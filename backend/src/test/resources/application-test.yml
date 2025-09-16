@@ -1,0 +1,12 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/novel_reading_db_test
+  test:
+    database:
+      replace: none
+
+logging:
+  level:
+    com.miraimagiclab.novelreadingapp: DEBUG
+    org.springframework.data.mongodb: DEBUG

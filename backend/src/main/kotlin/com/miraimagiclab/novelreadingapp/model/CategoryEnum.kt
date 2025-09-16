@@ -1,0 +1,31 @@
+package com.miraimagiclab.novelreadingapp.model
+
+enum class CategoryEnum {
+    ROMANCE,
+    FANTASY,
+    MYSTERY,
+    THRILLER,
+    HORROR,
+    SCIENCE_FICTION,
+    HISTORICAL,
+    CONTEMPORARY,
+    YOUNG_ADULT,
+    ADULT,
+    COMEDY,
+    DRAMA,
+    ACTION,
+    ADVENTURE,
+    SUPERNATURAL,
+    SLICE_OF_LIFE,
+    SCHOOL_LIFE,
+    REINCARNATION,
+    TRANSMIGRATION,
+    SYSTEM,
+    CULTIVATION,
+    WUXIA,
+    XIANXIA,
+    URBAN,
+    MODERN,
+    ANCIENT,
+    OTHER
+}
