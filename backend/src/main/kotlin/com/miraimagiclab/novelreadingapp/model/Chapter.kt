@@ -14,7 +14,7 @@ data class Chapter(
 
     val chapterTitle: String,
 
-    val chapterNumber: Number,
+    val chapterNumber: Int,
 
     val content: String,
 

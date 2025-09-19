@@ -97,35 +97,4 @@ class NovelController(
         val novels = novelService.getRecentlyUpdatedNovels()
         return ResponseEntity.ok(ApiResponse.success(novels, "Recently updated novels retrieved successfully"))
     }
-
-    @PostMapping("/{id}/view")
-    fun incrementViewCount(@PathVariable id: String): ResponseEntity<ApiResponse<NovelDto>> {
-        val novel = novelService.incrementViewCount(id)
-        return ResponseEntity.ok(ApiResponse.success(novel, "View count incremented successfully"))
-    }
-
-    @PostMapping("/{id}/follow")
-    fun incrementFollowCount(@PathVariable id: String): ResponseEntity<ApiResponse<NovelDto>> {
-        val novel = novelService.incrementFollowCount(id)
-        return ResponseEntity.ok(ApiResponse.success(novel, "Follow count incremented successfully"))
-    }
-
-    @DeleteMapping("/{id}/follow")
-    fun decrementFollowCount(@PathVariable id: String): ResponseEntity<ApiResponse<NovelDto>> {
-        val novel = novelService.decrementFollowCount(id)
-        return ResponseEntity.ok(ApiResponse.success(novel, "Follow count decremented successfully"))
-    }
-
-    @PostMapping("/{id}/rating")
-    fun updateRating(
-        @PathVariable id: String,
-        @RequestParam rating: Double
-    ): ResponseEntity<ApiResponse<NovelDto>> {
-        if (rating < 0.0 || rating > 5.0) {
-            return ResponseEntity.badRequest()
-                .body(ApiResponse.error("Rating must be between 0.0 and 5.0"))
-        }
-        val novel = novelService.updateRating(id, rating)
-        return ResponseEntity.ok(ApiResponse.success(novel, "Rating updated successfully"))
-    }
 }
