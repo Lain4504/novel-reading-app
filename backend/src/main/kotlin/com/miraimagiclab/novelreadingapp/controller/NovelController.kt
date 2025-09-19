@@ -1,7 +1,13 @@
 package com.miraimagiclab.novelreadingapp.controller
 
 import com.miraimagiclab.novelreadingapp.dto.*
+import com.miraimagiclab.novelreadingapp.dto.request.NovelCreateRequest
+import com.miraimagiclab.novelreadingapp.dto.request.NovelSearchRequest
+import com.miraimagiclab.novelreadingapp.dto.request.NovelUpdateRequest
+import com.miraimagiclab.novelreadingapp.dto.response.NovelDto
+import com.miraimagiclab.novelreadingapp.dto.response.PageResponse
 import com.miraimagiclab.novelreadingapp.service.NovelService
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -9,7 +15,8 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/novels")
-@CrossOrigin(origins = ["*"])
+@CrossOrigin(origins = ["http://localhost:3000", "http://localhost:8080", "http://127.0.0.1:3000", "http://127.0.0.1:8080"])
+@Tag(name = "Novel Management", description = "APIs for managing novels")
 class NovelController(
     private val novelService: NovelService
 ) {

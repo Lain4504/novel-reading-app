@@ -1,4 +1,4 @@
-package com.miraimagiclab.novelreadingapp.dto
+package com.miraimagiclab.novelreadingapp.dto.response
 
 import org.springframework.data.domain.Page
 

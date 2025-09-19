@@ -1,4 +1,4 @@
-package com.miraimagiclab.novelreadingapp.dto
+package com.miraimagiclab.novelreadingapp.dto.response
 
 import com.miraimagiclab.novelreadingapp.model.CategoryEnum
 import com.miraimagiclab.novelreadingapp.model.Novel

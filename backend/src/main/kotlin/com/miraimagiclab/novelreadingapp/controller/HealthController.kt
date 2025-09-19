@@ -1,6 +1,7 @@
 package com.miraimagiclab.novelreadingapp.controller
 
 import com.miraimagiclab.novelreadingapp.dto.ApiResponse
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -9,6 +10,7 @@ import java.time.LocalDateTime
 
 @RestController
 @RequestMapping("/health")
+@Tag(name = "Health Check", description = "APIs for checking service health")
 class HealthController {
 
     @GetMapping

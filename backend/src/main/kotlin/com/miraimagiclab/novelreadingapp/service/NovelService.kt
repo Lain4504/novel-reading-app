@@ -1,6 +1,10 @@
 package com.miraimagiclab.novelreadingapp.service
 
-import com.miraimagiclab.novelreadingapp.dto.*
+import com.miraimagiclab.novelreadingapp.dto.request.NovelCreateRequest
+import com.miraimagiclab.novelreadingapp.dto.request.NovelSearchRequest
+import com.miraimagiclab.novelreadingapp.dto.request.NovelUpdateRequest
+import com.miraimagiclab.novelreadingapp.dto.response.NovelDto
+import com.miraimagiclab.novelreadingapp.dto.response.PageResponse
 import com.miraimagiclab.novelreadingapp.exception.DuplicateNovelException
 import com.miraimagiclab.novelreadingapp.exception.NovelNotFoundException
 import com.miraimagiclab.novelreadingapp.model.Novel

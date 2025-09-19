@@ -1,37 +1,33 @@
-package com.miraimagiclab.novelreadingapp.dto
+package com.miraimagiclab.novelreadingapp.dto.request
 
 import com.miraimagiclab.novelreadingapp.model.CategoryEnum
 import com.miraimagiclab.novelreadingapp.model.NovelStatusEnum
 import jakarta.validation.constraints.*
 
-data class NovelCreateRequest(
-    @field:NotBlank(message = "Title is required")
+data class NovelUpdateRequest(
     @field:Size(min = 1, max = 200, message = "Title must be between 1 and 200 characters")
-    val title: String,
+    val title: String? = null,
     
-    @field:NotBlank(message = "Description is required")
     @field:Size(min = 10, max = 5000, message = "Description must be between 10 and 5000 characters")
-    val description: String,
+    val description: String? = null,
     
-    @field:NotBlank(message = "Author name is required")
     @field:Size(min = 1, max = 100, message = "Author name must be between 1 and 100 characters")
-    val authorName: String,
+    val authorName: String? = null,
     
     val coverImage: String? = null,
     
-    @field:NotEmpty(message = "At least one category is required")
-    val categories: Set<CategoryEnum>,
+    val categories: Set<CategoryEnum>? = null,
     
     @field:Size(min = 0, max = 5, message = "Rating must be between 0 and 5")
-    val rating: Double = 0.0,
+    val rating: Double? = null,
     
-    val wordCount: Int = 0,
+    val wordCount: Int? = null,
     
-    val chapterCount: Int = 0,
+    val chapterCount: Int? = null,
     
     val authorId: String? = null,
     
-    val status: NovelStatusEnum = NovelStatusEnum.DRAFT,
+    val status: NovelStatusEnum? = null,
     
-    val isR18: Boolean = false
+    val isR18: Boolean? = null
 )

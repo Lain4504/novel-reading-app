@@ -34,6 +34,9 @@ dependencies {
     // MongoDB
     implementation("org.springframework.data:spring-data-mongodb")
     
+    // Swagger/OpenAPI
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
+    
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
