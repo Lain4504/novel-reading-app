@@ -1,7 +1,13 @@
 package com.miraimagiclab.novelreadingapp.controller
 
 import com.miraimagiclab.novelreadingapp.dto.*
+import com.miraimagiclab.novelreadingapp.dto.request.NovelCreateRequest
+import com.miraimagiclab.novelreadingapp.dto.request.NovelSearchRequest
+import com.miraimagiclab.novelreadingapp.dto.request.NovelUpdateRequest
+import com.miraimagiclab.novelreadingapp.dto.response.NovelDto
+import com.miraimagiclab.novelreadingapp.dto.response.PageResponse
 import com.miraimagiclab.novelreadingapp.service.NovelService
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -9,7 +15,8 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/novels")
-@CrossOrigin(origins = ["*"])
+@CrossOrigin(origins = ["http://localhost:3000", "http://localhost:8080", "http://127.0.0.1:3000", "http://127.0.0.1:8080"])
+@Tag(name = "Novel Management", description = "APIs for managing novels")
 class NovelController(
     private val novelService: NovelService
 ) {
@@ -89,36 +96,5 @@ class NovelController(
     fun getRecentlyUpdatedNovels(): ResponseEntity<ApiResponse<List<NovelDto>>> {
         val novels = novelService.getRecentlyUpdatedNovels()
         return ResponseEntity.ok(ApiResponse.success(novels, "Recently updated novels retrieved successfully"))
-    }
-
-    @PostMapping("/{id}/view")
-    fun incrementViewCount(@PathVariable id: String): ResponseEntity<ApiResponse<NovelDto>> {
-        val novel = novelService.incrementViewCount(id)
-        return ResponseEntity.ok(ApiResponse.success(novel, "View count incremented successfully"))
-    }
-
-    @PostMapping("/{id}/follow")
-    fun incrementFollowCount(@PathVariable id: String): ResponseEntity<ApiResponse<NovelDto>> {
-        val novel = novelService.incrementFollowCount(id)
-        return ResponseEntity.ok(ApiResponse.success(novel, "Follow count incremented successfully"))
-    }
-
-    @DeleteMapping("/{id}/follow")
-    fun decrementFollowCount(@PathVariable id: String): ResponseEntity<ApiResponse<NovelDto>> {
-        val novel = novelService.decrementFollowCount(id)
-        return ResponseEntity.ok(ApiResponse.success(novel, "Follow count decremented successfully"))
-    }
-
-    @PostMapping("/{id}/rating")
-    fun updateRating(
-        @PathVariable id: String,
-        @RequestParam rating: Double
-    ): ResponseEntity<ApiResponse<NovelDto>> {
-        if (rating < 0.0 || rating > 5.0) {
-            return ResponseEntity.badRequest()
-                .body(ApiResponse.error("Rating must be between 0.0 and 5.0"))
-        }
-        val novel = novelService.updateRating(id, rating)
-        return ResponseEntity.ok(ApiResponse.success(novel, "Rating updated successfully"))
     }
 }

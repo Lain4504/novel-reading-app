@@ -1,6 +1,10 @@
 package com.miraimagiclab.novelreadingapp.service
 
-import com.miraimagiclab.novelreadingapp.dto.*
+import com.miraimagiclab.novelreadingapp.dto.request.NovelCreateRequest
+import com.miraimagiclab.novelreadingapp.dto.request.NovelSearchRequest
+import com.miraimagiclab.novelreadingapp.dto.request.NovelUpdateRequest
+import com.miraimagiclab.novelreadingapp.dto.response.NovelDto
+import com.miraimagiclab.novelreadingapp.dto.response.PageResponse
 import com.miraimagiclab.novelreadingapp.exception.DuplicateNovelException
 import com.miraimagiclab.novelreadingapp.exception.NovelNotFoundException
 import com.miraimagiclab.novelreadingapp.model.Novel
@@ -175,62 +179,5 @@ class NovelService(
     @Transactional(readOnly = true)
     fun getRecentlyUpdatedNovels(): List<NovelDto> {
         return novelRepository.findTop10ByOrderByUpdatedAtDesc().map { NovelDto.fromEntity(it) }
-    }
-
-    fun incrementViewCount(id: String): NovelDto {
-        val novel = novelRepository.findById(id)
-            .orElseThrow { NovelNotFoundException("Novel with ID '$id' not found") }
-        
-        val updatedNovel = novel.copy(
-            viewCount = novel.viewCount + 1,
-            updatedAt = LocalDateTime.now()
-        )
-        
-        val savedNovel = novelRepository.save(updatedNovel)
-        return NovelDto.fromEntity(savedNovel)
-    }
-
-    fun incrementFollowCount(id: String): NovelDto {
-        val novel = novelRepository.findById(id)
-            .orElseThrow { NovelNotFoundException("Novel with ID '$id' not found") }
-        
-        val updatedNovel = novel.copy(
-            followCount = novel.followCount + 1,
-            updatedAt = LocalDateTime.now()
-        )
-        
-        val savedNovel = novelRepository.save(updatedNovel)
-        return NovelDto.fromEntity(savedNovel)
-    }
-
-    fun decrementFollowCount(id: String): NovelDto {
-        val novel = novelRepository.findById(id)
-            .orElseThrow { NovelNotFoundException("Novel with ID '$id' not found") }
-        
-        val updatedNovel = novel.copy(
-            followCount = maxOf(0, novel.followCount - 1),
-            updatedAt = LocalDateTime.now()
-        )
-        
-        val savedNovel = novelRepository.save(updatedNovel)
-        return NovelDto.fromEntity(savedNovel)
-    }
-
-    fun updateRating(id: String, newRating: Double): NovelDto {
-        val novel = novelRepository.findById(id)
-            .orElseThrow { NovelNotFoundException("Novel with ID '$id' not found") }
-        
-        val totalRating = novel.rating * novel.ratingCount + newRating
-        val newRatingCount = novel.ratingCount + 1
-        val averageRating = totalRating / newRatingCount
-        
-        val updatedNovel = novel.copy(
-            rating = averageRating,
-            ratingCount = newRatingCount,
-            updatedAt = LocalDateTime.now()
-        )
-        
-        val savedNovel = novelRepository.save(updatedNovel)
-        return NovelDto.fromEntity(savedNovel)
     }
 }

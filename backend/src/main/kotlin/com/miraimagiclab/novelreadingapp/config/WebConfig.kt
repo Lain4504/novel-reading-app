@@ -19,7 +19,7 @@ class WebConfig(
 
     override fun addCorsMappings(registry: CorsRegistry) {
         registry.addMapping("/**")
-            .allowedOriginPatterns(*allowedOrigins.split(",").toTypedArray())
+            .allowedOrigins(*allowedOrigins.split(",").toTypedArray())
             .allowedMethods(*allowedMethods.split(",").toTypedArray())
             .allowedHeaders(*allowedHeaders.split(",").toTypedArray())
             .allowCredentials(allowCredentials)
@@ -28,7 +28,7 @@ class WebConfig(
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
-        configuration.allowedOriginPatterns = allowedOrigins.split(",")
+        configuration.allowedOrigins = allowedOrigins.split(",")
         configuration.allowedMethods = allowedMethods.split(",")
         configuration.allowedHeaders = allowedHeaders.split(",")
         configuration.allowCredentials = allowCredentials
