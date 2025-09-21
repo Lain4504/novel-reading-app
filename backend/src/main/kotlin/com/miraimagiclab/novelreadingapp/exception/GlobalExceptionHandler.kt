@@ -31,6 +31,24 @@ class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response)
     }
 
+    @ExceptionHandler(UserNotFoundException::class)
+    fun handleUserNotFoundException(ex: UserNotFoundException, request: WebRequest): ResponseEntity<ApiResponse<Nothing>> {
+        val response = ApiResponse.error<Nothing>(
+            message = ex.message ?: "User not found",
+            errors = listOf("User with the given ID does not exist")
+        )
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response)
+    }
+
+    @ExceptionHandler(DuplicateUserException::class)
+    fun handleDuplicateUserException(ex: DuplicateUserException, request: WebRequest): ResponseEntity<ApiResponse<Nothing>> {
+        val response = ApiResponse.error<Nothing>(
+            message = ex.message ?: "Duplicate user",
+            errors = listOf("A user with the same username or email already exists")
+        )
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response)
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidationException(ex: MethodArgumentNotValidException, request: WebRequest): ResponseEntity<ApiResponse<Nothing>> {
         val errors = ex.bindingResult.fieldErrors.map { fieldError: FieldError ->

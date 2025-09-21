@@ -19,7 +19,9 @@ import java.time.LocalDateTime
 @Service
 @Transactional
 class NovelService(
-    private val novelRepository: NovelRepository
+    private val novelRepository: NovelRepository,
+    private val reviewService: ReviewService,
+    private val userNovelInteractionService: UserNovelInteractionService
 ) {
 
     fun createNovel(request: NovelCreateRequest): NovelDto {
@@ -179,5 +181,75 @@ class NovelService(
     @Transactional(readOnly = true)
     fun getRecentlyUpdatedNovels(): List<NovelDto> {
         return novelRepository.findTop10ByOrderByUpdatedAtDesc().map { NovelDto.fromEntity(it) }
+    }
+
+    fun incrementViewCount(id: String): NovelDto {
+        val novel = novelRepository.findById(id)
+            .orElseThrow { NovelNotFoundException("Novel with ID '$id' not found") }
+
+        val updatedNovel = novel.copy(
+            viewCount = novel.viewCount + 1,
+            updatedAt = LocalDateTime.now()
+        )
+
+        val savedNovel = novelRepository.save(updatedNovel)
+        return NovelDto.fromEntity(savedNovel)
+    }
+
+    fun toggleFollow(id: String, userId: String): NovelDto {
+        val novel = novelRepository.findById(id)
+            .orElseThrow { NovelNotFoundException("Novel with ID '$id' not found") }
+
+        val interaction = userNovelInteractionService.toggleFollow(userId, id)
+
+        // Update follow count in novel
+        val followCount = userNovelInteractionService.getFollowCount(id)
+        val updatedNovel = novel.copy(
+            followCount = followCount.toInt(),
+            updatedAt = LocalDateTime.now()
+        )
+
+        val savedNovel = novelRepository.save(updatedNovel)
+        return NovelDto.fromEntity(savedNovel)
+    }
+
+    fun unfollow(id: String, userId: String): NovelDto {
+        val novel = novelRepository.findById(id)
+            .orElseThrow { NovelNotFoundException("Novel with ID '$id' not found") }
+
+        // For unfollow, we need to set hasFollowing to false
+        val updateRequest = com.miraimagiclab.novelreadingapp.dto.request.UserNovelInteractionUpdateRequest(
+            hasFollowing = false
+        )
+        userNovelInteractionService.createOrUpdateInteraction(userId, id, updateRequest)
+
+        // Update follow count in novel
+        val followCount = userNovelInteractionService.getFollowCount(id)
+        val updatedNovel = novel.copy(
+            followCount = followCount.toInt(),
+            updatedAt = LocalDateTime.now()
+        )
+
+        val savedNovel = novelRepository.save(updatedNovel)
+        return NovelDto.fromEntity(savedNovel)
+    }
+
+    fun addOrUpdateRating(id: String, userId: String, rating: Double): NovelDto {
+        val novel = novelRepository.findById(id)
+            .orElseThrow { NovelNotFoundException("Novel with ID '$id' not found") }
+
+        // This would typically create/update a review, but for now we'll just update the novel's rating
+        // In a real implementation, you'd want to calculate average from reviews
+        val currentRatingCount = novel.ratingCount + 1
+        val newRating = ((novel.rating * novel.ratingCount) + rating) / currentRatingCount
+
+        val updatedNovel = novel.copy(
+            rating = newRating,
+            ratingCount = currentRatingCount,
+            updatedAt = LocalDateTime.now()
+        )
+
+        val savedNovel = novelRepository.save(updatedNovel)
+        return NovelDto.fromEntity(savedNovel)
     }
 }
