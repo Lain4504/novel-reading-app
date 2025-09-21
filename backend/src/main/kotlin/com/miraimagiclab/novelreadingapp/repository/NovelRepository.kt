@@ -1,8 +1,8 @@
 package com.miraimagiclab.novelreadingapp.repository
 
-import com.miraimagiclab.novelreadingapp.model.CategoryEnum
+import com.miraimagiclab.novelreadingapp.enumeration.CategoryEnum
 import com.miraimagiclab.novelreadingapp.model.Novel
-import com.miraimagiclab.novelreadingapp.model.NovelStatusEnum
+import com.miraimagiclab.novelreadingapp.enumeration.NovelStatusEnum
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.mongodb.repository.MongoRepository

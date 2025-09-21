@@ -1,8 +1,10 @@
 package com.miraimagiclab.novelreadingapp.controller
 
 import com.miraimagiclab.novelreadingapp.dto.ApiResponse
-import com.miraimagiclab.novelreadingapp.dto.request.ChapterRequestDto
+import com.miraimagiclab.novelreadingapp.dto.request.ChapterCreateRequest
+import com.miraimagiclab.novelreadingapp.dto.request.ChapterUpdateRequest
 import com.miraimagiclab.novelreadingapp.dto.response.ChapterResponseDto
+import com.miraimagiclab.novelreadingapp.dto.response.PageResponse
 import com.miraimagiclab.novelreadingapp.service.ChapterService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -23,19 +26,23 @@ import org.springframework.web.bind.annotation.RestController
 class ChapterController(
     private val chapterService: ChapterService
 ) {
-    @PostMapping
-    fun createChapter(@Valid @RequestBody requestDto: ChapterRequestDto): ResponseEntity<ApiResponse<ChapterResponseDto>> {
-        val chapter = chapterService.createChapter(requestDto)
+    @PostMapping("/novels/{novelId}")
+    fun createChapter(
+        @PathVariable("novelId") novelId: String,
+        @Valid @RequestBody requestDto: ChapterCreateRequest
+    ): ResponseEntity<ApiResponse<ChapterResponseDto>> {
+        val chapter = chapterService.createChapter(novelId, requestDto)
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(ApiResponse.success(chapter, "Chapter created successfully"))
     }
 
-    @PutMapping("/{chapterId}")
+    @PutMapping("/novels/{novelId}/{chapterId}")
     fun updateChapter(
+        @PathVariable("novelId") novelId: String,
         @PathVariable("chapterId") chapterId: String,
-        @Valid @RequestBody requestDto: ChapterRequestDto
+        @Valid @RequestBody requestDto: ChapterUpdateRequest
     ): ResponseEntity<ApiResponse<ChapterResponseDto>?> {
-        val chapter = chapterService.updateChapter(chapterId, requestDto)
+        val chapter = chapterService.updateChapter(novelId, chapterId, requestDto)
         return ResponseEntity.ok(ApiResponse.success(chapter, "Chapter updated successfully"))
     }
 
@@ -50,6 +57,26 @@ class ChapterController(
     fun getChapterById(@PathVariable("chapterId") chapterId: String): ResponseEntity<ApiResponse<ChapterResponseDto>> {
         val chapter = chapterService.getChapterById(chapterId)
         return ResponseEntity.ok(ApiResponse.success(chapter, "Chapter retrieved successfully"))
+    }
+
+    @GetMapping("/novels/{novelId}")
+    fun getChaptersByNovelId(
+        @PathVariable("novelId") novelId: String,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "20") size: Int,
+        @RequestParam(defaultValue = "asc") sortDirection: String
+    ): ResponseEntity<ApiResponse<PageResponse<ChapterResponseDto>>> {
+        val chapters = chapterService.getChaptersByNovelId(novelId, page, size, sortDirection)
+        return ResponseEntity.ok(ApiResponse.success(chapters, "Chapters retrieved successfully"))
+    }
+
+    @PostMapping("/reorder/{novelId}")
+    fun reorderChapters(
+        @PathVariable("novelId") novelId: String,
+        @RequestBody newOrder: List<String>
+    ): ResponseEntity<ApiResponse<String>> {
+        chapterService.reorderChapters(novelId, newOrder)
+        return ResponseEntity.ok(ApiResponse.success("Chapters reordered successfully"))
     }
 
 }

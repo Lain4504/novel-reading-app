@@ -1,8 +1,8 @@
 package com.miraimagiclab.novelreadingapp.dto.response
 
-import com.miraimagiclab.novelreadingapp.model.CategoryEnum
+import com.miraimagiclab.novelreadingapp.enumeration.CategoryEnum
 import com.miraimagiclab.novelreadingapp.model.Novel
-import com.miraimagiclab.novelreadingapp.model.NovelStatusEnum
+import com.miraimagiclab.novelreadingapp.enumeration.NovelStatusEnum
 import java.time.LocalDateTime
 
 data class NovelDto(
