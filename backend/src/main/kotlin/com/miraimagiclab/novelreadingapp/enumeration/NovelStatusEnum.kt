@@ -1,4 +1,4 @@
-package com.miraimagiclab.novelreadingapp.model
+package com.miraimagiclab.novelreadingapp.enumeration
 
 enum class NovelStatusEnum {
     DRAFT,

@@ -1,7 +1,7 @@
 package com.miraimagiclab.novelreadingapp.dto.request
 
-import com.miraimagiclab.novelreadingapp.model.CategoryEnum
-import com.miraimagiclab.novelreadingapp.model.NovelStatusEnum
+import com.miraimagiclab.novelreadingapp.enumeration.CategoryEnum
+import com.miraimagiclab.novelreadingapp.enumeration.NovelStatusEnum
 
 data class NovelSearchRequest(
     val title: String? = null,

@@ -1,7 +1,7 @@
 package com.miraimagiclab.novelreadingapp.dto.request
 
-import com.miraimagiclab.novelreadingapp.model.CategoryEnum
-import com.miraimagiclab.novelreadingapp.model.NovelStatusEnum
+import com.miraimagiclab.novelreadingapp.enumeration.CategoryEnum
+import com.miraimagiclab.novelreadingapp.enumeration.NovelStatusEnum
 import jakarta.validation.constraints.*
 
 data class NovelUpdateRequest(
@@ -25,6 +25,7 @@ data class NovelUpdateRequest(
     
     val chapterCount: Int? = null,
     
+    @field:Size(min = 1, max = 100, message = "Author ID must be between 1 and 100 characters")
     val authorId: String? = null,
     
     val status: NovelStatusEnum? = null,

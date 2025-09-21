@@ -1,10 +1,11 @@
 package com.miraimagiclab.novelreadingapp.dto.request
 
-import com.miraimagiclab.novelreadingapp.model.CategoryEnum
-import com.miraimagiclab.novelreadingapp.model.NovelStatusEnum
+import com.miraimagiclab.novelreadingapp.enumeration.CategoryEnum
+import com.miraimagiclab.novelreadingapp.enumeration.NovelStatusEnum
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.Size
+import jakarta.validation.constraints.Pattern
 
 data class NovelCreateRequest(
     @field:NotBlank(message = "Title is required")
@@ -19,19 +20,13 @@ data class NovelCreateRequest(
     @field:Size(min = 1, max = 100, message = "Author name must be between 1 and 100 characters")
     val authorName: String,
 
+    @field:Size(min = 1, max = 100, message = "Author ID must be between 1 and 100 characters")
+    val authorId: String? = null,
+
     val coverImage: String? = null,
 
     @field:NotEmpty(message = "At least one category is required")
     val categories: Set<CategoryEnum>,
-
-    @field:Size(min = 0, max = 5, message = "Rating must be between 0 and 5")
-    val rating: Double = 0.0,
-
-    val wordCount: Int = 0,
-
-    val chapterCount: Int = 0,
-
-    val authorId: String? = null,
 
     val status: NovelStatusEnum = NovelStatusEnum.DRAFT,
 

@@ -1,9 +1,14 @@
 package com.miraimagiclab.novelreadingapp.service
 
-import com.miraimagiclab.novelreadingapp.dto.request.ChapterRequestDto
+import com.miraimagiclab.novelreadingapp.dto.request.ChapterCreateRequest
+import com.miraimagiclab.novelreadingapp.dto.request.ChapterUpdateRequest
 import com.miraimagiclab.novelreadingapp.dto.response.ChapterResponseDto
+import com.miraimagiclab.novelreadingapp.dto.response.PageResponse
 import com.miraimagiclab.novelreadingapp.model.Chapter
 import com.miraimagiclab.novelreadingapp.repository.ChapterRepository
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -14,17 +19,14 @@ import org.springframework.web.bind.annotation.PathVariable
 class ChapterService (
     private val chapterRepository: ChapterRepository
 ){
-    fun createChapter(request: ChapterRequestDto): ChapterResponseDto {
-        if (chapterRepository.existsByNovelId(request.novelId)) {
-            throw Exception("Chapter for Novel ID '${request.novelId}' already exists")
-        }
+    fun createChapter(novelId: String, request: ChapterCreateRequest): ChapterResponseDto {
         val chapter = Chapter(
-            novelId = request.novelId,
+            novelId = novelId,
             chapterTitle = request.chapterTitle,
             content = request.content,
             wordCount = request.content.split("\\s+".toRegex()).size,
             viewCount = 0,
-            chapterNumber = chapterRepository.countChapterByNovelId(request.novelId) + 1
+            chapterNumber = chapterRepository.countByNovelId(novelId) + 1
         )
         val savedChapter = chapterRepository.save(chapter)
         return ChapterResponseDto(
@@ -40,9 +42,15 @@ class ChapterService (
         )
     }
 
-    fun updateChapter(chapterId: String, request: ChapterRequestDto): ChapterResponseDto {
+    fun updateChapter(novelId: String, chapterId: String, request: ChapterUpdateRequest): ChapterResponseDto {
         val existingChapter = chapterRepository.findById(chapterId)
             .orElseThrow { Exception("Chapter with ID '$chapterId' not found") }
+        
+        // Verify that the chapter belongs to the specified novel
+        if (existingChapter.novelId != novelId) {
+            throw Exception("Chapter with ID '$chapterId' does not belong to novel '$novelId'")
+        }
+        
         val updatedChapter = existingChapter.copy(
             chapterTitle = request.chapterTitle,
             content = request.content,
@@ -83,5 +91,66 @@ class ChapterService (
             createdAt = chapter.createdAt.toString(),
             updatedAt = chapter.updatedAt.toString()
         )
+    }
+
+    @Transactional(readOnly = true)
+    fun getChaptersByNovelId(novelId: String, page: Int = 0, size: Int = 20, sortDirection: String = "asc"): PageResponse<ChapterResponseDto> {
+        val sort = Sort.by(
+            if (sortDirection == "asc") Sort.Direction.ASC else Sort.Direction.DESC,
+            "chapterNumber"
+        )
+        val pageable: Pageable = PageRequest.of(page, size, sort)
+        val chapters = chapterRepository.findByNovelId(novelId, pageable)
+        
+        val chapterDtos = chapters.content.map { chapter ->
+            ChapterResponseDto(
+                id = chapter.id!!,
+                novelId = chapter.novelId,
+                chapterTitle = chapter.chapterTitle,
+                chapterNumber = chapter.chapterNumber,
+                content = chapter.content,
+                wordCount = chapter.wordCount,
+                viewCount = chapter.viewCount,
+                createdAt = chapter.createdAt.toString(),
+                updatedAt = chapter.updatedAt.toString()
+            )
+        }
+        
+        return PageResponse(
+            content = chapterDtos,
+            page = chapters.number,
+            size = chapters.size,
+            totalElements = chapters.totalElements,
+            totalPages = chapters.totalPages,
+            first = chapters.isFirst,
+            last = chapters.isLast,
+            numberOfElements = chapters.numberOfElements
+        )
+    }
+
+    fun reorderChapters(novelId: String, newOrder: List<String>): List<ChapterResponseDto> {
+        val chapters = chapterRepository.findByNovelId(novelId)
+        if (chapters.size != newOrder.size || !chapters.all { newOrder.contains(it.id) }) {
+            throw Exception("Invalid chapter order")
+        }
+        val chapterMap = chapters.associateBy { it.id }
+        val reorderedChapters = newOrder.mapIndexed { index, chapterId ->
+            val chapter = chapterMap[chapterId] ?: throw Exception("Chapter with ID '$chapterId' not found")
+            chapter.copy(chapterNumber = index + 1)
+        }
+        chapterRepository.saveAll(reorderedChapters)
+        return reorderedChapters.map { chapter ->
+            ChapterResponseDto(
+                id = chapter.id!!,
+                novelId = chapter.novelId,
+                chapterTitle = chapter.chapterTitle,
+                chapterNumber = chapter.chapterNumber,
+                content = chapter.content,
+                wordCount = chapter.wordCount,
+                viewCount = chapter.viewCount,
+                createdAt = chapter.createdAt.toString(),
+                updatedAt = chapter.updatedAt.toString()
+            )
+        }
     }
 }
