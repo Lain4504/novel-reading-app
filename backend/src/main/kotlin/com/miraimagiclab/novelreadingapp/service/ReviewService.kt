@@ -55,8 +55,7 @@ class ReviewService(
             chaptersReadWhenReviewed = request.chaptersReadWhenReviewed,
             totalChaptersAtReview = request.totalChaptersAtReview,
             createdAt = LocalDateTime.now(),
-            updatedAt = LocalDateTime.now(),
-            version = 1
+            updatedAt = LocalDateTime.now()
         )
 
         val savedReview = reviewRepository.save(review)
