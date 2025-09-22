@@ -45,8 +45,6 @@ data class User(
 
     val updatedAt: LocalDateTime = LocalDateTime.now(),
 
-    val lastTimeLogin: LocalDateTime? = null,
-
     // Track when displayName was last changed to enforce 30-day rule
     val lastDisplayNameChangedAt: LocalDateTime? = null
 )

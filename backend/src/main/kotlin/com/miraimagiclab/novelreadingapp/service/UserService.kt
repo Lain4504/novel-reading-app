@@ -123,16 +123,4 @@ class UserService(
         return user
     }
 
-    fun updateLastLogin(id: String): UserDto {
-        val user = userRepository.findById(id)
-            .orElseThrow { UserNotFoundException("User with ID '$id' not found") }
-
-        val updatedUser = user.copy(
-            lastTimeLogin = LocalDateTime.now(),
-            updatedAt = LocalDateTime.now()
-        )
-
-        val savedUser = userRepository.save(updatedUser)
-        return UserDto.fromEntity(savedUser)
-    }
 }

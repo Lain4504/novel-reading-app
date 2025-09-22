@@ -72,9 +72,4 @@ class UserController(
         return ResponseEntity.ok(ApiResponse.success("User deleted successfully"))
     }
 
-    @PostMapping("/{id}/login")
-    fun updateLastLogin(@PathVariable id: String): ResponseEntity<ApiResponse<UserDto>> {
-        val user = userService.updateLastLogin(id)
-        return ResponseEntity.ok(ApiResponse.success(user, "Last login updated successfully"))
-    }
 }
