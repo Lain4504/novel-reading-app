@@ -18,7 +18,6 @@ data class UserDto(
     val displayName: String?,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
-    val lastTimeLogin: LocalDateTime?,
     val lastDisplayNameChangedAt: LocalDateTime?
 ) {
     companion object {
@@ -36,7 +35,6 @@ data class UserDto(
                 displayName = user.displayName ?: user.username,
                 createdAt = user.createdAt,
                 updatedAt = user.updatedAt,
-                lastTimeLogin = user.lastTimeLogin,
                 lastDisplayNameChangedAt = user.lastDisplayNameChangedAt
             )
         }

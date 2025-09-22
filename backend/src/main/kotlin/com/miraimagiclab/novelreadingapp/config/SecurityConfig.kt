@@ -30,7 +30,6 @@ class SecurityConfig(
                 authz
                     .requestMatchers("/api/health", "/api/swagger-ui/**", "/api/api-docs/**").permitAll()
                     .requestMatchers("/api/users", "/api/users/login").permitAll() // Allow signup and login
-                    .requestMatchers("/api/users/{id}/login").permitAll() // Allow update last login (might need auth later)
                     .anyRequest().authenticated() // All other requests require authentication
             }
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
