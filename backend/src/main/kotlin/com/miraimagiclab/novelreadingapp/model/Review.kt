@@ -42,7 +42,5 @@ data class Review(
 
     // Metadata
     val createdAt: LocalDateTime = LocalDateTime.now(),
-    val updatedAt: LocalDateTime = LocalDateTime.now(),
-
-    val version: Int = 1
+    val updatedAt: LocalDateTime = LocalDateTime.now()
 )

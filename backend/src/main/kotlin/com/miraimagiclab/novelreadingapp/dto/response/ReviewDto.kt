@@ -18,8 +18,7 @@ data class ReviewDto(
     val chaptersReadWhenReviewed: Int,
     val totalChaptersAtReview: Int,
     val createdAt: LocalDateTime,
-    val updatedAt: LocalDateTime,
-    val version: Int
+    val updatedAt: LocalDateTime
 ) {
     companion object {
         fun fromEntity(review: Review): ReviewDto {
@@ -38,8 +37,7 @@ data class ReviewDto(
                 chaptersReadWhenReviewed = review.chaptersReadWhenReviewed,
                 totalChaptersAtReview = review.totalChaptersAtReview,
                 createdAt = review.createdAt,
-                updatedAt = review.updatedAt,
-                version = review.version
+                updatedAt = review.updatedAt
             )
         }
     }
