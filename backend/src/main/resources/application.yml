@@ -41,6 +41,10 @@ app:
     allowed-headers: "*"
     allow-credentials: true
 
+jwt:
+  secret: "mySecretKeyThatIsAtLeast32CharactersLongForJWTTokenGenerationAndValidation"
+  expiration: 86400000  # 24 hours in milliseconds
+
 # Swagger/OpenAPI Configuration
 springdoc:
   api-docs:

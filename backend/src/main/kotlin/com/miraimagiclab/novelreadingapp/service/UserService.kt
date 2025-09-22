@@ -109,6 +109,27 @@ class UserService(
         userRepository.deleteById(id)
     }
 
+    fun authenticate(usernameOrEmail: String, password: String): User {
+        val user = if (usernameOrEmail.contains("@")) {
+            userRepository.findByEmail(usernameOrEmail)
+        } else {
+            userRepository.findByUsername(usernameOrEmail)
+        }.orElseThrow { UserNotFoundException("Invalid username/email or password") }
+
+        if (!passwordEncoder.matches(password, user.password)) {
+            throw UserNotFoundException("Invalid username/email or password")
+        }
+
+        // Update last login time
+        val updatedUser = user.copy(
+            lastTimeLogin = LocalDateTime.now(),
+            updatedAt = LocalDateTime.now()
+        )
+        userRepository.save(updatedUser)
+
+        return updatedUser
+    }
+
     fun updateLastLogin(id: String): UserDto {
         val user = userRepository.findById(id)
             .orElseThrow { UserNotFoundException("User with ID '$id' not found") }
