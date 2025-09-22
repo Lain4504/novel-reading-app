@@ -120,14 +120,7 @@ class UserService(
             throw UserNotFoundException("Invalid username/email or password")
         }
 
-        // Update last login time
-        val updatedUser = user.copy(
-            lastTimeLogin = LocalDateTime.now(),
-            updatedAt = LocalDateTime.now()
-        )
-        userRepository.save(updatedUser)
-
-        return updatedUser
+        return user
     }
 
     fun updateLastLogin(id: String): UserDto {
