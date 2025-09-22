@@ -1,8 +1,11 @@
 package com.miraimagiclab.novelreadingapp.controller
 
+import com.miraimagiclab.novelreadingapp.config.JwtUtil
 import com.miraimagiclab.novelreadingapp.dto.ApiResponse
+import com.miraimagiclab.novelreadingapp.dto.request.LoginRequest
 import com.miraimagiclab.novelreadingapp.dto.request.UserCreateRequest
 import com.miraimagiclab.novelreadingapp.dto.request.UserUpdateRequest
+import com.miraimagiclab.novelreadingapp.dto.response.LoginResponse
 import com.miraimagiclab.novelreadingapp.dto.response.UserDto
 import com.miraimagiclab.novelreadingapp.service.UserService
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -16,7 +19,8 @@ import org.springframework.web.bind.annotation.*
 @CrossOrigin(origins = ["http://localhost:3000", "http://localhost:8080", "http://127.0.0.1:3000", "http://127.0.0.1:8080"])
 @Tag(name = "User Management", description = "APIs for managing users")
 class UserController(
-    private val userService: UserService
+    private val userService: UserService,
+    private val jwtUtil: JwtUtil
 ) {
 
     @PostMapping
@@ -24,6 +28,15 @@ class UserController(
         val user = userService.createUser(request)
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(ApiResponse.success(user, "User created successfully"))
+    }
+
+    @PostMapping("/login")
+    fun login(@Valid @RequestBody request: LoginRequest): ResponseEntity<ApiResponse<LoginResponse>> {
+        val user = userService.authenticate(request.usernameOrEmail, request.password)
+        val token = jwtUtil.generateToken(user)
+        val userDto = UserDto.fromEntity(user)
+        val loginResponse = LoginResponse(token, userDto)
+        return ResponseEntity.ok(ApiResponse.success(loginResponse, "Login successful"))
     }
 
     @GetMapping("/{id}")
