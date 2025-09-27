@@ -32,11 +32,27 @@ class UserController(
 
     @PostMapping("/login")
     fun login(@Valid @RequestBody request: LoginRequest): ResponseEntity<ApiResponse<LoginResponse>> {
-        val user = userService.authenticate(request.usernameOrEmail, request.password)
-        val token = jwtUtil.generateToken(user)
-        val userDto = UserDto.fromEntity(user)
-        val loginResponse = LoginResponse(token, userDto)
+        val authResult = userService.authenticate(request.usernameOrEmail, request.password)
+        val userDto = UserDto.fromEntity(authResult.user)
+        val loginResponse = LoginResponse(authResult.token, authResult.refreshToken, userDto)
         return ResponseEntity.ok(ApiResponse.success(loginResponse, "Login successful"))
+    }
+
+    @PostMapping("/refresh")
+    fun refreshToken(@RequestParam refreshToken: String): ResponseEntity<ApiResponse<LoginResponse>> {
+        if (!jwtUtil.validateRefreshToken(refreshToken)) {
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error("Invalid refresh token"))
+        }
+
+        val userId = jwtUtil.getUserIdFromToken(refreshToken)
+        val userEntity = userService.getUserEntityById(userId)
+        val newToken = jwtUtil.generateToken(userEntity)
+        val newRefreshToken = jwtUtil.generateRefreshToken(userEntity)
+        val userDto = UserDto.fromEntity(userEntity)
+
+        val loginResponse = LoginResponse(newToken, newRefreshToken, userDto)
+        return ResponseEntity.ok(ApiResponse.success(loginResponse, "Token refreshed successfully"))
     }
 
     @GetMapping("/{id}")

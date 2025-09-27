@@ -8,7 +8,7 @@ spring:
     name: novel-reading-app
   data:
     mongodb:
-      uri: mongodb://localhost:27017/novel_reading_db
+      uri: mongodb://root:root@localhost:27017/novel_reading_db?authSource=admin
       auto-index-creation: true
   jackson:
     default-property-inclusion: non_null
@@ -16,6 +16,21 @@ spring:
       write-dates-as-timestamps: false
     deserialization:
       fail-on-unknown-properties: false
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:your-email@gmail.com}
+    password: ${MAIL_PASSWORD:your-app-password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
 
 management:
   endpoints:
@@ -44,6 +59,7 @@ app:
 jwt:
   secret: "mySecretKeyThatIsAtLeast32CharactersLongForJWTTokenGenerationAndValidation"
   expiration: 86400000  # 24 hours in milliseconds
+  refresh-expiration: 604800000  # 7 days in milliseconds
 
 # Swagger/OpenAPI Configuration
 springdoc:

@@ -18,6 +18,9 @@ class JwtUtil {
     @Value("\${jwt.expiration:86400000}") // 24 hours in milliseconds
     private var jwtExpiration: Long = 86400000
 
+    @Value("\${jwt.refresh-expiration:604800000}") // 7 days in milliseconds
+    private var refreshExpiration: Long = 604800000
+
     private val key: SecretKey by lazy {
         Keys.hmacShaKeyFor(secret.toByteArray())
     }
@@ -34,6 +37,21 @@ class JwtUtil {
             .setSubject(user.username)
             .setIssuedAt(Date())
             .setExpiration(Date(System.currentTimeMillis() + jwtExpiration))
+            .signWith(key)
+            .compact()
+    }
+
+    fun generateRefreshToken(user: User): String {
+        val claims = mutableMapOf<String, Any>()
+        claims["userId"] = user.id!!
+        claims["username"] = user.username
+        claims["type"] = "refresh"
+
+        return Jwts.builder()
+            .setClaims(claims)
+            .setSubject(user.username)
+            .setIssuedAt(Date())
+            .setExpiration(Date(System.currentTimeMillis() + refreshExpiration))
             .signWith(key)
             .compact()
     }
@@ -58,6 +76,16 @@ class JwtUtil {
     fun validateToken(token: String, userDetails: UserDetails): Boolean {
         val username = getUsernameFromToken(token)
         return username == userDetails.username && !isTokenExpired(token)
+    }
+
+    fun validateRefreshToken(token: String): Boolean {
+        return try {
+            val claims = getClaimsFromToken(token)
+            val type = claims["type"] as? String
+            return type == "refresh" && !isTokenExpired(token)
+        } catch (e: Exception) {
+            false
+        }
     }
 
     private fun getClaimsFromToken(token: String): Claims {
