@@ -1,5 +1,6 @@
 package com.miraimagiclab.novelreadingapp.service
 
+import com.miraimagiclab.novelreadingapp.config.JwtUtil
 import com.miraimagiclab.novelreadingapp.dto.request.UserCreateRequest
 import com.miraimagiclab.novelreadingapp.dto.request.UserUpdateRequest
 import com.miraimagiclab.novelreadingapp.dto.response.UserDto
@@ -12,11 +13,19 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
+data class AuthResult(
+    val user: User,
+    val token: String,
+    val refreshToken: String
+)
+
 @Service
 @Transactional
 class UserService(
     private val userRepository: UserRepository,
-    private val passwordEncoder: PasswordEncoder
+    private val passwordEncoder: PasswordEncoder,
+    private val jwtUtil: JwtUtil,
+    private val emailService: EmailService
 ) {
 
     fun createUser(request: UserCreateRequest): UserDto {
@@ -44,6 +53,16 @@ class UserService(
         )
 
         val savedUser = userRepository.save(user)
+
+        // Send welcome email asynchronously
+        try {
+            emailService.sendWelcomeEmail(savedUser.email, savedUser.username)
+        } catch (e: Exception) {
+            // Log the error but don't fail registration
+            // In a real app, you'd use a logger
+            println("Failed to send welcome email: ${e.message}")
+        }
+
         return UserDto.fromEntity(savedUser)
     }
 
@@ -52,6 +71,12 @@ class UserService(
         val user = userRepository.findById(id)
             .orElseThrow { UserNotFoundException("User with ID '$id' not found") }
         return UserDto.fromEntity(user)
+    }
+
+    @Transactional(readOnly = true)
+    fun getUserEntityById(id: String): User {
+        return userRepository.findById(id)
+            .orElseThrow { UserNotFoundException("User with ID '$id' not found") }
     }
 
     @Transactional(readOnly = true)
@@ -109,7 +134,7 @@ class UserService(
         userRepository.deleteById(id)
     }
 
-    fun authenticate(usernameOrEmail: String, password: String): User {
+    fun authenticate(usernameOrEmail: String, password: String): AuthResult {
         val user = if (usernameOrEmail.contains("@")) {
             userRepository.findByEmail(usernameOrEmail)
         } else {
@@ -120,7 +145,10 @@ class UserService(
             throw UserNotFoundException("Invalid username/email or password")
         }
 
-        return user
+        val token = jwtUtil.generateToken(user)
+        val refreshToken = jwtUtil.generateRefreshToken(user)
+
+        return AuthResult(user, token, refreshToken)
     }
 
 }

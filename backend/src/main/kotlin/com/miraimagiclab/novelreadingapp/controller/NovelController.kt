@@ -98,24 +98,6 @@ class NovelController(
         return ResponseEntity.ok(ApiResponse.success(novels, "Recently updated novels retrieved successfully"))
     }
 
-    // Integration with new entities
-    @PostMapping("/{id}/view")
-    fun incrementViewCount(@PathVariable id: String): ResponseEntity<ApiResponse<NovelDto>> {
-        val novel = novelService.incrementViewCount(id)
-        return ResponseEntity.ok(ApiResponse.success(novel, "View count incremented successfully"))
-    }
-
-    @PostMapping("/{id}/follow")
-    fun toggleFollow(@PathVariable id: String, @RequestParam userId: String): ResponseEntity<ApiResponse<NovelDto>> {
-        val novel = novelService.toggleFollow(id, userId)
-        return ResponseEntity.ok(ApiResponse.success(novel, "Follow status toggled successfully"))
-    }
-
-    @DeleteMapping("/{id}/follow")
-    fun unfollow(@PathVariable id: String, @RequestParam userId: String): ResponseEntity<ApiResponse<NovelDto>> {
-        val novel = novelService.unfollow(id, userId)
-        return ResponseEntity.ok(ApiResponse.success(novel, "Unfollowed successfully"))
-    }
 
     @PostMapping("/{id}/rating")
     fun addOrUpdateRating(
