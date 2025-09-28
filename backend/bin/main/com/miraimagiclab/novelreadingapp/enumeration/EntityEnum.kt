@@ -1,7 +1,11 @@
 package com.miraimagiclab.novelreadingapp.enumeration
 
-enum class CommentEnum {
+enum class EntityEnum {
     NOVEL,
     CHAPTER,
-    COMMENT
+    COMMENT,
+    IMAGE,
+    USER,
+    NEWS,
+    OTHER
 }
