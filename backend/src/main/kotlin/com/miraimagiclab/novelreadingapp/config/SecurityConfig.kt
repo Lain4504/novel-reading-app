@@ -28,7 +28,7 @@ class SecurityConfig(
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { authz ->
                 authz
-                    .requestMatchers("/api/health", "/api/swagger-ui/**", "/api/api-docs/**").permitAll()
+                    .requestMatchers("/api/health", "/api/swagger-ui/**", "/api/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/api-docs/**").permitAll()
                     .requestMatchers("/api/users", "/api/users/login").permitAll() // Allow signup and login
                     .anyRequest().authenticated() // All other requests require authentication
             }

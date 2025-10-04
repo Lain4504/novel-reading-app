@@ -8,7 +8,7 @@ spring:
     name: novel-reading-app
   data:
     mongodb:
-      uri: mongodb://root:root@localhost:27017/novel_reading_db?authSource=admin
+      uri: mongodb://localhost:27017/novel_reading_db
       auto-index-creation: true
   jackson:
     default-property-inclusion: non_null
