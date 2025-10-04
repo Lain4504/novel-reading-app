@@ -17,8 +17,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.miraimagiclab.novelreadingapp.data.Book
-import com.miraimagiclab.novelreadingapp.ui.theme.BookCardBackground
-import com.miraimagiclab.novelreadingapp.ui.theme.BookScoreBackground
+import com.miraimagiclab.novelreadingapp.ui.theme.CustomShapes
+import com.miraimagiclab.novelreadingapp.ui.theme.Spacing
 
 @Composable
 fun BookCard(
@@ -30,94 +30,36 @@ fun BookCard(
         modifier = modifier
             .width(140.dp)
             .clickable { onClick() },
-        shape = RoundedCornerShape(12.dp),
+        shape = CustomShapes.cardShape,
         colors = CardDefaults.cardColors(
-            containerColor = BookCardBackground
+            containerColor = Color.Transparent
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.sm)
         ) {
-            // Book cover with score overlay
-            Box(
+            // Book cover
+            AsyncImage(
+                model = book.coverUrl,
+                contentDescription = book.title,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(180.dp)
-            ) {
-                AsyncImage(
-                    model = book.coverUrl,
-                    contentDescription = book.title,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.Crop
-                )
-                
-                // Score badge
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp)
-                        .background(
-                            color = BookScoreBackground,
-                            shape = RoundedCornerShape(16.dp)
-                        )
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = book.score.toString(),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-                
-                // Book type badge
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(8.dp)
-                        .background(
-                            color = Color.Black.copy(alpha = 0.7f),
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                ) {
-                    Text(
-                        text = when (book.type) {
-                            com.miraimagiclab.novelreadingapp.data.BookType.NOVEL -> "Novel"
-                            com.miraimagiclab.novelreadingapp.data.BookType.LIGHT_NOVEL -> "Light Novel"
-                            com.miraimagiclab.novelreadingapp.data.BookType.MANGA -> "Manga"
-                        },
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.White
-                    )
-                }
-            }
+                    .height(200.dp)
+                    .clip(CustomShapes.bookCoverShape),
+                contentScale = ContentScale.Crop
+            )
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(Spacing.sm))
             
             // Book title
             Text(
                 text = book.title,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.fillMaxWidth()
-            )
-            
-            Spacer(modifier = Modifier.height(4.dp))
-            
-            // Author
-            Text(
-                text = book.author,
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.fillMaxWidth()
             )

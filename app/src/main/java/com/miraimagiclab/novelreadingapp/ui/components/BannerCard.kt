@@ -16,6 +16,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.miraimagiclab.novelreadingapp.ui.theme.CustomShapes
+import com.miraimagiclab.novelreadingapp.ui.theme.Spacing
 
 @Composable
 fun BannerCard(
@@ -27,9 +29,9 @@ fun BannerCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .height(200.dp),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            .height(160.dp),
+        shape = CustomShapes.bannerShape,
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Box(
             modifier = Modifier.fillMaxSize()
@@ -41,7 +43,7 @@ fun BannerCard(
                 contentScale = ContentScale.Crop
             )
             
-            // Gradient overlay
+            // Enhanced gradient overlay with orange accent
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -49,29 +51,29 @@ fun BannerCard(
                         brush = Brush.verticalGradient(
                             colors = listOf(
                                 Color.Transparent,
-                                Color.Black.copy(alpha = 0.7f)
+                                Color.Black.copy(alpha = 0.3f),
+                                Color.Black.copy(alpha = 0.8f)
                             )
                         )
                     )
             )
             
-            // Content
+            // Content with improved typography
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                    .padding(Spacing.lg),
+                verticalArrangement = Arrangement.spacedBy(Spacing.xs)
             ) {
                 Text(
                     text = title,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.headlineMedium,
                     color = Color.White,
                     textAlign = TextAlign.Start
                 )
                 Text(
                     text = subtitle,
-                    fontSize = 14.sp,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = Color.White.copy(alpha = 0.9f),
                     textAlign = TextAlign.Start
                 )
