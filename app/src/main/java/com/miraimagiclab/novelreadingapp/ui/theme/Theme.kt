@@ -13,29 +13,61 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Primary80,
-    secondary = PrimaryGrey80,
-    tertiary = Accent80,
-    background = BackgroundDark,
-    surface = SurfaceDark,
+    primary = GreenPrimary,
     onPrimary = Color.White,
+    primaryContainer = GreenPrimaryVariant,
+    onPrimaryContainer = Color.White,
+    
+    secondary = BlueSecondary,
     onSecondary = Color.White,
+    secondaryContainer = BlueSecondaryVariant,
+    onSecondaryContainer = Color.White,
+    
+    tertiary = TealAccent,
     onTertiary = Color.White,
+    tertiaryContainer = TealAccentVariant,
+    onTertiaryContainer = Color.White,
+    
+    background = BackgroundDark,
     onBackground = OnSurfaceDark,
-    onSurface = OnSurfaceDark
+    surface = SurfaceDark,
+    onSurface = OnSurfaceDark,
+    surfaceVariant = SurfaceVariantDark,
+    onSurfaceVariant = OnSurfaceDark,
+    
+    error = ErrorRed,
+    onError = Color.White,
+    errorContainer = ErrorRed.copy(alpha = 0.1f),
+    onErrorContainer = ErrorRed
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Primary40,
-    secondary = PrimaryGrey40,
-    tertiary = Accent40,
-    background = BackgroundLight,
-    surface = SurfaceLight,
+    primary = GreenPrimary,
     onPrimary = Color.White,
+    primaryContainer = GreenSecondary,
+    onPrimaryContainer = GreenPrimaryVariant,
+    
+    secondary = BlueSecondary,
     onSecondary = Color.White,
+    secondaryContainer = BlueTertiary,
+    onSecondaryContainer = BlueSecondaryVariant,
+    
+    tertiary = TealAccent,
     onTertiary = Color.White,
+    tertiaryContainer = TealAccent.copy(alpha = 0.1f),
+    onTertiaryContainer = TealAccentVariant,
+    
+    background = BackgroundLight,
     onBackground = OnSurfaceLight,
-    onSurface = OnSurfaceLight
+    surface = SurfaceLight,
+    onSurface = OnSurfaceLight,
+    surfaceVariant = SurfaceVariantLight,
+    onSurfaceVariant = OnSurfaceLight,
+    
+    error = ErrorRed,
+    onError = Color.White,
+    errorContainer = ErrorRed.copy(alpha = 0.1f),
+    onErrorContainer = ErrorRed
 )
 
 @Composable
@@ -58,6 +90,7 @@ fun NovelReadingAppTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
+        shapes = AppShapes,
         content = content
     )
 }

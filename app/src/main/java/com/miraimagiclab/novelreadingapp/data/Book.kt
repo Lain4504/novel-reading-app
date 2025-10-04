@@ -20,6 +20,7 @@ data class BookDetail(
     val chapters: List<Chapter>,
     val volumes: List<Volume>,
     val reviews: List<Review>,
+    val comments: List<Comment>,
     val recommendations: List<Book>
 )
 
@@ -27,7 +28,7 @@ data class Chapter(
     val id: String,
     val title: String,
     val isUnlocked: Boolean = true,
-    val thumbnailUrl: String? = null
+    val createdAt: String
 )
 
 data class Volume(
@@ -43,6 +44,22 @@ data class Review(
     val rating: Int,
     val comment: String,
     val date: String
+)
+
+data class Comment(
+    val id: String,
+    val username: String,
+    val comment: String,
+    val date: String,
+    val replies: List<Reply> = emptyList()
+)
+
+data class Reply(
+    val id: String,
+    val username: String,
+    val comment: String,
+    val date: String,
+    val parentCommentId: String
 )
 
 enum class BookType {

@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,7 +25,9 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.miraimagiclab.novelreadingapp.data.MockData
 import com.miraimagiclab.novelreadingapp.ui.components.BookCard
+import com.miraimagiclab.novelreadingapp.ui.theme.CustomShapes
 import com.miraimagiclab.novelreadingapp.ui.theme.ReadButtonColor
+import com.miraimagiclab.novelreadingapp.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,7 +43,7 @@ fun BookDetailsScreen(
         return
     }
     
-    val tabs = listOf("Overview", "Chapters", "Series volume", "Reviews", "Recom")
+    val tabs = listOf("Overview", "Chapters", "Comments", "Reviews", "Recom")
     
     Scaffold(
         topBar = {
@@ -48,6 +51,7 @@ fun BookDetailsScreen(
                 title = {
                     Text(
                         text = bookDetail.book.title,
+                        style = MaterialTheme.typography.titleLarge,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -56,7 +60,8 @@ fun BookDetailsScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 },
@@ -64,18 +69,16 @@ fun BookDetailsScreen(
                     IconButton(onClick = { /* Handle favorite */ }) {
                         Icon(
                             imageVector = Icons.Default.Star,
-                            contentDescription = "Add to favorites"
+                            contentDescription = "Add to favorites",
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
-                    Text(
-                        text = "12:30",
-                        modifier = Modifier
-                            .align(Alignment.CenterVertically)
-                            .padding(end = 16.dp),
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                ),
+                windowInsets = WindowInsets(0)
             )
         },
         bottomBar = {
@@ -83,16 +86,16 @@ fun BookDetailsScreen(
                 onClick = { /* Handle start reading */ },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(Spacing.lg),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = ReadButtonColor
-                )
+                ),
+                shape = CustomShapes.buttonShape
             ) {
                 Text(
                     text = "Start to read",
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
+                    style = MaterialTheme.typography.labelLarge,
+                    color = Color.White
                 )
             }
         }
@@ -105,16 +108,31 @@ fun BookDetailsScreen(
             // Book Header
             BookHeader(bookDetail = bookDetail)
             
-            // Tab Row
-            TabRow(
+            // Tab Row with horizontal scrolling
+            ScrollableTabRow(
                 selectedTabIndex = selectedTabIndex,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                edgePadding = 0.dp,
+                indicator = { tabPositions ->
+                    TabRowDefaults.Indicator(
+                        modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                        height = 3.dp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             ) {
                 tabs.forEachIndexed { index, title ->
                     Tab(
                         selected = selectedTabIndex == index,
                         onClick = { selectedTabIndex = index },
-                        text = { Text(title) }
+                        text = { 
+                            Text(
+                                text = title,
+                                style = MaterialTheme.typography.titleSmall,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                     )
                 }
             }
@@ -123,7 +141,7 @@ fun BookDetailsScreen(
             when (selectedTabIndex) {
                 0 -> OverviewContent(bookDetail = bookDetail)
                 1 -> ChaptersContent(bookDetail = bookDetail)
-                2 -> SeriesVolumeContent(bookDetail = bookDetail)
+                2 -> CommentsContent(bookDetail = bookDetail)
                 3 -> ReviewsContent(bookDetail = bookDetail)
                 4 -> RecommendationsContent(bookDetail = bookDetail)
             }
@@ -136,8 +154,8 @@ fun BookHeader(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(Spacing.lg),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.lg)
     ) {
         // Book Cover
         AsyncImage(
@@ -146,25 +164,25 @@ fun BookHeader(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail) {
             modifier = Modifier
                 .width(120.dp)
                 .height(160.dp)
-                .clip(RoundedCornerShape(8.dp)),
+                .clip(CustomShapes.bookCoverShape),
             contentScale = ContentScale.Crop
         )
         
         // Book Info
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            verticalArrangement = Arrangement.spacedBy(Spacing.xs)
         ) {
             Text(
                 text = "Author: ${bookDetail.book.author}",
-                fontSize = 14.sp,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
             
             if (bookDetail.book.series != null) {
                 Text(
                     text = "Series: ${bookDetail.book.series}",
-                    fontSize = 14.sp,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
@@ -175,13 +193,13 @@ fun BookHeader(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail) {
                     com.miraimagiclab.novelreadingapp.data.BookType.LIGHT_NOVEL -> "Light Novel"
                     com.miraimagiclab.novelreadingapp.data.BookType.MANGA -> "Manga"
                 }}",
-                fontSize = 14.sp,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
             
             Text(
                 text = "Genre: ${bookDetail.book.genres.joinToString(" | ")}",
-                fontSize = 14.sp,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
@@ -189,13 +207,13 @@ fun BookHeader(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail) {
             
             Text(
                 text = "Release: ${bookDetail.book.releaseDate}",
-                fontSize = 14.sp,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
             
             Text(
                 text = "Pages: ${bookDetail.book.readTime}",
-                fontSize = 14.sp,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
@@ -208,48 +226,47 @@ fun OverviewContent(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetai
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.lg)
     ) {
         // Summary Section
         Text(
             text = "Summary",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface
         )
         
         Text(
             text = bookDetail.summary,
-            fontSize = 14.sp,
-            color = MaterialTheme.colorScheme.onSurface,
-            lineHeight = 20.sp
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface
         )
         
         // Illustration Section
         Text(
             text = "Illustration",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface
         )
         
         Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
         ) {
             AsyncImage(
-                model = "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=150&h=150&fit=crop",
+                model = "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=120&h=200&fit=crop",
                 contentDescription = "Illustration 1",
                 modifier = Modifier
-                    .size(80.dp)
+                    .width(80.dp)
+                    .height(120.dp)
                     .clip(RoundedCornerShape(8.dp)),
                 contentScale = ContentScale.Crop
             )
             AsyncImage(
-                model = "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=150&h=150&fit=crop",
+                model = "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=120&h=200&fit=crop",
                 contentDescription = "Illustration 2",
                 modifier = Modifier
-                    .size(80.dp)
+                    .width(80.dp)
+                    .height(120.dp)
                     .clip(RoundedCornerShape(8.dp)),
                 contentScale = ContentScale.Crop
             )
@@ -261,8 +278,8 @@ fun OverviewContent(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetai
 fun ChaptersContent(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        contentPadding = PaddingValues(Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm)
     ) {
         items(bookDetail.chapters) { chapter ->
             ChapterItem(chapter = chapter)
@@ -272,78 +289,152 @@ fun ChaptersContent(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetai
 
 @Composable
 fun ChapterItem(chapter: com.miraimagiclab.novelreadingapp.data.Chapter) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(vertical = 8.dp, horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        AsyncImage(
-            model = chapter.thumbnailUrl ?: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=60&h=60&fit=crop",
-            contentDescription = chapter.title,
-            modifier = Modifier
-                .size(60.dp)
-                .clip(RoundedCornerShape(8.dp)),
-            contentScale = ContentScale.Crop
-        )
-        
-        Spacer(modifier = Modifier.width(12.dp))
-        
         Text(
             text = chapter.title,
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f)
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        
+        Text(
+            text = "Created: ${chapter.createdAt}",
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
         )
     }
 }
 
 @Composable
-fun SeriesVolumeContent(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail) {
+fun CommentsContent(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        contentPadding = PaddingValues(Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm)
     ) {
-        items(bookDetail.volumes) { volume ->
-            VolumeItem(volume = volume)
+        items(bookDetail.comments) { comment ->
+            CommentItem(comment = comment)
         }
     }
 }
 
 @Composable
-fun VolumeItem(volume: com.miraimagiclab.novelreadingapp.data.Volume) {
-    Row(
+fun CommentItem(comment: com.miraimagiclab.novelreadingapp.data.Comment) {
+    var showReplies by remember { mutableStateOf(false) }
+    
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(vertical = 8.dp, horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(Spacing.xs)
     ) {
-        AsyncImage(
-            model = volume.coverUrl,
-            contentDescription = volume.title,
-            modifier = Modifier
-                .size(60.dp)
-                .clip(RoundedCornerShape(8.dp)),
-            contentScale = ContentScale.Crop
-        )
-        
-        Spacer(modifier = Modifier.width(12.dp))
-        
-        Column(
-            modifier = Modifier.weight(1f)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = volume.title,
-                fontSize = 16.sp,
+                text = comment.username,
+                style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface
             )
+        }
+        
+        Text(
+            text = comment.comment,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            lineHeight = 20.sp
+        )
+        
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
-                text = volume.releaseDate,
-                fontSize = 14.sp,
+                text = comment.date,
+                style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
+            
+            // Reply button
+            if (comment.replies.isNotEmpty()) {
+                TextButton(
+                    onClick = { showReplies = !showReplies }
+                ) {
+                    Text(
+                        text = if (showReplies) "Hide replies" else "Show ${comment.replies.size} replies",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        }
+        
+        // Show replies if expanded
+        if (showReplies && comment.replies.isNotEmpty()) {
+            Column(
+                modifier = Modifier.padding(start = Spacing.md, top = Spacing.sm),
+                verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+            ) {
+                comment.replies.forEach { reply ->
+                    ReplyItem(reply = reply)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ReplyItem(reply: com.miraimagiclab.novelreadingapp.data.Reply) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        // Reply indicator line
+        Box(
+            modifier = Modifier
+                .width(2.dp)
+                .height(40.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                    shape = RoundedCornerShape(1.dp)
+                )
+        )
+        
+        Spacer(modifier = Modifier.width(Spacing.sm))
+        
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            Text(
+                text = reply.username,
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            
+            Text(
+                text = reply.comment,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                lineHeight = 18.sp
+            )
+            
+            Text(
+                text = reply.date,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
         }
     }
@@ -353,17 +444,170 @@ fun VolumeItem(volume: com.miraimagiclab.novelreadingapp.data.Volume) {
 fun ReviewsContent(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        contentPadding = PaddingValues(Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.lg)
     ) {
+        // Average Rating Section
+        item {
+            AverageRatingSection(bookDetail = bookDetail)
+        }
+        
+        // Top Reviews Header
+        item {
+            TopReviewsHeader()
+        }
+        
+        // Individual Reviews
         items(bookDetail.reviews) { review ->
-            ReviewItem(review = review)
+            DetailedReviewItem(review = review)
         }
     }
 }
 
 @Composable
-fun ReviewItem(review: com.miraimagiclab.novelreadingapp.data.Review) {
+fun AverageRatingSection(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail) {
+    val averageRating = bookDetail.reviews.map { it.rating }.average()
+    val totalReviews = bookDetail.reviews.size
+    
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        // Left side - Average rating
+        Column {
+            Text(
+                text = "Average rating",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
+            
+            Text(
+                text = "${String.format("%.1f", averageRating)}/5",
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            
+            // Star rating
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                repeat(5) { index ->
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Star",
+                        tint = Color(0xFFFFD700),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+            
+            Text(
+                text = "($totalReviews Reviews)",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
+        }
+        
+        // Right side - Rating breakdown
+        Column(
+            modifier = Modifier.width(120.dp)
+        ) {
+            // Calculate rating distribution
+            val ratingDistribution = (1..5).map { star ->
+                bookDetail.reviews.count { it.rating == star }.toFloat() / totalReviews
+            }
+            
+            (5 downTo 1).forEachIndexed { index, star ->
+                val percentage = (ratingDistribution[star - 1] * 100).toInt()
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "$star",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.width(12.dp)
+                    )
+                    
+                    Spacer(modifier = Modifier.width(4.dp))
+                    
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(4.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                                shape = RoundedCornerShape(2.dp)
+                            )
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .fillMaxWidth(percentage / 100f)
+                                .background(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = RoundedCornerShape(2.dp)
+                                )
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.width(4.dp))
+                    
+                    Text(
+                        text = "${percentage}%",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.width(24.dp)
+                    )
+                }
+                
+                if (index < 4) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun TopReviewsHeader() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "Top Reviews",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        
+        // Sort dropdown
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Sort by",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowDown,
+                contentDescription = "Sort",
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun DetailedReviewItem(review: com.miraimagiclab.novelreadingapp.data.Review) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -372,48 +616,128 @@ fun ReviewItem(review: com.miraimagiclab.novelreadingapp.data.Review) {
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.padding(Spacing.md),
+            verticalArrangement = Arrangement.spacedBy(Spacing.sm)
         ) {
+            // User info row
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = review.username,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
+                // Avatar placeholder
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            shape = androidx.compose.foundation.shape.CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
-                    repeat(review.rating) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = "Star",
-                            tint = Color(0xFFFFD700),
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
+                    Text(
+                        text = review.username.take(1).uppercase(),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                
+                Spacer(modifier = Modifier.width(Spacing.sm))
+                
+                Column {
+                    Text(
+                        text = review.username,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    
+                    Text(
+                        text = review.date,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
                 }
             }
             
+            // Star rating
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                repeat(review.rating) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Star",
+                        tint = Color(0xFFFFD700),
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+            
+            // Review title (if available)
+            Text(
+                text = "Great read!",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            
+            // Review content
             Text(
                 text = review.comment,
-                fontSize = 14.sp,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 lineHeight = 20.sp
             )
-            
-            Text(
-                text = review.date,
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-            )
         }
+    }
+}
+
+@Composable
+fun ReviewItem(review: com.miraimagiclab.novelreadingapp.data.Review) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp, horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(Spacing.xs)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = review.username,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                repeat(review.rating) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Star",
+                        tint = Color(0xFFFFD700),
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+        }
+        
+        Text(
+            text = review.comment,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            lineHeight = 20.sp
+        )
+        
+        Text(
+            text = review.date,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+        )
     }
 }
 
