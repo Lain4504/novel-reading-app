@@ -426,7 +426,14 @@ fun RecommendationsContent(bookDetail: com.miraimagiclab.novelreadingapp.data.Bo
     ) {
         items(bookDetail.recommendations) { book ->
             BookCard(
-                book = book,
+                book = com.miraimagiclab.novelreadingapp.data.model.Book(
+                    id = book.id,
+                    title = book.title,
+                    type = book.type.name,
+                    score = book.score,
+                    coverUrl = book.coverUrl,
+                    genres = book.genres
+                ),
                 onClick = { /* Handle recommendation click */ }
             )
         }

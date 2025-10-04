@@ -16,7 +16,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.miraimagiclab.novelreadingapp.data.Book
+import com.miraimagiclab.novelreadingapp.data.model.Book
 import com.miraimagiclab.novelreadingapp.ui.theme.BookCardBackground
 import com.miraimagiclab.novelreadingapp.ui.theme.BookScoreBackground
 
@@ -85,11 +85,7 @@ fun BookCard(
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = when (book.type) {
-                            com.miraimagiclab.novelreadingapp.data.BookType.NOVEL -> "Novel"
-                            com.miraimagiclab.novelreadingapp.data.BookType.LIGHT_NOVEL -> "Light Novel"
-                            com.miraimagiclab.novelreadingapp.data.BookType.MANGA -> "Manga"
-                        },
+                        text = book.type,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color.White
@@ -112,9 +108,9 @@ fun BookCard(
             
             Spacer(modifier = Modifier.height(4.dp))
             
-            // Author
+            // Genres
             Text(
-                text = book.author,
+                text = book.genres.joinToString(", "),
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 maxLines = 1,
