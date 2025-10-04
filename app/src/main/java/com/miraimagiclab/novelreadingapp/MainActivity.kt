@@ -13,8 +13,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.miraimagiclab.novelreadingapp.navigation.NovelReadingNavigation
 import com.miraimagiclab.novelreadingapp.navigation.Screen
-import com.miraimagiclab.novelreadingapp.ui.components.BottomNavigationBar
-import com.miraimagiclab.novelreadingapp.ui.theme.NovelReadingAppTheme
+import com.miraimagiclab.novelreadingapp.core.ui.components.BottomNavigationBar
+import com.miraimagiclab.novelreadingapp.core.ui.theme.NovelReadingAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
