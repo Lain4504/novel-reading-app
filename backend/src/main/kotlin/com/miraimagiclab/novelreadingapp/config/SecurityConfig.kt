@@ -28,8 +28,11 @@ class SecurityConfig(
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { authz ->
                 authz
-                    .requestMatchers("/api/health", "/api/swagger-ui/**", "/api/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/api-docs/**").permitAll()
-                    .requestMatchers("/api/users", "/api/users/login").permitAll() // Allow signup and login
+                    .requestMatchers("/health", "/swagger-ui/**", "/api-docs/**", "/swagger-ui.html").permitAll()
+                    .requestMatchers("/users", "/users/login", "/users/refresh").permitAll() // Allow signup, login and refresh
+                    .requestMatchers("/novels/**").permitAll() // Allow novel access for reading
+                    .requestMatchers("/chapters/**").permitAll() // Allow chapter access for reading
+                    .requestMatchers("/reviews/**").permitAll() // Allow review access
                     .anyRequest().authenticated() // All other requests require authentication
             }
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
