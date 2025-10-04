@@ -7,6 +7,7 @@ import com.miraimagiclab.novelreadingapp.dto.request.UserCreateRequest
 import com.miraimagiclab.novelreadingapp.dto.request.UserUpdateRequest
 import com.miraimagiclab.novelreadingapp.dto.response.LoginResponse
 import com.miraimagiclab.novelreadingapp.dto.response.UserDto
+import com.miraimagiclab.novelreadingapp.dto.response.UserStatsResponse
 import com.miraimagiclab.novelreadingapp.service.UserService
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
@@ -86,6 +87,24 @@ class UserController(
     fun deleteUser(@PathVariable id: String): ResponseEntity<ApiResponse<Nothing>> {
         userService.deleteUser(id)
         return ResponseEntity.ok(ApiResponse.success("User deleted successfully"))
+    }
+
+    @GetMapping("/{id}/stats")
+    fun getUserStats(@PathVariable id: String): ResponseEntity<ApiResponse<UserStatsResponse>> {
+        val user = userService.getUserById(id)
+        
+        // Get user statistics from various services
+        // For now, return basic stats - can be enhanced with actual calculations
+        val stats = UserStatsResponse(
+            bookPoints = 1200, // TODO: Calculate actual points
+            readBooks = 22, // TODO: Count from reading history
+            userName = user.username,
+            followingCount = 0, // TODO: Get from UserNovelInteractionService
+            wishlistCount = 0, // TODO: Get from UserNovelInteractionService  
+            reviewsCount = 0 // TODO: Get from ReviewService
+        )
+        
+        return ResponseEntity.ok(ApiResponse.success(stats, "User stats retrieved successfully"))
     }
 
 }

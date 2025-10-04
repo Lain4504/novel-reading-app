@@ -4,9 +4,9 @@ import com.google.gson.annotations.SerializedName
 
 data class UserStats(
     @SerializedName("book_points")
-    val bookPoints: Int,
+    val bookPoints: Int?,
     @SerializedName("read_books")
-    val readBooks: Int,
+    val readBooks: Int?,
     @SerializedName("user_name")
-    val userName: String
+    val userName: String?
 )

@@ -34,6 +34,16 @@ class NovelController(
         return ResponseEntity.ok(ApiResponse.success(novel, "Novel retrieved successfully"))
     }
 
+    @GetMapping("/featured")
+    fun getFeaturedNovel(): ResponseEntity<ApiResponse<NovelDto>> {
+        // Get the top-rated novel as featured
+        val novels = novelService.getTopNovelsByRating()
+        val featuredNovel = novels.firstOrNull()
+            ?: throw RuntimeException("No novels available for featuring")
+        
+        return ResponseEntity.ok(ApiResponse.success(featuredNovel, "Featured novel retrieved successfully"))
+    }
+
     @PutMapping("/{id}")
     fun updateNovel(
         @PathVariable id: String,
@@ -96,6 +106,17 @@ class NovelController(
     fun getRecentlyUpdatedNovels(): ResponseEntity<ApiResponse<List<NovelDto>>> {
         val novels = novelService.getRecentlyUpdatedNovels()
         return ResponseEntity.ok(ApiResponse.success(novels, "Recently updated novels retrieved successfully"))
+    }
+
+    @GetMapping("/our-picks")
+    fun getOurPicks(
+        @RequestParam(defaultValue = "novel") category: String,
+        @RequestParam(defaultValue = "10") limit: Int
+    ): ResponseEntity<ApiResponse<List<NovelDto>>> {
+        // Get our curated picks - top rated novels limited by the specified limit
+        val novels = novelService.getTopNovelsByRating()
+        val limitedNovels = novels.take(limit)
+        return ResponseEntity.ok(ApiResponse.success(limitedNovels, "Our picks retrieved successfully"))
     }
 
 

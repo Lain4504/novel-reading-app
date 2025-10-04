@@ -46,8 +46,8 @@ fun BookCard(
                     .height(180.dp)
             ) {
                 AsyncImage(
-                    model = book.coverUrl,
-                    contentDescription = book.title,
+                    model = book.coverUrl ?: "",
+                    contentDescription = book.title ?: "Book Cover",
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(RoundedCornerShape(8.dp)),
@@ -66,7 +66,7 @@ fun BookCard(
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = book.score.toString(),
+                        text = (book.score ?: 0).toString(),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -85,7 +85,7 @@ fun BookCard(
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = book.type,
+                        text = book.type ?: "Unknown",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color.White
@@ -97,7 +97,7 @@ fun BookCard(
             
             // Book title
             Text(
-                text = book.title,
+                text = book.title ?: "Unknown Title",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -110,7 +110,7 @@ fun BookCard(
             
             // Genres
             Text(
-                text = book.genres.joinToString(", "),
+                text = book.genres?.joinToString(", ") ?: "",
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 maxLines = 1,

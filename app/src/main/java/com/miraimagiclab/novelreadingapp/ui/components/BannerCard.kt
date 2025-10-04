@@ -19,9 +19,9 @@ import coil.compose.AsyncImage
 
 @Composable
 fun BannerCard(
-    title: String,
-    subtitle: String,
-    imageUrl: String,
+    title: String?,
+    subtitle: String?,
+    imageUrl: String?,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -35,8 +35,8 @@ fun BannerCard(
             modifier = Modifier.fillMaxSize()
         ) {
             AsyncImage(
-                model = imageUrl,
-                contentDescription = title,
+                model = imageUrl ?: "",
+                contentDescription = title ?: "Banner Image",
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
@@ -63,18 +63,20 @@ fun BannerCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = title,
+                    text = title ?: "Unknown Title",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
                     textAlign = TextAlign.Start
                 )
-                Text(
-                    text = subtitle,
-                    fontSize = 14.sp,
-                    color = Color.White.copy(alpha = 0.9f),
-                    textAlign = TextAlign.Start
-                )
+                subtitle?.let {
+                    Text(
+                        text = it,
+                        fontSize = 14.sp,
+                        color = Color.White.copy(alpha = 0.9f),
+                        textAlign = TextAlign.Start
+                    )
+                }
             }
         }
     }

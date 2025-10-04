@@ -18,7 +18,8 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "http://localhost:8080/api/"
+    // Use 10.0.2.2 for Android emulator, or replace with your actual IP for real device
+    private const val BASE_URL = "http://192.168.1.182:8080/api/"
 
     @Provides
     @Singleton
@@ -40,6 +41,7 @@ object NetworkModule {
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true)
             .build()
     }
 

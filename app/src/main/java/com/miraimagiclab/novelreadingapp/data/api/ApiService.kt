@@ -1,29 +1,40 @@
 package com.miraimagiclab.novelreadingapp.data.api
 
+import com.miraimagiclab.novelreadingapp.data.model.ApiResponse
 import com.miraimagiclab.novelreadingapp.data.model.Book
 import com.miraimagiclab.novelreadingapp.data.model.FeaturedBook
 import com.miraimagiclab.novelreadingapp.data.model.PickBook
 import com.miraimagiclab.novelreadingapp.data.model.UserStats
+import retrofit2.Response
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ApiService {
     
-    @GET("user/stats")
-    suspend fun getUserStats(): UserStats
+    // Health check endpoint
+    @GET("health")
+    suspend fun getHealth(): Response<ApiResponse<Map<String, Any>>>
     
-    @GET("books/banner")
-    suspend fun getFeaturedBook(): FeaturedBook
+    // User endpoints
+    @GET("users/{userId}/stats")
+    suspend fun getUserStats(@Path("userId") userId: String): Response<ApiResponse<UserStats>>
     
-    @GET("books/recommended")
+    // Novel endpoints - updated to match backend
+    @GET("novels/featured")
+    suspend fun getFeaturedNovel(): Response<ApiResponse<FeaturedBook>>
+    
+    @GET("novels")
     suspend fun getRecommendedBooks(
-        @Query("user_id") userId: String? = null,
-        @Query("limit") limit: Int = 10
-    ): List<Book>
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 10,
+        @Query("sortBy") sortBy: String = "createdAt",
+        @Query("sortDirection") sortDirection: String = "DESC"
+    ): Response<ApiResponse<Any>> // Backend returns PageResponse<NovelDto>
     
-    @GET("books/our-picks")
+    @GET("novels/our-picks")
     suspend fun getOurPicks(
         @Query("category") category: String = "novel",
         @Query("limit") limit: Int = 10
-    ): List<PickBook>
+    ): Response<ApiResponse<List<PickBook>>>
 }

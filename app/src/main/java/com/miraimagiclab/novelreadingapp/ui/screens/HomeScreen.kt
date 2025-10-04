@@ -54,12 +54,14 @@ fun HomeScreen(
                         )
                         when (val stats = userStats) {
                             is UserStatsState.Success -> {
-                                Text(
-                                    text = stats.data.userName,
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
+                                stats.data.userName?.let {
+                                    Text(
+                                        text = it,
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
                             }
                             is UserStatsState.Loading -> {
                                 Text(
@@ -161,7 +163,7 @@ fun HomeScreen(
                         items(books.data) { book ->
                             BookCard(
                                 book = book,
-                                onClick = { onBookClick(book.id) }
+                                onClick = { book.id?.let { onBookClick(it) } }
                             )
                         }
                     }
@@ -197,7 +199,7 @@ fun HomeScreen(
                         items(picks.data) { book ->
                             PickBookCard(
                                 book = book,
-                                onClick = { onBookClick(book.id) }
+                                onClick = { book.id?.let { onBookClick(it) } }
                             )
                         }
                     }
@@ -235,12 +237,12 @@ private fun UserStatsSection(userStats: UserStatsState) {
                 UserStatItem(
                     icon = Icons.Default.Star,
                     label = "Book Points",
-                    value = stats.data.bookPoints.toString()
+                    value = (stats.data.bookPoints ?: 0).toString()
                 )
                 UserStatItem(
                     icon = Icons.Default.AccountCircle,
                     label = "Read Books",
-                    value = stats.data.readBooks.toString()
+                    value = (stats.data.readBooks ?: 0).toString()
                 )
             }
             is UserStatsState.Loading -> {
@@ -390,22 +392,26 @@ private fun PickBookCard(
                 contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = book.title,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(horizontal = 8.dp),
-                maxLines = 2,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-            )
-            Text(
-                text = book.author,
-                fontSize = 10.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
-                maxLines = 1,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-            )
+            book.title?.let {
+                Text(
+                    text = it,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    maxLines = 2,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+            }
+            book.author?.let {
+                Text(
+                    text = it,
+                    fontSize = 10.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                    modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+            }
         }
     }
 }
