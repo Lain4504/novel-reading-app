@@ -9,6 +9,9 @@ sealed class Screen(
     val arguments: List<NamedNavArgument> = emptyList()
 ) {
     object Home : Screen("home")
+    object Explore : Screen("explore")
+    object BookList : Screen("book_list")
+    object Profile : Screen("profile")
     
     object BookDetails : Screen(
         route = "book_details/{bookId}",
