@@ -1,6 +1,13 @@
 package com.miraimagiclab.novelreadingapp.ui.screens
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -17,7 +24,6 @@ import androidx.compose.ui.unit.sp
 import com.miraimagiclab.novelreadingapp.data.MockData
 import com.miraimagiclab.novelreadingapp.ui.components.BannerCard
 import com.miraimagiclab.novelreadingapp.ui.components.BookCard
-import com.miraimagiclab.novelreadingapp.ui.components.StatsCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -115,25 +121,6 @@ fun HomeScreen(
                 subtitle = "Valkyrie Has Landed",
                 imageUrl = "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=200&fit=crop"
             )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Stats Section
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                StatsCard(
-                    icon = Icons.Default.Star,
-                    title = "Book points",
-                    value = "${MockData.userStats.bookPoints} points"
-                )
-                StatsCard(
-                    icon = Icons.Default.Star,
-                    title = "Read books",
-                    value = "${MockData.userStats.readBooks} Books"
-                )
-            }
             
             Spacer(modifier = Modifier.height(24.dp))
             
