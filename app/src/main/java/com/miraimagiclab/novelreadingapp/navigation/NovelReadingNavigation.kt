@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.miraimagiclab.novelreadingapp.ui.screens.*
+import com.miraimagiclab.novelreadingapp.data.MockData
 
 @Composable
 fun NovelReadingNavigation(
@@ -30,7 +31,10 @@ fun NovelReadingNavigation(
             BookListScreen(
                 onNavigateInProgress = { navController.navigate(Screen.InProgress.route) },
                 onNavigateCompleted = { navController.navigate(Screen.CompletedBook.route) },
-                onBookClick = { bookId -> navController.navigate(Screen.BookDetails.createRoute(bookId)) }
+                onBookClick = { bookId -> navController.navigate(Screen.BookDetails.createRoute(bookId)) },
+                onBackClick = {
+                    navController.popBackStack(Screen.Home.route, inclusive = false)
+                }
             )
         }
 
@@ -38,6 +42,9 @@ fun NovelReadingNavigation(
             ExploreScreen(
                 onBookClick = { bookId ->
                     navController.navigate(Screen.BookDetails.createRoute(bookId))
+                },
+                onBackClick = {
+                    navController.popBackStack(Screen.Home.route, inclusive = false)
                 }
             )
         }
@@ -48,14 +55,21 @@ fun NovelReadingNavigation(
 
         composable(Screen.InProgress.route) {
             InProgressScreen(
+                navController,
                 onBookClick = { bookId ->
-                    navController.navigate(Screen.BookDetails.createRoute(bookId))
+                    val bookDetail = MockData.getBookDetail(bookId)
+                    val firstChapterId = bookDetail?.chapters?.firstOrNull()?.id
+                    if (firstChapterId != null) {
+                        navController.navigate("reading/$bookId/$firstChapterId")
+                    }
                 }
             )
         }
 
+
         composable(Screen.CompletedBook.route) {
             CompletedBookScreen(
+                navController,
                 onBookClick = { bookId ->
                     navController.navigate(Screen.BookDetails.createRoute(bookId))
                 }
