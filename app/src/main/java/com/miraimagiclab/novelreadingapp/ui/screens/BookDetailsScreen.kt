@@ -1,6 +1,7 @@
 package com.miraimagiclab.novelreadingapp.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -33,7 +34,8 @@ import com.miraimagiclab.novelreadingapp.ui.theme.Spacing
 @Composable
 fun BookDetailsScreen(
     bookId: String,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onChapterClick: (chapter: com.miraimagiclab.novelreadingapp.data.Chapter) -> Unit = {}
 ) {
     val bookDetail = MockData.getBookDetail(bookId)
     var selectedTabIndex by remember { mutableIntStateOf(0) }
@@ -83,7 +85,12 @@ fun BookDetailsScreen(
         },
         bottomBar = {
             Button(
-                onClick = { /* Handle start reading */ },
+                onClick = { 
+                    val firstChapter = bookDetail.chapters.firstOrNull()
+                    if (firstChapter != null) {
+                        onChapterClick(firstChapter)
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(Spacing.lg),
@@ -140,7 +147,7 @@ fun BookDetailsScreen(
             // Tab Content
             when (selectedTabIndex) {
                 0 -> OverviewContent(bookDetail = bookDetail)
-                1 -> ChaptersContent(bookDetail = bookDetail)
+                1 -> ChaptersContent(bookDetail = bookDetail, onChapterClick = onChapterClick)
                 2 -> CommentsContent(bookDetail = bookDetail)
                 3 -> ReviewsContent(bookDetail = bookDetail)
                 4 -> RecommendationsContent(bookDetail = bookDetail)
@@ -275,23 +282,33 @@ fun OverviewContent(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetai
 }
 
 @Composable
-fun ChaptersContent(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail) {
+fun ChaptersContent(
+    bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail,
+    onChapterClick: (chapter: com.miraimagiclab.novelreadingapp.data.Chapter) -> Unit
+) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(Spacing.lg),
         verticalArrangement = Arrangement.spacedBy(Spacing.sm)
     ) {
         items(bookDetail.chapters) { chapter ->
-            ChapterItem(chapter = chapter)
+            ChapterItem(
+                chapter = chapter,
+                onClick = { onChapterClick(chapter) }
+            )
         }
     }
 }
 
 @Composable
-fun ChapterItem(chapter: com.miraimagiclab.novelreadingapp.data.Chapter) {
+fun ChapterItem(
+    chapter: com.miraimagiclab.novelreadingapp.data.Chapter,
+    onClick: () -> Unit = {}
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { onClick() }
             .padding(vertical = 8.dp, horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {

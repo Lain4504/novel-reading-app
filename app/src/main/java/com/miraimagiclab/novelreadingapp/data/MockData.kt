@@ -338,13 +338,31 @@ object MockData {
                 book = it,
                 summary = "LIKE LOOKING IN A MIRROR... For better or worse, the Eighty-Sixth Strike Package had become the spearhead of the Republic's war effort. The Legion's advance had been halted, but the cost was high. Shana, Shiden, Theo, Kurena, and the rest of the squadron had survived countless battles, but the war was far from over. As they prepared for their next mission, they couldn't help but wonder what the future held for them and their country. The weight of their responsibilities pressed down on them, but they knew they had to continue fighting for the sake of those they had lost and those they still hoped to protect.",
                 chapters = listOf(
-                    Chapter("cover", "Eighty Six Vol 9: Valkyrie Has Landed", true, "2023-01-15"),
-                    Chapter("prologue", "The Beast of Gluttony", true, "2023-01-20"),
-                    Chapter("chapter1", "The Mermaid's Bargain", true, "2023-01-25"),
-                    Chapter("interlude", "The King of Spades and Queen of Hearts' Interminable, All Too Trivial Dispute", true, "2023-02-01"),
-                    Chapter("chapter2", "The Valkyrie's Descent", true, "2023-02-05"),
-                    Chapter("chapter3", "The Final Battle", true, "2023-02-10"),
-                    Chapter("epilogue", "A New Beginning", true, "2023-02-15")
+                    Chapter("cover", "Eighty Six Vol 9: Valkyrie Has Landed", true, "2023-01-15", ""),
+                    Chapter("prologue", "The Beast of Gluttony", true, "2023-01-20", ""),
+                    Chapter("chapter1", "The Mermaid's Bargain", true, "2023-01-25", 
+                        "CHAPTER 1: THE MERMAID'S BARGAIN\n\n" +
+                        "The ocean stretched endlessly before them, its surface reflecting the pale light of the moon like scattered silver coins. Lena stood at the edge of the cliff, her white hair dancing in the night breeze as she gazed down at the tumultuous waters below.\n\n" +
+                        "\"Are you sure about this?\" Shin asked, his voice barely audible over the sound of crashing waves. His crimson eyes held a mixture of concern and determination as he watched her from a few steps behind.\n\n" +
+                        "Lena didn't turn around. Instead, she reached into her pocket and pulled out a small, ornate seashell. The shell glowed faintly with an otherworldly light, pulsing like a heartbeat.\n\n" +
+                        "\"The mermaid's bargain is our only hope,\" she said quietly. \"The Legion's advance cannot be stopped by conventional means. We need their help.\"\n\n" +
+                        "Shin's jaw tightened. He had heard the stories—ancient beings who lived in the depths, capable of granting wishes at a terrible price. But the price was always more than anyone could bear.\n\n" +
+                        "\"What if the cost is too high?\" he asked, stepping closer to her.\n\n" +
+                        "Lena finally turned to face him, her expression resolute. \"Then we'll pay it together. Whatever it takes to protect our people, to end this war once and for all.\"\n\n" +
+                        "She raised the shell to her lips and blew into it. The sound that emerged was unlike anything Shin had ever heard—a haunting melody that seemed to echo across the entire ocean, calling to something ancient and powerful.\n\n" +
+                        "The waters began to churn, and from the depths emerged a figure that defied description. The mermaid's form was both beautiful and terrifying, her scales shimmering like liquid moonlight, her eyes holding the wisdom of countless centuries.\n\n" +
+                        "\"You have called upon the ancient ones,\" the mermaid spoke, her voice like the sound of waves crashing against rocks. \"What do you seek, children of the surface world?\"\n\n" +
+                        "Lena stepped forward, her heart pounding in her chest. \"We seek your aid in ending the war that threatens to destroy our world. The Legion must be stopped.\"\n\n" +
+                        "The mermaid's eyes narrowed, and for a moment, the ocean itself seemed to hold its breath. \"The price for such aid is great,\" she said slowly. \"Are you prepared to pay it?\"\n\n" +
+                        "Shin moved to stand beside Lena, his hand finding hers. \"We are,\" they said together.\n\n" +
+                        "The mermaid smiled, and it was a smile that held both promise and warning. \"Then let the bargain be struck. But remember, children—some prices are paid not in gold or silver, but in the very essence of who you are.\"\n\n" +
+                        "As the words faded into the night, the mermaid disappeared beneath the waves, leaving behind only the sound of the ocean and the weight of an unspoken promise.\n\n" +
+                        "Lena and Shin stood together on the cliff, knowing that their lives had just changed forever. The bargain had been made, and now they would have to live with the consequences—whatever they might be."
+                    ),
+                    Chapter("interlude", "The King of Spades and Queen of Hearts' Interminable, All Too Trivial Dispute", true, "2023-02-01", ""),
+                    Chapter("chapter2", "The Valkyrie's Descent", true, "2023-02-05", ""),
+                    Chapter("chapter3", "The Final Battle", true, "2023-02-10", ""),
+                    Chapter("epilogue", "A New Beginning", true, "2023-02-15", "")
                 ),
                 volumes = listOf(
                     Volume("vol1", "Eighty Six Vol 1", "February 10, 2017", "https://images-cn.ssl-images-amazon.cn/images/I/51O9zNg07AL.jpg"),

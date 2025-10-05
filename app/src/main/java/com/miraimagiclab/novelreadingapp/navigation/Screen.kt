@@ -23,4 +23,18 @@ sealed class Screen(
     ) {
         fun createRoute(bookId: String) = "book_details/$bookId"
     }
+    
+    object Reading : Screen(
+        route = "reading/{bookId}/{chapterId}",
+        arguments = listOf(
+            navArgument("bookId") {
+                type = NavType.StringType
+            },
+            navArgument("chapterId") {
+                type = NavType.StringType
+            }
+        )
+    ) {
+        fun createRoute(bookId: String, chapterId: String) = "reading/$bookId/$chapterId"
+    }
 }
