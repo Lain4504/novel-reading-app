@@ -13,6 +13,27 @@ sealed class Screen(
     object BookList : Screen("book_list")
     object Profile : Screen("profile")
     
+    // Auth Screens
+    object ForgotPassword : Screen("forgot_password")
+    object OTPVerification : Screen(
+        route = "otp_verification/{email}/{type}",
+        arguments = listOf(
+            navArgument("email") { type = NavType.StringType },
+            navArgument("type") { type = NavType.StringType }
+        )
+    ) {
+        fun createRoute(email: String, type: String) = "otp_verification/$email/$type"
+    }
+    object ResetPassword : Screen(
+        route = "reset_password/{email}/{code}",
+        arguments = listOf(
+            navArgument("email") { type = NavType.StringType },
+            navArgument("code") { type = NavType.StringType }
+        )
+    ) {
+        fun createRoute(email: String, code: String) = "reset_password/$email/$code"
+    }
+    
     object BookDetails : Screen(
         route = "book_details/{bookId}",
         arguments = listOf(
