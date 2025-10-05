@@ -28,7 +28,8 @@ data class Chapter(
     val id: String,
     val title: String,
     val isUnlocked: Boolean = true,
-    val createdAt: String
+    val createdAt: String,
+    val content: String = ""
 )
 
 data class Volume(

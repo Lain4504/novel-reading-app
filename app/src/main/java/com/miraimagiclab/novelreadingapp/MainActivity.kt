@@ -38,7 +38,7 @@ class MainActivity : ComponentActivity() {
                                 Screen.Explore.route,
                                 Screen.BookList.route,
                                 Screen.Profile.route
-                            )
+                            ) && !(currentRoute?.startsWith("book_details/") == true) && !(currentRoute?.startsWith("reading/") == true)
                             if (showBottomNav) {
                                 BottomNavigationBar(
                                     currentRoute = currentRoute,
