@@ -24,17 +24,42 @@ fun NovelReadingNavigation(
                 }
             )
         }
-        
-        composable(Screen.Explore.route) {
-            ExploreScreen()
-        }
-        
+
         composable(Screen.BookList.route) {
-            BookListScreen()
+            // also pass callbacks so when user navigates to BookList via bottom nav it works the same
+            BookListScreen(
+                onNavigateInProgress = { navController.navigate(Screen.InProgress.route) },
+                onNavigateCompleted = { navController.navigate(Screen.CompletedBook.route) },
+                onBookClick = { bookId -> navController.navigate(Screen.BookDetails.createRoute(bookId)) }
+            )
+        }
+
+        composable(Screen.Explore.route) {
+            ExploreScreen(
+                onBookClick = { bookId ->
+                    navController.navigate(Screen.BookDetails.createRoute(bookId))
+                }
+            )
         }
         
         composable(Screen.Profile.route) {
             ProfileScreen()
+        }
+
+        composable(Screen.InProgress.route) {
+            InProgressScreen(
+                onBookClick = { bookId ->
+                    navController.navigate(Screen.BookDetails.createRoute(bookId))
+                }
+            )
+        }
+
+        composable(Screen.CompletedBook.route) {
+            CompletedBookScreen(
+                onBookClick = { bookId ->
+                    navController.navigate(Screen.BookDetails.createRoute(bookId))
+                }
+            )
         }
         
         composable(
