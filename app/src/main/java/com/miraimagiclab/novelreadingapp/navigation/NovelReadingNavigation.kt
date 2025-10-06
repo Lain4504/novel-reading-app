@@ -7,7 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.miraimagiclab.novelreadingapp.ui.screens.*
 import com.miraimagiclab.novelreadingapp.ui.screens.auth.*
-
+import com.miraimagiclab.novelreadingapp.data.MockData
 @Composable
 fun NovelReadingNavigation(
     navController: NavHostController,
@@ -25,19 +25,35 @@ fun NovelReadingNavigation(
                 }
             )
         }
-        
-        composable(Screen.Explore.route) {
-            ExploreScreen()
-        }
-        
+
         composable(Screen.BookList.route) {
-            BookListScreen()
+            // also pass callbacks so when user navigates to BookList via bottom nav it works the same
+            BookListScreen(
+                onNavigateInProgress = { navController.navigate(Screen.InProgress.route) },
+                onNavigateCompleted = { navController.navigate(Screen.CompletedBook.route) },
+                onBookClick = { bookId -> navController.navigate(Screen.BookDetails.createRoute(bookId)) },
+                onBackClick = {
+                    navController.popBackStack(Screen.Home.route, inclusive = false)
+                }
+            )
+        }
+
+        composable(Screen.Explore.route) {
+            ExploreScreen(
+                onBookClick = { bookId ->
+                    navController.navigate(Screen.BookDetails.createRoute(bookId))
+                },
+                onBackClick = {
+                    navController.popBackStack(Screen.Home.route, inclusive = false)
+                }
+            )
         }
         
         composable(Screen.Profile.route) {
             ProfileScreen()
         }
 
+<<<<<<< HEAD
         // Auth routes
         composable(Screen.ForgotPassword.route) {
             ForgotPasswordScreen(
@@ -96,10 +112,33 @@ fun NovelReadingNavigation(
                     // Handle password reset success
                     navController.navigate(Screen.Home.route) {
                         popUpTo(0) { inclusive = true }
+=======
+        composable(Screen.InProgress.route) {
+            InProgressScreen(
+                navController,
+                onBookClick = { bookId ->
+                    val bookDetail = MockData.getBookDetail(bookId)
+                    val firstChapterId = bookDetail?.chapters?.firstOrNull()?.id
+                    if (firstChapterId != null) {
+                        navController.navigate("reading/$bookId/$firstChapterId")
+>>>>>>> 5497c25ac0d7898ed6fa4c5b7911d00b53b9be3c
                     }
                 }
             )
         }
+<<<<<<< HEAD
+=======
+
+
+        composable(Screen.CompletedBook.route) {
+            CompletedBookScreen(
+                navController,
+                onBookClick = { bookId ->
+                    navController.navigate(Screen.BookDetails.createRoute(bookId))
+                }
+            )
+        }
+>>>>>>> 5497c25ac0d7898ed6fa4c5b7911d00b53b9be3c
         
         composable(
             route = Screen.BookDetails.route,

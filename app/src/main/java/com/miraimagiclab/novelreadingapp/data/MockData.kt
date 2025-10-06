@@ -17,7 +17,8 @@ object MockData {
             score = 85,
             coverUrl = "https://images-cn.ssl-images-amazon.cn/images/I/51VgkCa+sHL.jpg",
             readTime = "8 hours 30 minutes",
-            releaseDate = "September 18, 2010"
+            releaseDate = "September 18, 2010",
+            isCompleted = false
         ),
         Book(
             id = "2",
@@ -29,7 +30,8 @@ object MockData {
             score = 86,
             coverUrl = "https://images-cn.ssl-images-amazon.cn/images/I/511xm7YWEOL.jpg",
             readTime = "11 hours 12 minutes",
-            releaseDate = "February 22, 2022"
+            releaseDate = "February 22, 2022",
+            isCompleted = true
         ),
         Book(
             id = "3",
@@ -40,7 +42,8 @@ object MockData {
             score = 78,
             coverUrl = "https://images-cn.ssl-images-amazon.cn/images/I/51dmbPfIumL.jpg",
             readTime = "6 hours 45 minutes",
-            releaseDate = "March 15, 2023"
+            releaseDate = "March 15, 2023",
+            isCompleted = false
         ),
         Book(
             id = "4",
@@ -51,7 +54,8 @@ object MockData {
             score = 92,
             coverUrl = "https://images-cn.ssl-images-amazon.cn/images/I/51Rw-hU9v3L.jpg",
             readTime = "4 hours 20 minutes",
-            releaseDate = "1988"
+            releaseDate = "1988",
+            isCompleted = true
         ),
         Book(
             id = "5",
@@ -62,7 +66,8 @@ object MockData {
             score = 88,
             coverUrl = "https://images-cn.ssl-images-amazon.cn/images/I/51hgjEZEpJL.jpg",
             readTime = "12 hours 30 minutes",
-            releaseDate = "August 26, 2003"
+            releaseDate = "August 26, 2003",
+            isCompleted = false
         )
     )
     
@@ -76,7 +81,8 @@ object MockData {
             score = 92,
             coverUrl = "https://images-cn.ssl-images-amazon.cn/images/I/51HntLYdWhL.jpg",
             readTime = "4 hours 20 minutes",
-            releaseDate = "1988"
+            releaseDate = "1988",
+            isCompleted = true
         ),
         Book(
             id = "7",
@@ -87,7 +93,8 @@ object MockData {
             score = 88,
             coverUrl = "https://images-cn.ssl-images-amazon.cn/images/I/51PaQ6PlfGL.jpg",
             readTime = "12 hours 30 minutes",
-            releaseDate = "August 26, 2003"
+            releaseDate = "August 26, 2003",
+            isCompleted = false
         ),
         Book(
             id = "8",
@@ -98,7 +105,8 @@ object MockData {
             score = 75,
             coverUrl = "https://images-cn.ssl-images-amazon.cn/images/I/51RgyI9DPuL.jpg",
             readTime = "7 hours 15 minutes",
-            releaseDate = "2023"
+            releaseDate = "2023",
+            isCompleted = true
         )
     )
     
@@ -331,6 +339,7 @@ object MockData {
         )
     )
     
+
     fun getBookDetail(bookId: String): BookDetail? {
         val book = (recommendedBooks + ourPickBooks).find { it.id == bookId }
         return book?.let {
