@@ -12,8 +12,6 @@ sealed class Screen(
     object Explore : Screen("explore")
     object BookList : Screen("book_list")
     object Profile : Screen("profile")
-    object InProgress : Screen("in_progress")
-    object CompletedBook : Screen("completed_book")
     
     // Auth Screens
     object ForgotPassword : Screen("forgot_password")
