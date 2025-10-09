@@ -3,6 +3,7 @@ package com.miraimagiclab.novelreadingapp.dto.request
 import com.miraimagiclab.novelreadingapp.enumeration.UserRoleEnum
 import com.miraimagiclab.novelreadingapp.enumeration.UserStatusEnum
 import jakarta.validation.constraints.Email
+import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 
 data class UserUpdateRequest(
@@ -13,6 +14,14 @@ data class UserUpdateRequest(
     val email: String? = null,
 
     @field:Size(min = 6, message = "Password must be at least 6 characters")
+    @field:Pattern(
+        regexp = ".*[A-Z].*",
+        message = "Password must contain at least one uppercase letter"
+    )
+    @field:Pattern(
+        regexp = ".*[!@#\$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*",
+        message = "Password must contain at least one special character"
+    )
     val password: String? = null,
 
     val roles: Set<UserRoleEnum>? = null,
