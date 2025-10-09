@@ -25,4 +25,6 @@ interface UserRepository : MongoRepository<User, String> {
     fun countByStatus(status: UserStatusEnum): Long
 
     fun countByRolesContaining(role: UserRoleEnum): Long
+
+    fun findByVerificationToken(verificationToken: String): User?
 }
