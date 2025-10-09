@@ -19,6 +19,10 @@ data class UserCreateRequest(
     @field:NotBlank(message = "Password is required")
     @field:Size(min = 6, message = "Password must be at least 6 characters")
     @field:Pattern(
+        regexp = ".*[a-z].*",
+        message = "Password must contain at least one lowercase letter"
+    )
+    @field:Pattern(
         regexp = ".*[A-Z].*",
         message = "Password must contain at least one uppercase letter"
     )
