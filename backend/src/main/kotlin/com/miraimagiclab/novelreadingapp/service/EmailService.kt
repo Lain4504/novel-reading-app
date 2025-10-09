@@ -45,20 +45,26 @@ class EmailService(
         mailSender.send(message)
     }
 
-    fun sendVerificationEmail(to: String, username: String) {
+    fun sendVerificationEmail(to: String, username: String, verificationToken: String) {
+        val verificationUrl = "http://localhost:8080/api/auth/verify-email?token=$verificationToken"
+
         val message = SimpleMailMessage()
         message.setTo(to)
-        message.setSubject("Account Verification - Novel Reading App")
+        message.setSubject("Activate Your Account - Novel Reading App")
         message.setText("""
             Hi $username,
 
             Thank you for signing up for Novel Reading App!
 
-            Your account has been created but needs to be verified before you can start using it.
+            Your account has been created but needs to be activated before you can start using it.
 
-            Please check your email for the verification code that was sent separately, or use the OTP verification endpoint with your email.
+            Click the link below to activate your account:
 
-            Once verified, you'll be able to login and start reading novels.
+            $verificationUrl
+
+            This link will expire in 24 hours.
+
+            If you didn't create this account, please ignore this email.
 
             Best regards,
             Novel Reading App Team

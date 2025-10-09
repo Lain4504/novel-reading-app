@@ -7,13 +7,13 @@ import com.miraimagiclab.novelreadingapp.dto.response.UserDto
 import com.miraimagiclab.novelreadingapp.enumeration.UserStatusEnum
 import com.miraimagiclab.novelreadingapp.exception.DuplicateUserException
 import com.miraimagiclab.novelreadingapp.exception.UserNotFoundException
-import com.miraimagiclab.novelreadingapp.model.OTPType
 import com.miraimagiclab.novelreadingapp.model.User
 import com.miraimagiclab.novelreadingapp.repository.UserRepository
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
+import java.util.UUID
 
 data class AuthResult(
     val user: User,
@@ -27,8 +27,7 @@ class UserService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder,
     private val jwtUtil: JwtUtil,
-    private val emailService: EmailService,
-    private val otpService: OTPService
+    private val emailService: EmailService
 ) {
 
     fun createUser(request: UserCreateRequest): UserDto {
@@ -39,6 +38,10 @@ class UserService(
         if (userRepository.existsByEmail(request.email)) {
             throw DuplicateUserException("Email '${request.email}' already exists")
         }
+
+        // Generate verification token
+        val verificationToken = UUID.randomUUID().toString()
+        val tokenExpiresAt = LocalDateTime.now().plusHours(24) // 24 hours expiry
 
         val user = User(
             username = request.username,
@@ -52,17 +55,16 @@ class UserService(
             bio = request.bio,
             displayName = request.displayName ?: request.username,
             createdAt = LocalDateTime.now(),
-            updatedAt = LocalDateTime.now()
+            updatedAt = LocalDateTime.now(),
+            verificationToken = verificationToken,
+            verificationTokenExpiresAt = tokenExpiresAt
         )
 
         val savedUser = userRepository.save(user)
 
-        // Generate OTP for account verification
-        otpService.generateOTP(savedUser.email, OTPType.ACCOUNT_VERIFICATION)
-
-        // Send account verification email asynchronously
+        // Send account verification email with activation link
         try {
-            emailService.sendVerificationEmail(savedUser.email, savedUser.username)
+            emailService.sendVerificationEmail(savedUser.email, savedUser.username, savedUser.verificationToken!!)
         } catch (e: Exception) {
             // Log the error but don't fail registration
             // In a real app, you'd use a logger
@@ -180,6 +182,37 @@ class UserService(
 
         val updatedUser = user.copy(
             status = UserStatusEnum.ACTIVE,
+            updatedAt = LocalDateTime.now()
+        )
+
+        userRepository.save(updatedUser)
+    }
+
+    fun findByVerificationToken(token: String): User? {
+        return userRepository.findByVerificationToken(token)
+    }
+
+    fun activateAccountByToken(token: String) {
+        val user = userRepository.findByVerificationToken(token)
+            ?: throw UserNotFoundException("Invalid verification token")
+
+        val updatedUser = user.copy(
+            status = UserStatusEnum.ACTIVE,
+            verificationToken = null, // Clear the token after use
+            verificationTokenExpiresAt = null,
+            updatedAt = LocalDateTime.now()
+        )
+
+        userRepository.save(updatedUser)
+    }
+
+    fun updateVerificationToken(email: String, newToken: String, expiresAt: LocalDateTime) {
+        val user = userRepository.findByEmail(email)
+            .orElseThrow { UserNotFoundException("User with email '$email' not found") }
+
+        val updatedUser = user.copy(
+            verificationToken = newToken,
+            verificationTokenExpiresAt = expiresAt,
             updatedAt = LocalDateTime.now()
         )
 

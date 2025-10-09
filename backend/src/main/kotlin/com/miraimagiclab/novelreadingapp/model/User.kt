@@ -46,5 +46,11 @@ data class User(
     val updatedAt: LocalDateTime = LocalDateTime.now(),
 
     // Track when displayName was last changed to enforce 30-day rule
-    val lastDisplayNameChangedAt: LocalDateTime? = null
+    val lastDisplayNameChangedAt: LocalDateTime? = null,
+
+    // Email verification token for new accounts
+    val verificationToken: String? = null,
+
+    // Token expiration time
+    val verificationTokenExpiresAt: LocalDateTime? = null
 )
