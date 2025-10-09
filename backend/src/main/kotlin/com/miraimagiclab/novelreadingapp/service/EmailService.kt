@@ -45,6 +45,28 @@ class EmailService(
         mailSender.send(message)
     }
 
+    fun sendVerificationEmail(to: String, username: String) {
+        val message = SimpleMailMessage()
+        message.setTo(to)
+        message.setSubject("Account Verification - Novel Reading App")
+        message.setText("""
+            Hi $username,
+
+            Thank you for signing up for Novel Reading App!
+
+            Your account has been created but needs to be verified before you can start using it.
+
+            Please check your email for the verification code that was sent separately, or use the OTP verification endpoint with your email.
+
+            Once verified, you'll be able to login and start reading novels.
+
+            Best regards,
+            Novel Reading App Team
+        """.trimIndent())
+
+        mailSender.send(message)
+    }
+
     fun sendEmail(to: String, subject: String, body: String) {
         val message = SimpleMailMessage()
         message.setTo(to)

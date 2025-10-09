@@ -21,7 +21,7 @@ data class UserCreateRequest(
 
     val roles: Set<UserRoleEnum> = setOf(UserRoleEnum.USER),
 
-    val status: UserStatusEnum = UserStatusEnum.ACTIVE,
+    val status: UserStatusEnum = UserStatusEnum.INACTIVE,
 
     val avatarUrl: String? = null,
 

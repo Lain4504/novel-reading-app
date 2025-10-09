@@ -7,6 +7,7 @@ import com.miraimagiclab.novelreadingapp.dto.response.UserDto
 import com.miraimagiclab.novelreadingapp.enumeration.UserStatusEnum
 import com.miraimagiclab.novelreadingapp.exception.DuplicateUserException
 import com.miraimagiclab.novelreadingapp.exception.UserNotFoundException
+import com.miraimagiclab.novelreadingapp.model.OTPType
 import com.miraimagiclab.novelreadingapp.model.User
 import com.miraimagiclab.novelreadingapp.repository.UserRepository
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -26,7 +27,8 @@ class UserService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder,
     private val jwtUtil: JwtUtil,
-    private val emailService: EmailService
+    private val emailService: EmailService,
+    private val otpService: OTPService
 ) {
 
     fun createUser(request: UserCreateRequest): UserDto {
@@ -55,13 +57,16 @@ class UserService(
 
         val savedUser = userRepository.save(user)
 
-        // Send welcome email asynchronously
+        // Generate OTP for account verification
+        otpService.generateOTP(savedUser.email, OTPType.ACCOUNT_VERIFICATION)
+
+        // Send account verification email asynchronously
         try {
-            emailService.sendWelcomeEmail(savedUser.email, savedUser.username)
+            emailService.sendVerificationEmail(savedUser.email, savedUser.username)
         } catch (e: Exception) {
             // Log the error but don't fail registration
             // In a real app, you'd use a logger
-            println("Failed to send welcome email: ${e.message}")
+            println("Failed to send verification email: ${e.message}")
         }
 
         return UserDto.fromEntity(savedUser)
