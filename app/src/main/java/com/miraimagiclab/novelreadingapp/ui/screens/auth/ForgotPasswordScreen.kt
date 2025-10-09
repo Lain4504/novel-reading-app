@@ -1,6 +1,9 @@
 package com.miraimagiclab.novelreadingapp.ui.screens.auth
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -11,6 +14,7 @@ import com.miraimagiclab.novelreadingapp.ui.components.EmailTextField
 import com.miraimagiclab.novelreadingapp.ui.components.PasswordTextField
 import com.miraimagiclab.novelreadingapp.ui.theme.Spacing
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ForgotPasswordScreen(
     onBackClick: () -> Unit,

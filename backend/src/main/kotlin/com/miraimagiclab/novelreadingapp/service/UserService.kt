@@ -4,6 +4,7 @@ import com.miraimagiclab.novelreadingapp.config.JwtUtil
 import com.miraimagiclab.novelreadingapp.dto.request.UserCreateRequest
 import com.miraimagiclab.novelreadingapp.dto.request.UserUpdateRequest
 import com.miraimagiclab.novelreadingapp.dto.response.UserDto
+import com.miraimagiclab.novelreadingapp.enumeration.UserStatusEnum
 import com.miraimagiclab.novelreadingapp.exception.DuplicateUserException
 import com.miraimagiclab.novelreadingapp.exception.UserNotFoundException
 import com.miraimagiclab.novelreadingapp.model.User
@@ -87,6 +88,11 @@ class UserService(
     }
 
     @Transactional(readOnly = true)
+    fun findByEmail(email: String): User? {
+        return userRepository.findByEmail(email).orElse(null)
+    }
+
+    @Transactional(readOnly = true)
     fun getUserByEmail(email: String): UserDto {
         val user = userRepository.findByEmail(email)
             .orElseThrow { UserNotFoundException("User with email '$email' not found") }
@@ -149,6 +155,30 @@ class UserService(
         val refreshToken = jwtUtil.generateRefreshToken(user)
 
         return AuthResult(user, token, refreshToken)
+    }
+
+    fun resetPassword(email: String, newPassword: String) {
+        val user = userRepository.findByEmail(email)
+            .orElseThrow { UserNotFoundException("User with email '$email' not found") }
+
+        val updatedUser = user.copy(
+            password = passwordEncoder.encode(newPassword),
+            updatedAt = LocalDateTime.now()
+        )
+
+        userRepository.save(updatedUser)
+    }
+
+    fun activateAccount(email: String) {
+        val user = userRepository.findByEmail(email)
+            .orElseThrow { UserNotFoundException("User with email '$email' not found") }
+
+        val updatedUser = user.copy(
+            status = UserStatusEnum.ACTIVE,
+            updatedAt = LocalDateTime.now()
+        )
+
+        userRepository.save(updatedUser)
     }
 
 }

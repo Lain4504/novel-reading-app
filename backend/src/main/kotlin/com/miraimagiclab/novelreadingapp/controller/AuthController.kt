@@ -4,6 +4,7 @@ import com.miraimagiclab.novelreadingapp.dto.ApiResponse
 import com.miraimagiclab.novelreadingapp.dto.ForgotPasswordRequest
 import com.miraimagiclab.novelreadingapp.dto.ResetPasswordRequest
 import com.miraimagiclab.novelreadingapp.dto.VerifyOTPRequest
+import com.miraimagiclab.novelreadingapp.enumeration.UserStatusEnum
 import com.miraimagiclab.novelreadingapp.model.OTPType
 import com.miraimagiclab.novelreadingapp.service.OTPService
 import com.miraimagiclab.novelreadingapp.service.UserService
@@ -63,7 +64,7 @@ class AuthController(
         val user = userService.findByEmail(email)
             ?: return ResponseEntity.ok(ApiResponse.error("User not found"))
 
-        if (user.isActive) {
+        if (user.status == UserStatusEnum.ACTIVE) {
             return ResponseEntity.ok(ApiResponse.error("Account is already verified"))
         }
 

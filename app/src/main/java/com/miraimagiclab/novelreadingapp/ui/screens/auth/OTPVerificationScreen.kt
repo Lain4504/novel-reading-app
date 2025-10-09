@@ -1,6 +1,10 @@
 package com.miraimagiclab.novelreadingapp.ui.screens.auth
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -8,7 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.miraimagiclab.novelreadingapp.ui.theme.Spacing
+import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OTPVerificationScreen(
     email: String,
@@ -20,10 +26,10 @@ fun OTPVerificationScreen(
     var otpCode by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     var canResend by remember { mutableStateOf(false) }
-    
+    var timeLeft by remember { mutableStateOf(60) }
+
     // Timer for resend button
     LaunchedEffect(Unit) {
-        var timeLeft = 60
         while (timeLeft > 0) {
             delay(1000)
             timeLeft--
