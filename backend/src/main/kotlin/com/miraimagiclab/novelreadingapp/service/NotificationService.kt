@@ -1,9 +1,12 @@
 package com.miraimagiclab.novelreadingapp.service
 
+import com.miraimagiclab.novelreadingapp.dto.response.NotificationDto
+import com.miraimagiclab.novelreadingapp.dto.response.PageResponse
+import com.miraimagiclab.novelreadingapp.exception.NotificationNotFoundException
 import com.miraimagiclab.novelreadingapp.model.Notification
 import com.miraimagiclab.novelreadingapp.repository.NotificationRepository
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -11,31 +14,52 @@ import java.time.LocalDateTime
 class NotificationService(
     private val notificationRepository: NotificationRepository
 ) {
-    fun create(userId: String, notification: Notification): Notification {
-        val toSave = notification.copy(
-            userId = userId,
-            createdAt = LocalDateTime.now(),
-            read = false
-        )
-        return notificationRepository.save(toSave)
+
+    // Lấy notification theo ID
+    fun getNotificationById(id: String): NotificationDto {
+        val notification = notificationRepository.findById(id)
+            .orElseThrow { NotificationNotFoundException(id) }
+        return NotificationDto.fromEntity(notification)
     }
 
-    fun getById(id: String): Notification =
-        notificationRepository.findById(id)
-            .orElseThrow { RuntimeException("Notification not found") }
+    // Xóa notification theo ID
+    fun deleteNotification(id: String) {
+        if (!notificationRepository.existsById(id)) {
+            throw NotificationNotFoundException(id)
+        }
+        notificationRepository.deleteById(id)
+    }
 
-    fun getByUserId(userId: String, pageable: Pageable): Page<Notification> =
-        notificationRepository.findByUserId(userId, pageable)
+    // Lấy danh sách notification của user theo page/size
+    fun getNotificationsByUser(userId: String, page: Int, size: Int): PageResponse<NotificationDto> {
+        val pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))
+        val notifications = notificationRepository.findByUserId(userId, pageable)
+        val dtoPage = notifications.map { NotificationDto.fromEntity(it) }
+        return PageResponse.fromPage(dtoPage)
+    }
 
-    fun countUnread(userId: String): Long =
-        notificationRepository.countByUserIdAndReadFalse(userId)
+    // Đếm số notification chưa đọc
+    fun countUnreadNotifications(userId: String): Long {
+        return notificationRepository.countByUserIdAndReadFalse(userId)
+    }
 
-    fun markAsRead(id: String) {
-        val notification = getById(id)
+    // Đánh dấu 1 notification là đã đọc
+    fun markAsRead(id: String): NotificationDto {
+        val notification = notificationRepository.findById(id)
+            .orElseThrow { NotificationNotFoundException(id) }
+
         val updated = notification.copy(
             read = true,
             updatedAt = LocalDateTime.now()
         )
-        notificationRepository.save(updated)
+        val saved = notificationRepository.save(updated)
+        return NotificationDto.fromEntity(saved)
+    }
+
+    // Đánh dấu tất cả notification của user là đã đọc
+    fun markAllAsRead(userId: String) {
+        val all = notificationRepository.findByUserId(userId)
+        val updatedList = all.map { it.copy(read = true, updatedAt = LocalDateTime.now()) }
+        notificationRepository.saveAll(updatedList)
     }
 }

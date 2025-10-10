@@ -1,13 +1,13 @@
 package com.miraimagiclab.novelreadingapp.dto.request
 
-import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.Size
-import com.miraimagiclab.novelreadingapp.enumeration.NotificationEnum
 import com.miraimagiclab.novelreadingapp.enumeration.EntityEnum
+import com.miraimagiclab.novelreadingapp.enumeration.NotificationEnum
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
 
-data class NotificationRequest(
+data class NotificationCreateRequest(
     @field:NotBlank val userId: String,
-    val type: NotificationEnum,
+    @field:NotNull val type: NotificationEnum,
     @field:NotBlank val title: String,
     @field:NotBlank val message: String,
     val entityId: String? = null,
