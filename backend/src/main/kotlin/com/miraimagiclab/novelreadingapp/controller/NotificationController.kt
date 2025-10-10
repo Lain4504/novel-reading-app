@@ -1,11 +1,10 @@
 package com.miraimagiclab.novelreadingapp.controller
 
-import com.miraimagiclab.novelreadingapp.model.Notification
-import com.miraimagiclab.novelreadingapp.service.NotificationService
 import com.miraimagiclab.novelreadingapp.dto.ApiResponse
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
-import org.springframework.http.HttpStatus
+import com.miraimagiclab.novelreadingapp.dto.response.PageResponse
+import com.miraimagiclab.novelreadingapp.dto.response.NotificationDto
+import com.miraimagiclab.novelreadingapp.service.NotificationService
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -14,49 +13,47 @@ import org.springframework.web.bind.annotation.*
 @CrossOrigin(
     origins = [
         "http://localhost:3000",
-        "http://localhost:8080",
         "http://127.0.0.1:3000",
+        "http://localhost:8080",
         "http://127.0.0.1:8080"
     ]
 )
+@Tag(name = "Notification Management", description = "APIs for managing user notifications")
 class NotificationController(
     private val notificationService: NotificationService
 ) {
 
-    @PostMapping("/users/{userId}")
-    fun createNotification(
-        @PathVariable("userId") userId: String,
-        @RequestBody notification: Notification
-    ): ResponseEntity<ApiResponse<Notification>> {
-        val saved = notificationService.create(userId, notification)
-        return ResponseEntity.status(HttpStatus.CREATED)
-            .body(ApiResponse.success(saved, "Notification created successfully"))
-    }
-
     @GetMapping("/{id}")
-    fun getById(@PathVariable("id") id: String): ResponseEntity<ApiResponse<Notification>> {
-        val notification = notificationService.getById(id)
+    fun getNotificationById(
+        @PathVariable id: String
+    ): ResponseEntity<ApiResponse<NotificationDto>> {
+        val notification = notificationService.getNotificationById(id)
         return ResponseEntity.ok(ApiResponse.success(notification, "Notification retrieved successfully"))
     }
 
     @GetMapping("/users/{userId}")
-    fun getByUserId(
-        @PathVariable("userId") userId: String,
-        pageable: Pageable
-    ): ResponseEntity<ApiResponse<Page<Notification>>> {
-        val notifications = notificationService.getByUserId(userId, pageable)
+    fun getNotificationsByUserId(
+        @PathVariable userId: String,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "20") size: Int
+    ): ResponseEntity<ApiResponse<PageResponse<NotificationDto>>> {
+        val notifications = notificationService.getNotificationsByUserId(userId, page, size)
         return ResponseEntity.ok(ApiResponse.success(notifications, "Notifications retrieved successfully"))
     }
 
-    @GetMapping("/users/{userId}/unread-count")
-    fun countUnread(@PathVariable("userId") userId: String): ResponseEntity<ApiResponse<Long>> {
-        val count = notificationService.countUnread(userId)
-        return ResponseEntity.ok(ApiResponse.success(count))
+    @PostMapping("/{id}/read")
+    fun markAsRead(
+        @PathVariable id: String
+    ): ResponseEntity<ApiResponse<NotificationDto>> {
+        val updated = notificationService.markAsRead(id)
+        return ResponseEntity.ok(ApiResponse.success(updated, "Notification marked as read"))
     }
 
-    @PutMapping("/{id}/read")
-    fun markAsRead(@PathVariable("id") id: String): ResponseEntity<ApiResponse<String>> {
-        notificationService.markAsRead(id)
-        return ResponseEntity.ok(ApiResponse.success(message = "Notification marked as read"))
+    @DeleteMapping("/{id}")
+    fun deleteNotification(
+        @PathVariable id: String
+    ): ResponseEntity<ApiResponse<Nothing>> {
+        notificationService.deleteNotification(id)
+        return ResponseEntity.ok(ApiResponse.success("Notification deleted successfully"))
     }
 }
