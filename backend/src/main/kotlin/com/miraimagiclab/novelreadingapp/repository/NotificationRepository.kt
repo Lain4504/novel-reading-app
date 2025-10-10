@@ -9,5 +9,6 @@ import org.springframework.stereotype.Repository
 @Repository
 interface NotificationRepository : MongoRepository<Notification, String> {
     fun findByUserId(userId: String, pageable: Pageable): Page<Notification>
+    fun findByUserId(userId: String): List<Notification>
     fun countByUserIdAndReadFalse(userId: String): Long
 }

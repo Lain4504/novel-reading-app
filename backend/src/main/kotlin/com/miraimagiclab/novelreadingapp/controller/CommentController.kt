@@ -1,10 +1,14 @@
 package com.miraimagiclab.novelreadingapp.controller
 
 import com.miraimagiclab.novelreadingapp.dto.ApiResponse
-import com.miraimagiclab.novelreadingapp.model.Comment
+import com.miraimagiclab.novelreadingapp.dto.request.CommentCreateRequest
+import com.miraimagiclab.novelreadingapp.dto.request.CommentReplyCreateRequest
+import com.miraimagiclab.novelreadingapp.dto.request.CommentUpdateRequest
+import com.miraimagiclab.novelreadingapp.dto.response.CommentResponseDto
+import com.miraimagiclab.novelreadingapp.dto.response.PageResponse
 import com.miraimagiclab.novelreadingapp.service.CommentService
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
+import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -19,47 +23,68 @@ import org.springframework.web.bind.annotation.*
         "http://127.0.0.1:8080"
     ]
 )
+@Tag(name = "Comment Management", description = "APIs for managing comments and replies")
 class CommentController(
     private val commentService: CommentService
 ) {
 
-    @PostMapping("/novels/{novelId}")
+    @PostMapping
     fun createComment(
-        @PathVariable novelId: String,
-        @RequestBody comment: Comment
-    ): ResponseEntity<ApiResponse<Comment>> {
-        val saved = commentService.create(novelId, comment)
+        @Valid @RequestBody request: CommentCreateRequest
+    ): ResponseEntity<ApiResponse<CommentResponseDto>> {
+        val comment = commentService.createComment(request)
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(ApiResponse.success(saved, "Comment created successfully"))
+            .body(ApiResponse.success(comment, "Comment created successfully"))
+    }
+
+    @PostMapping("/{commentId}/reply")
+    fun createReply(
+        @PathVariable commentId: String,
+        @Valid @RequestBody request: CommentReplyCreateRequest
+    ): ResponseEntity<ApiResponse<CommentResponseDto>> {
+        val reply = commentService.createReply(commentId, request)
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(ApiResponse.success(reply, "Reply created successfully"))
     }
 
     @GetMapping("/{id}")
-    fun getById(@PathVariable id: String): ResponseEntity<ApiResponse<Comment>> {
-        val comment = commentService.getById(id)
+    fun getCommentById(@PathVariable id: String): ResponseEntity<ApiResponse<CommentResponseDto>> {
+        val comment = commentService.getCommentById(id)
         return ResponseEntity.ok(ApiResponse.success(comment, "Comment retrieved successfully"))
     }
 
-    @GetMapping("/novels/{novelId}")
-    fun getByNovelId(
+    @GetMapping("/novel/{novelId}")
+    fun getCommentsByNovel(
         @PathVariable novelId: String,
-        pageable: Pageable
-    ): ResponseEntity<ApiResponse<Page<Comment>>> {
-        val comments = commentService.getByNovelId(novelId, pageable)
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "20") size: Int
+    ): ResponseEntity<ApiResponse<PageResponse<CommentResponseDto>>> {
+        val comments = commentService.getCommentsByNovelId(novelId, page, size)
         return ResponseEntity.ok(ApiResponse.success(comments, "Comments retrieved successfully"))
+    }
+
+    @GetMapping("/{commentId}/replies")
+    fun getRepliesByCommentId(
+        @PathVariable commentId: String,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "10") size: Int
+    ): ResponseEntity<ApiResponse<PageResponse<CommentResponseDto>>> {
+        val replies = commentService.getRepliesByCommentId(commentId, page, size)
+        return ResponseEntity.ok(ApiResponse.success(replies, "Replies retrieved successfully"))
     }
 
     @PutMapping("/{id}")
     fun updateComment(
         @PathVariable id: String,
-        @RequestBody comment: Comment
-    ): ResponseEntity<ApiResponse<Comment>> {
-        val updated = commentService.update(id, comment)
+        @Valid @RequestBody request: CommentUpdateRequest
+    ): ResponseEntity<ApiResponse<CommentResponseDto>> {
+        val updated = commentService.updateComment(id, request)
         return ResponseEntity.ok(ApiResponse.success(updated, "Comment updated successfully"))
     }
 
     @DeleteMapping("/{id}")
-    fun deleteComment(@PathVariable id: String): ResponseEntity<ApiResponse<Unit>> {
-        commentService.delete(id)
-        return ResponseEntity.ok(ApiResponse.success(message = "Comment deleted successfully"))
+    fun deleteComment(@PathVariable id: String): ResponseEntity<ApiResponse<Nothing>> {
+        commentService.deleteComment(id)
+        return ResponseEntity.ok(ApiResponse.success("Comment deleted successfully"))
     }
 }
