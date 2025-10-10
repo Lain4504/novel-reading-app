@@ -8,8 +8,12 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface CommentRepository : MongoRepository<Comment, String> {
-    fun findByNovelId(novelId: String, pageable: Pageable): Page<Comment>
-    fun findByParentId(parentId: String, pageable: Pageable): Page<Comment>
-    fun countByNovelId(novelId: String): Long
-    fun existsByIdAndDeletedFalse(id: String): Boolean
+
+    fun findByNovelIdAndParentIdIsNullAndDeletedFalse(novelId: String, pageable: Pageable): Page<Comment>
+
+    fun findByParentIdAndDeletedFalse(parentId: String, pageable: Pageable): Page<Comment>
+
+    fun countByNovelIdAndDeletedFalse(novelId: String): Long
+
+    fun countByParentIdAndDeletedFalse(parentId: String): Long
 }
