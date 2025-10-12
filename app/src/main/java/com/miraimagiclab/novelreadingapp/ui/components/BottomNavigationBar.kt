@@ -60,7 +60,7 @@ fun BottomNavigationBar(
             
             NavigationBarItem(
                 selected = isSelected,
-                onClick = { 
+                onClick = {
                     if (!isSelected) {
                         onNavigate(item.route)
                     }
