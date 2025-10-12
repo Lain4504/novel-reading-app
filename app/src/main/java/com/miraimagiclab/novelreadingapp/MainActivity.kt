@@ -15,7 +15,9 @@ import com.miraimagiclab.novelreadingapp.navigation.NovelReadingNavigation
 import com.miraimagiclab.novelreadingapp.navigation.Screen
 import com.miraimagiclab.novelreadingapp.ui.components.BottomNavigationBar
 import com.miraimagiclab.novelreadingapp.ui.theme.NovelReadingAppTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
