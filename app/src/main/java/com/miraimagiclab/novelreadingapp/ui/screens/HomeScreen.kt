@@ -29,18 +29,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.miraimagiclab.novelreadingapp.data.MockData
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.miraimagiclab.novelreadingapp.data.Book
 import com.miraimagiclab.novelreadingapp.ui.components.BannerCard
 import com.miraimagiclab.novelreadingapp.ui.components.BookCard
 import com.miraimagiclab.novelreadingapp.ui.components.RankingListItem
 import com.miraimagiclab.novelreadingapp.ui.theme.Spacing
+import com.miraimagiclab.novelreadingapp.ui.viewmodel.HomeViewModel
+import com.miraimagiclab.novelreadingapp.util.NovelToBookConverter
+import com.miraimagiclab.novelreadingapp.util.UiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onBookClick: (String) -> Unit
+    onBookClick: (String) -> Unit,
+    viewModel: HomeViewModel = hiltViewModel()
 ) {
     val scrollState = rememberScrollState()
+    val uiState by viewModel.uiState.collectAsState()
     
     Scaffold(
         contentWindowInsets = WindowInsets(0),
@@ -87,180 +93,237 @@ fun HomeScreen(
             )
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(scrollState)
-                .padding(horizontal = Spacing.contentPadding)
-        ) {
-            // Banner Section with swipeable ranking books
-            val bannerPagerState = rememberPagerState(pageCount = { MockData.rankingBooks.size })
-            
-            HorizontalPager(
-                state = bannerPagerState,
-                modifier = Modifier.height(200.dp)
-            ) { page ->
-                val book = MockData.rankingBooks[page]
-                BannerCard(
-                    title = book.title,
-                    subtitle = "Rank #${page + 1} • ${book.author}",
-                    imageUrl = book.coverUrl
-                )
-            }
-            
-            // Banner page indicators
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                repeat(bannerPagerState.pageCount) { iteration ->
-                    val color = if (bannerPagerState.currentPage == iteration) 
-                        MaterialTheme.colorScheme.primary 
-                    else 
-                        MaterialTheme.colorScheme.outline
-                    
-                    Box(
-                        modifier = Modifier
-                            .padding(2.dp)
-                            .size(6.dp)
-                            .background(
-                                color = color,
-                                shape = androidx.compose.foundation.shape.CircleShape
-                            )
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(Spacing.sectionSpacing))
-            
-            // Recommended for you section
-            Text(
-                text = "Recommended for you",
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(bottom = Spacing.md)
-            )
-            
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-                contentPadding = PaddingValues(horizontal = Spacing.xs)
-            ) {
-                items(MockData.recommendedBooks) { book ->
-                    BookCard(
-                        book = book,
-                        onClick = { onBookClick(book.id) }
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(Spacing.sectionSpacing))
-            
-            // Our pick for novel section
-            Text(
-                text = "Our pick for novel",
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(bottom = Spacing.md)
-            )
-            
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-                contentPadding = PaddingValues(horizontal = Spacing.xs)
-            ) {
-                items(MockData.ourPickBooks) { book ->
-                    BookCard(
-                        book = book,
-                        onClick = { onBookClick(book.id) }
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(Spacing.sectionSpacing))
-            
-            // Ranking section
-            Text(
-                text = "Top Ranking",
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(bottom = Spacing.md)
-            )
-            
-            // Ranking with swiper functionality
-            val pagerState = rememberPagerState(pageCount = { (MockData.rankingBooks.size + 4) / 5 })
-            
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.height(480.dp)
-            ) { page ->
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+        when (val currentState = uiState) {
+            is UiState.Loading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    contentAlignment = Alignment.Center
                 ) {
-                    // Show 5 items per page
-                    repeat(5) { index ->
-                        val globalIndex = page * 5 + index
-                        if (globalIndex < MockData.rankingBooks.size) {
-                            RankingListItem(
-                                book = MockData.rankingBooks[globalIndex],
-                                rank = globalIndex + 1,
-                                onClick = { onBookClick(MockData.rankingBooks[globalIndex].id) }
-                            )
-                        } else {
-                            // Empty space to maintain consistent layout
-                            Spacer(modifier = Modifier.height(88.dp))
+                    CircularProgressIndicator()
+                }
+            }
+            is UiState.Error -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = currentState.message,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = { viewModel.refreshData() }) {
+                            Text("Retry")
                         }
                     }
                 }
             }
-            
-            Spacer(modifier = Modifier.height(Spacing.sectionSpacing))
-            
-            // New Books section
-            Text(
-                text = "Truyện mới",
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(bottom = Spacing.md)
-            )
-            
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-                contentPadding = PaddingValues(horizontal = Spacing.xs)
-            ) {
-                items(MockData.newBooks) { book ->
-                    BookCard(
-                        book = book,
-                        onClick = { onBookClick(book.id) }
-                    )
+            is UiState.Success -> {
+                val homeData = currentState.data
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .verticalScroll(scrollState)
+                        .padding(horizontal = Spacing.contentPadding)
+                ) {
+                    // Banner Section with swipeable ranking books
+                    if (homeData.bannerNovels.isNotEmpty()) {
+                        val bannerPagerState = rememberPagerState(pageCount = { homeData.bannerNovels.size })
+                        
+                        HorizontalPager(
+                            state = bannerPagerState,
+                            modifier = Modifier.height(200.dp)
+                        ) { page ->
+                            val novel = homeData.bannerNovels[page]
+                            val book = NovelToBookConverter.novelToBook(novel)
+                            BannerCard(
+                                title = book.title,
+                                subtitle = "Rank #${page + 1} • ${book.author}",
+                                imageUrl = book.coverUrl
+                            )
+                        }
+                        
+                        // Banner page indicators
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            repeat(bannerPagerState.pageCount) { iteration ->
+                                val color = if (bannerPagerState.currentPage == iteration) 
+                                    MaterialTheme.colorScheme.primary 
+                                else 
+                                    MaterialTheme.colorScheme.outline
+                                
+                                Box(
+                                    modifier = Modifier
+                                        .padding(2.dp)
+                                        .size(6.dp)
+                                        .background(
+                                            color = color,
+                                            shape = androidx.compose.foundation.shape.CircleShape
+                                        )
+                                )
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(Spacing.sectionSpacing))
+                    }
+                    
+                    // Recommended for you section
+                    if (homeData.recommendedNovels.isNotEmpty()) {
+                        Text(
+                            text = "Recommended for you",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(bottom = Spacing.md)
+                        )
+                        
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                            contentPadding = PaddingValues(horizontal = Spacing.xs)
+                        ) {
+                            items(homeData.recommendedNovels) { novel ->
+                                val book = NovelToBookConverter.novelToBook(novel)
+                                BookCard(
+                                    book = book,
+                                    onClick = { onBookClick(book.id) }
+                                )
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(Spacing.sectionSpacing))
+                    }
+                    
+                    // Our pick for novel section
+                    if (homeData.newNovels.isNotEmpty()) {
+                        Text(
+                            text = "Our pick for novel",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(bottom = Spacing.md)
+                        )
+                        
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                            contentPadding = PaddingValues(horizontal = Spacing.xs)
+                        ) {
+                            items(homeData.newNovels.take(5)) { novel ->
+                                val book = NovelToBookConverter.novelToBook(novel)
+                                BookCard(
+                                    book = book,
+                                    onClick = { onBookClick(book.id) }
+                                )
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(Spacing.sectionSpacing))
+                    }
+                    
+                    // Ranking section
+                    if (homeData.rankingNovels.isNotEmpty()) {
+                        Text(
+                            text = "Top Ranking",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(bottom = Spacing.md)
+                        )
+                        
+                        // Ranking with swiper functionality
+                        val pagerState = rememberPagerState(pageCount = { (homeData.rankingNovels.size + 4) / 5 })
+                        
+                        HorizontalPager(
+                            state = pagerState,
+                            modifier = Modifier.height(480.dp)
+                        ) { page ->
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                // Show 5 items per page
+                                repeat(5) { index ->
+                                    val globalIndex = page * 5 + index
+                                    if (globalIndex < homeData.rankingNovels.size) {
+                                        val novel = homeData.rankingNovels[globalIndex]
+                                        val book = NovelToBookConverter.novelToBook(novel)
+                                        RankingListItem(
+                                            book = book,
+                                            rank = globalIndex + 1,
+                                            onClick = { onBookClick(book.id) }
+                                        )
+                                    } else {
+                                        // Empty space to maintain consistent layout
+                                        Spacer(modifier = Modifier.height(88.dp))
+                                    }
+                                }
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(Spacing.sectionSpacing))
+                    }
+                    
+                    // New Books section
+                    if (homeData.newNovels.isNotEmpty()) {
+                        Text(
+                            text = "Truyện mới",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(bottom = Spacing.md)
+                        )
+                        
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                            contentPadding = PaddingValues(horizontal = Spacing.xs)
+                        ) {
+                            items(homeData.newNovels) { novel ->
+                                val book = NovelToBookConverter.novelToBook(novel)
+                                BookCard(
+                                    book = book,
+                                    onClick = { onBookClick(book.id) }
+                                )
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(Spacing.sectionSpacing))
+                    }
+                    
+                    // Completed Books section
+                    if (homeData.completedNovels.isNotEmpty()) {
+                        Text(
+                            text = "Truyện hoàn thành",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(bottom = Spacing.md)
+                        )
+                        
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                            contentPadding = PaddingValues(horizontal = Spacing.xs)
+                        ) {
+                            items(homeData.completedNovels) { novel ->
+                                val book = NovelToBookConverter.novelToBook(novel)
+                                BookCard(
+                                    book = book,
+                                    onClick = { onBookClick(book.id) }
+                                )
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(Spacing.sectionSpacing))
+                    }
                 }
             }
-            
-            Spacer(modifier = Modifier.height(Spacing.sectionSpacing))
-            
-            // Completed Books section
-            Text(
-                text = "Truyện hoàn thành",
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(bottom = Spacing.md)
-            )
-            
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-                contentPadding = PaddingValues(horizontal = Spacing.xs)
-            ) {
-                items(MockData.completedBooks) { book ->
-                    BookCard(
-                        book = book,
-                        onClick = { onBookClick(book.id) }
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(Spacing.sectionSpacing))
         }
     }
 }
