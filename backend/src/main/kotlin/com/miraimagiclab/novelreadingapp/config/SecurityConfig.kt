@@ -50,6 +50,10 @@ class SecurityConfig(
                     
                     // Allow public access to read novel interactions (GET requests only)
                     .requestMatchers(HttpMethod.GET, "/interactions/novels/{novelId}/follow-count").permitAll() // Allow GET follow count
+
+                    // ALLOW IMAGE UPLOAD AND READ WITHOUT AUTH
+                    .requestMatchers(HttpMethod.POST, "/images/upload").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/images/**").permitAll()
                     
                     .anyRequest().authenticated() // All other requests require authentication
             }
