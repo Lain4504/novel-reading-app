@@ -20,8 +20,7 @@ import com.miraimagiclab.novelreadingapp.ui.theme.GreenPrimaryVariant
 
 @Composable
 fun LoginScreen(
-    navController: NavController,
-    viewModel: AuthViewModel = hiltViewModel()
+    navController: NavController
 ) {
     val scrollState = rememberScrollState()
     var email by remember { mutableStateOf("") }
