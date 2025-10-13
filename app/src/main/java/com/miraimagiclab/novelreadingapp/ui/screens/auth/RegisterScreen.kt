@@ -15,8 +15,7 @@ import com.miraimagiclab.novelreadingapp.ui.theme.GreenPrimary
 
 @Composable
 fun RegisterScreen(
-    navController: NavController,
-    viewModel: AuthViewModel = hiltViewModel()
+    navController: NavController
 ) {
     val scrollState = rememberScrollState()
 
