@@ -14,8 +14,9 @@ sealed class Screen(
     object CompletedBook : Screen("completed_book")
     object InProgress : Screen("in_progress")
     object Profile : Screen("profile")
-    
+
     // Auth Screens
+    object Login : Screen("login")
     object ForgotPassword : Screen("forgot_password")
     object OTPVerification : Screen(
         route = "otp_verification/{email}/{type}",
@@ -35,7 +36,7 @@ sealed class Screen(
     ) {
         fun createRoute(email: String, code: String) = "reset_password/$email/$code"
     }
-    
+
     object BookDetails : Screen(
         route = "book_details/{bookId}",
         arguments = listOf(
@@ -46,7 +47,7 @@ sealed class Screen(
     ) {
         fun createRoute(bookId: String) = "book_details/$bookId"
     }
-    
+
     object Reading : Screen(
         route = "reading/{bookId}/{chapterId}",
         arguments = listOf(
