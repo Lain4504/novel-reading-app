@@ -17,6 +17,8 @@ sealed class Screen(
 
     // Auth Screens
     object Login : Screen("login")
+    object Register : Screen("register")
+    object RegisterWithEmail : Screen("register_with_email")
     object ForgotPassword : Screen("forgot_password")
     object OTPVerification : Screen(
         route = "otp_verification/{email}/{type}",
