@@ -1,5 +1,7 @@
+// CommentResponseDto.kt
 package com.miraimagiclab.novelreadingapp.dto.response
 
+import com.miraimagiclab.novelreadingapp.model.Comment
 import java.time.LocalDateTime
 
 data class CommentResponseDto(
@@ -16,4 +18,24 @@ data class CommentResponseDto(
     val replyCount: Int,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime
-)
+) {
+    companion object {
+        fun fromEntity(comment: Comment): CommentResponseDto {
+            return CommentResponseDto(
+                id = comment.id ?: "",
+                content = comment.content,
+                userId = comment.userId ?: "",
+                targetType = comment.targetType.name,
+                novelId = comment.novelId,
+                parentId = comment.parentId,
+                level = comment.level ?: 1,
+                replyToId = comment.replyToId,
+                replyToUserName = comment.replyToUserName,
+                likeCount = comment.likeCount ?: 0,
+                replyCount = comment.replyCount ?: 0,
+                createdAt = comment.createdAt,
+                updatedAt = comment.updatedAt
+            )
+        }
+    }
+}

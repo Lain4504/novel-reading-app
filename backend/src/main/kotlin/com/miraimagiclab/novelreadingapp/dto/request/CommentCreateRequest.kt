@@ -1,3 +1,4 @@
+// CommentCreateRequest.kt
 package com.miraimagiclab.novelreadingapp.dto.request
 
 import com.miraimagiclab.novelreadingapp.enumeration.CommentEnum
@@ -10,6 +11,9 @@ data class CommentCreateRequest(
 
     @field:NotNull(message = "Target type is required")
     val targetType: CommentEnum,
+
+    @field:NotBlank(message = "User ID is required")
+    val userId: String,
 
     // Nếu targetType = NOVEL → dùng novelId
     val novelId: String? = null
