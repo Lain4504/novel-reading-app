@@ -31,6 +31,8 @@ spring:
           connectiontimeout: 5000
           timeout: 5000
           writetimeout: 5000
+  config:
+    import: "optional:file:.env[.properties]"
 
 # Management endpoints disabled
 management:
@@ -73,3 +75,10 @@ springdoc:
     show-common-extensions: true
     try-it-out-enabled: true
     persist-authorization: true
+
+#Cloudinary
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}
+
