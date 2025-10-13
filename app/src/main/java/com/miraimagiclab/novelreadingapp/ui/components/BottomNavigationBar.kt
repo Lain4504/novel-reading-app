@@ -60,9 +60,16 @@ fun BottomNavigationBar(
             
             NavigationBarItem(
                 selected = isSelected,
-                onClick = { 
+                onClick = {
                     if (!isSelected) {
-                        onNavigate(item.route)
+                        // Check if user is logged in before navigating to Profile
+                        if (item.route == Screen.Profile.route) {
+                            // TODO: Check authentication status
+                            // For now, always redirect to login
+                            onNavigate(Screen.Login.route)
+                        } else {
+                            onNavigate(item.route)
+                        }
                     }
                 },
                 icon = {
