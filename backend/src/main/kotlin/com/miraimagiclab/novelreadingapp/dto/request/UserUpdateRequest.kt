@@ -3,6 +3,7 @@ package com.miraimagiclab.novelreadingapp.dto.request
 import com.miraimagiclab.novelreadingapp.enumeration.UserRoleEnum
 import com.miraimagiclab.novelreadingapp.enumeration.UserStatusEnum
 import jakarta.validation.constraints.Email
+import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 
 data class UserUpdateRequest(
@@ -11,9 +12,6 @@ data class UserUpdateRequest(
 
     @field:Email(message = "Email should be valid")
     val email: String? = null,
-
-    @field:Size(min = 6, message = "Password must be at least 6 characters")
-    val password: String? = null,
 
     val roles: Set<UserRoleEnum>? = null,
 
