@@ -15,57 +15,140 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 
 @Composable
-fun ProfileScreen() {
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        // Header
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(16.dp)
+fun ProfileScreen(
+    onLoginClick: () -> Unit = {}
+) {
+    // TODO: Replace with actual authentication check
+    val isLoggedIn = false // This should come from your auth state
+
+    if (isLoggedIn) {
+        // Show authenticated user profile
+        Column(
+            modifier = Modifier.fillMaxSize()
         ) {
-            AsyncImage(
-                model = "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200",
-                contentDescription = "Profile avatar",
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(CircleShape)
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
-                Text(
-                    text = "Cheyenne Curtis",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+            // Header with user info
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(16.dp)
+            ) {
+                AsyncImage(
+                    model = "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200",
+                    contentDescription = "Profile avatar",
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
                 )
-                Text("022-23093", style = MaterialTheme.typography.bodySmall)
-                Text("Shinei.Nouzen@nordlicht.com", style = MaterialTheme.typography.bodySmall)
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Text(
+                        text = "Cheyenne Curtis",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Text("022-23093", style = MaterialTheme.typography.bodySmall)
+                    Text("Shinei.Nouzen@nordlicht.com", style = MaterialTheme.typography.bodySmall)
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                IconButton(onClick = { /* Edit profile */ }) {
+                    Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit profile")
+                }
             }
-            Spacer(modifier = Modifier.weight(1f))
-            IconButton(onClick = { /* Edit profile */ }) {
-                Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit profile")
-            }
+
+            Divider()
+
+            // Account settings
+            SectionTitle("Account settings")
+            ProfileMenuItem("Personal data", Icons.Default.Person) { }
+            ProfileMenuItem("Account security", Icons.Default.AccountBox) { }
+            ProfileMenuItem("Notification", Icons.Default.Notifications) { }
+            ProfileMenuItem("Subscription", Icons.Default.ShoppingCart) { }
+            ProfileMenuItem("My Booklist", Icons.Default.Check) { }
+            ProfileMenuItem("Reading progression", Icons.Default.DateRange) { }
+            ProfileMenuItem("Language options", Icons.Default.Place) { }
+            ProfileMenuItem("Image quality", Icons.Default.FavoriteBorder) { }
+            ProfileMenuItem("Clear cache", Icons.Default.Delete) { }
+
+            Divider(modifier = Modifier.padding(vertical = 8.dp))
+
+            // About katalis
+            SectionTitle("About katalis")
+            ProfileMenuItem("Get to know katalis", Icons.Default.Add) { }
+            ProfileMenuItem("Copyright", Icons.Default.Close) { }
         }
+    } else {
+        // Show beautiful login prompt centered on screen
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // App branding
+            Text(
+                text = "📚",
+                style = MaterialTheme.typography.displayLarge
+            )
 
-        Divider()
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // Account settings
-        SectionTitle("Account settings")
-        ProfileMenuItem("Personal data", Icons.Default.Person) { }
-        ProfileMenuItem("Account security", Icons.Default.AccountBox) { }
-        ProfileMenuItem("Notification", Icons.Default.Notifications) { }
-        ProfileMenuItem("Subscription", Icons.Default.ShoppingCart) { }
-        ProfileMenuItem("My Booklist", Icons.Default.Check) { }
-        ProfileMenuItem("Reading progression", Icons.Default.DateRange) { }
-        ProfileMenuItem("Language options", Icons.Default.Place) { }
-        ProfileMenuItem("Image quality", Icons.Default.FavoriteBorder) { }
-        ProfileMenuItem("Clear cache", Icons.Default.Delete) { }
+            Text(
+                text = "Novel Reading App",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
 
-        Divider(modifier = Modifier.padding(vertical = 8.dp))
+            Spacer(modifier = Modifier.height(48.dp))
 
-        // About katalis
-        SectionTitle("About katalis")
-        ProfileMenuItem("Get to know katalis", Icons.Default.Add) { }
-        ProfileMenuItem("Copyright", Icons.Default.Close) { }
+            // Welcome message
+            Text(
+                text = "Welcome to your profile",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Please login to access your personalized reading experience",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 32.dp)
+            )
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            // Beautiful login button
+            Button(
+                onClick = { onLoginClick() },
+                modifier = Modifier
+                    .fillMaxWidth(0.8f)
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = com.miraimagiclab.novelreadingapp.ui.theme.GreenPrimary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                shape = MaterialTheme.shapes.large
+            ) {
+                Text(
+                    text = "Login to Continue",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Additional info
+            Text(
+                text = "Access your reading history, bookmarks, and personalized recommendations",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 24.dp)
+            )
+        }
     }
 }
 

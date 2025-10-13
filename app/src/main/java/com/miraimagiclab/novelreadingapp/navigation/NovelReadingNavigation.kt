@@ -35,7 +35,14 @@ fun NovelReadingNavigation(
         }
         
         composable(Screen.Profile.route) {
-            ProfileScreen()
+            ProfileScreen(
+                onLoginClick = {
+                    navController.navigate(Screen.Login.route) {
+                        // Clear the back stack to prevent going back to profile
+                        popUpTo(Screen.Profile.route) { inclusive = true }
+                    }
+                }
+            )
         }
 
         // Auth routes
