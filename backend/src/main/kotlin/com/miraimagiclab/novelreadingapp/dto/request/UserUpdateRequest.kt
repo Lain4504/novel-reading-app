@@ -13,6 +13,8 @@ data class UserUpdateRequest(
     @field:Email(message = "Email should be valid")
     val email: String? = null,
 
+    val password: String? = null,
+
     val roles: Set<UserRoleEnum>? = null,
 
     val status: UserStatusEnum? = null,

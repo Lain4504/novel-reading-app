@@ -4,6 +4,7 @@ import com.miraimagiclab.novelreadingapp.config.JwtUtil
 import com.miraimagiclab.novelreadingapp.dto.request.UserCreateRequest
 import com.miraimagiclab.novelreadingapp.dto.request.UserUpdateRequest
 import com.miraimagiclab.novelreadingapp.dto.response.UserDto
+import com.miraimagiclab.novelreadingapp.enumeration.UserRoleEnum
 import com.miraimagiclab.novelreadingapp.enumeration.UserStatusEnum
 import com.miraimagiclab.novelreadingapp.exception.DuplicateUserException
 import com.miraimagiclab.novelreadingapp.exception.UserNotFoundException
@@ -47,8 +48,8 @@ class UserService(
             username = request.username,
             email = request.email,
             password = passwordEncoder.encode(request.password),
-            roles = request.roles,
-            status = request.status,
+            roles = request.roles ?: setOf(UserRoleEnum.USER),
+            status = request.status ?: UserStatusEnum.ACTIVE,
             avatarUrl = request.avatarUrl,
             backgroundUrl = request.backgroundUrl,
             authorName = request.authorName,
