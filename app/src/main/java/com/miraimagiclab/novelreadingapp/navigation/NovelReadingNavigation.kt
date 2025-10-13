@@ -43,6 +43,14 @@ fun NovelReadingNavigation(
             LoginScreen(navController = navController)
         }
 
+        composable(Screen.Register.route) {
+            RegisterScreen(navController = navController)
+        }
+
+        composable(Screen.RegisterWithEmail.route) {
+            RegisterWithEmailScreen(navController = navController)
+        }
+
         composable(Screen.ForgotPassword.route) {
             ForgotPasswordScreen(
                 onBackClick = {
