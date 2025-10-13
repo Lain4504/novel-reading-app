@@ -9,29 +9,56 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.miraimagiclab.novelreadingapp.navigation.Screen
 import com.miraimagiclab.novelreadingapp.ui.components.EmailTextField
 import com.miraimagiclab.novelreadingapp.ui.components.PasswordTextField
 import com.miraimagiclab.novelreadingapp.ui.theme.GreenPrimary
+import com.miraimagiclab.novelreadingapp.ui.viewmodel.AuthViewModel
+import com.miraimagiclab.novelreadingapp.util.UiState
+import kotlinx.coroutines.delay
 
 @Composable
 fun RegisterWithEmailScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: AuthViewModel = hiltViewModel()
 ) {
     val scrollState = rememberScrollState()
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var phoneNumber by remember { mutableStateOf("") }
-    var agreeToTerms by remember { mutableStateOf(false) }
+    var confirmPassword by remember { mutableStateOf("") }
+    var showError by remember { mutableStateOf<String?>(null) }
+
+    val registerState by viewModel.registerState.collectAsStateWithLifecycle()
+
+    // Handle register state changes
+    LaunchedEffect(registerState) {
+        when (registerState) {
+            is UiState.Success -> {
+                // Registration successful, navigate to OTP verification
+                navController.navigate(Screen.OTPVerification.route) {
+                    popUpTo(Screen.Register.route) { inclusive = true }
+                }
+            }
+            is UiState.Error -> {
+                showError = (registerState as UiState.Error).message
+                delay(3000) // Show error for 3 seconds
+                showError = null
+                viewModel.resetRegisterState()
+            }
+            else -> {}
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
             .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         // Logo/Brand
         Text(
@@ -50,20 +77,35 @@ fun RegisterWithEmailScreen(
         Spacer(modifier = Modifier.height(48.dp))
 
         Text(
-            text = "Create an account",
+            text = "Create Account",
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.onSurface
         )
 
         Spacer(modifier = Modifier.height(32.dp))
 
+        // Error message
+        showError?.let {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
         // Username field
         OutlinedTextField(
             value = username,
             onValueChange = { username = it },
             label = { Text("Username") },
-            placeholder = { Text("Enter your username") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -88,44 +130,25 @@ fun RegisterWithEmailScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Phone Number field
-        OutlinedTextField(
-            value = phoneNumber,
-            onValueChange = { phoneNumber = it },
-            label = { Text("Phone Number") },
-            placeholder = { Text("Enter your phone number") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Terms agreement checkbox
-        Row(
+        // Confirm Password field
+        PasswordTextField(
+            value = confirmPassword,
+            onValueChange = { confirmPassword = it },
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.Top
-        ) {
-            Checkbox(
-                checked = agreeToTerms,
-                onCheckedChange = { agreeToTerms = it }
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "I agree with Novel Reading App Terms of Service, Privacy Policy, and our default Notification Settings.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.weight(1f)
-            )
-        }
+            label = "Confirm Password"
+        )
 
         Spacer(modifier = Modifier.height(24.dp))
 
         // Sign up button
         Button(
             onClick = {
-                // TODO: Implement registration logic
-                // For now, navigate to home
-                navController.navigate(Screen.Home.route) {
-                    popUpTo(Screen.Register.route) { inclusive = true }
+                when {
+                    username.isBlank() -> showError = "Username is required"
+                    email.isBlank() -> showError = "Email is required"
+                    password.length < 8 -> showError = "Password must be at least 8 characters"
+                    password != confirmPassword -> showError = "Passwords do not match"
+                    else -> viewModel.register(username, email, password)
                 }
             },
             modifier = Modifier
@@ -135,14 +158,32 @@ fun RegisterWithEmailScreen(
                 containerColor = GreenPrimary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ),
-            enabled = agreeToTerms && username.isNotBlank() && email.isNotBlank() &&
-                     password.isNotBlank() && phoneNumber.isNotBlank()
+            enabled = username.isNotBlank() && email.isNotBlank() &&
+                     password.isNotBlank() && confirmPassword.isNotBlank() &&
+                     registerState !is UiState.Loading
         ) {
-            Text(
-                text = "Sign up",
-                style = MaterialTheme.typography.titleMedium
-            )
+            if (registerState is UiState.Loading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            } else {
+                Text(
+                    text = "Create Account",
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Terms of Service
+        Text(
+            text = "By creating an account you agree with our Terms of Service, Privacy Policy, and our default Notification Settings.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
 
         Spacer(modifier = Modifier.height(32.dp))
 

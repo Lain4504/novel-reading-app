@@ -94,6 +94,17 @@ fun HomeScreen(
         }
     ) { innerPadding ->
         when (val currentState = uiState) {
+            is UiState.Idle -> {
+                // Show loading state for idle as well
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
             is UiState.Loading -> {
                 Box(
                     modifier = Modifier
