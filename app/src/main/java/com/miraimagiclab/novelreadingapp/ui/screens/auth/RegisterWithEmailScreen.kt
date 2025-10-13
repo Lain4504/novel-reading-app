@@ -17,8 +17,7 @@ import com.miraimagiclab.novelreadingapp.ui.theme.GreenPrimary
 
 @Composable
 fun RegisterWithEmailScreen(
-    navController: NavController,
-    viewModel: AuthViewModel = hiltViewModel()
+    navController: NavController
 ) {
     val scrollState = rememberScrollState()
     var username by remember { mutableStateOf("") }
