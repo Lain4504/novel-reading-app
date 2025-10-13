@@ -30,5 +30,19 @@ data class UserCreateRequest(
         regexp = ".*[!@#\$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*",
         message = "Password must contain at least one special character"
     )
-    val password: String
+    val password: String,
+
+    val roles: Set<UserRoleEnum>? = null,
+
+    val status: UserStatusEnum? = null,
+
+    val avatarUrl: String? = null,
+
+    val backgroundUrl: String? = null,
+
+    val authorName: String? = null,
+
+    val bio: String? = null,
+
+    val displayName: String? = null
 )

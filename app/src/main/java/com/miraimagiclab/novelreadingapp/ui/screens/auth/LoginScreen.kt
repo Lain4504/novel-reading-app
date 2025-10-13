@@ -9,10 +9,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+<<<<<<< HEAD
 import androidx.compose.runtime.*
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.miraimagiclab.novelreadingapp.navigation.Screen
 import com.miraimagiclab.novelreadingapp.ui.components.EmailTextField
@@ -26,6 +29,10 @@ import com.miraimagiclab.novelreadingapp.util.UiState
 fun LoginScreen(
     navController: NavController,
     viewModel: AuthViewModel = hiltViewModel()
+
+@Composable
+fun LoginScreen(
+    navController: NavController
 ) {
     val scrollState = rememberScrollState()
     var email by remember { mutableStateOf("") }
@@ -120,7 +127,13 @@ fun LoginScreen(
         // Sign in button
         Button(
             onClick = {
+
                 viewModel.login(email, password)
+                // TODO: Implement login logic
+                // For now, navigate to home
+                navController.navigate(Screen.Home.route) {
+                    popUpTo(Screen.Login.route) { inclusive = true }
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -130,6 +143,8 @@ fun LoginScreen(
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ),
             enabled = email.isNotBlank() && password.isNotBlank()
+
+            )
         ) {
             Text(
                 text = "Sign in",
