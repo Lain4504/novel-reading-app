@@ -4,6 +4,7 @@ import com.miraimagiclab.novelreadingapp.enumeration.UserRoleEnum
 import com.miraimagiclab.novelreadingapp.enumeration.UserStatusEnum
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 
 data class UserCreateRequest(
@@ -17,11 +18,23 @@ data class UserCreateRequest(
 
     @field:NotBlank(message = "Password is required")
     @field:Size(min = 6, message = "Password must be at least 6 characters")
+    @field:Pattern(
+        regexp = ".*[a-z].*",
+        message = "Password must contain at least one lowercase letter"
+    )
+    @field:Pattern(
+        regexp = ".*[A-Z].*",
+        message = "Password must contain at least one uppercase letter"
+    )
+    @field:Pattern(
+        regexp = ".*[!@#\$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*",
+        message = "Password must contain at least one special character"
+    )
     val password: String,
 
-    val roles: Set<UserRoleEnum> = setOf(UserRoleEnum.USER),
+    val roles: Set<UserRoleEnum>? = null,
 
-    val status: UserStatusEnum = UserStatusEnum.ACTIVE,
+    val status: UserStatusEnum? = null,
 
     val avatarUrl: String? = null,
 

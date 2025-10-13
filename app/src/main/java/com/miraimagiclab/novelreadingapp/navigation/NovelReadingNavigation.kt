@@ -6,7 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.miraimagiclab.novelreadingapp.ui.screens.*
-import com.miraimagiclab.novelreadingapp.data.MockData
+import com.miraimagiclab.novelreadingapp.ui.screens.auth.*
 
 @Composable
 fun NovelReadingNavigation(
@@ -25,53 +25,78 @@ fun NovelReadingNavigation(
                 }
             )
         }
-
-        composable(Screen.BookList.route) {
-            // also pass callbacks so when user navigates to BookList via bottom nav it works the same
-            BookListScreen(
-                onNavigateInProgress = { navController.navigate(Screen.InProgress.route) },
-                onNavigateCompleted = { navController.navigate(Screen.CompletedBook.route) },
-                onBookClick = { bookId -> navController.navigate(Screen.BookDetails.createRoute(bookId)) },
-                onBackClick = {
-                    navController.popBackStack(Screen.Home.route, inclusive = false)
-                }
-            )
-        }
-
+        
         composable(Screen.Explore.route) {
-            ExploreScreen(
-                onBookClick = { bookId ->
-                    navController.navigate(Screen.BookDetails.createRoute(bookId))
-                },
-                onBackClick = {
-                    navController.popBackStack(Screen.Home.route, inclusive = false)
-                }
-            )
+            ExploreScreen()
+        }
+        
+        composable(Screen.BookList.route) {
+            BookListScreen()
         }
         
         composable(Screen.Profile.route) {
             ProfileScreen()
         }
 
-        composable(Screen.InProgress.route) {
-            InProgressScreen(
-                navController,
-                onBookClick = { bookId ->
-                    val bookDetail = MockData.getBookDetail(bookId)
-                    val firstChapterId = bookDetail?.chapters?.firstOrNull()?.id
-                    if (firstChapterId != null) {
-                        navController.navigate("reading/$bookId/$firstChapterId")
-                    }
+        // Auth routes
+        composable(Screen.ForgotPassword.route) {
+            ForgotPasswordScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onSubmit = { email ->
+                    navController.navigate(Screen.OTPVerification.createRoute(email, "password-reset"))
                 }
             )
         }
 
+        composable(
+            route = Screen.OTPVerification.route,
+            arguments = Screen.OTPVerification.arguments
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            val type = backStackEntry.arguments?.getString("type") ?: ""
+            
+            OTPVerificationScreen(
+                email = email,
+                type = type,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onSubmit = { code ->
+                    if (type == "password-reset") {
+                        navController.navigate(Screen.ResetPassword.createRoute(email, code))
+                    } else {
+                        // Handle account verification success
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                },
+                onResendCode = {
+                    // Implement resend logic
+                }
+            )
+        }
 
-        composable(Screen.CompletedBook.route) {
-            CompletedBookScreen(
-                navController,
-                onBookClick = { bookId ->
-                    navController.navigate(Screen.BookDetails.createRoute(bookId))
+        composable(
+            route = Screen.ResetPassword.route,
+            arguments = Screen.ResetPassword.arguments
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            val code = backStackEntry.arguments?.getString("code") ?: ""
+            
+            ResetPasswordScreen(
+                email = email,
+                otpCode = code,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onSubmit = { newPassword, confirmPassword ->
+                    // Handle password reset success
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             )
         }

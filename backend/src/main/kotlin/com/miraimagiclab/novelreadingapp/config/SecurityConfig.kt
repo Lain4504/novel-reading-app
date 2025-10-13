@@ -34,6 +34,7 @@ class SecurityConfig(
                 authz
                     .requestMatchers("/health", "/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/index.html", "/swagger-ui/").permitAll()
                     .requestMatchers("/users", "/users/login", "/users/refresh").permitAll() // Allow signup and login
+                    .requestMatchers("/api/auth/verify-email").permitAll() // Allow email verification
                     
                     // Allow public access to read novels (GET requests only)
                     .requestMatchers(HttpMethod.GET, "/novels", "/novels/**").permitAll() // Allow GET requests to novels

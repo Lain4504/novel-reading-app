@@ -4,6 +4,8 @@ import com.miraimagiclab.novelreadingapp.config.JwtUtil
 import com.miraimagiclab.novelreadingapp.dto.request.UserCreateRequest
 import com.miraimagiclab.novelreadingapp.dto.request.UserUpdateRequest
 import com.miraimagiclab.novelreadingapp.dto.response.UserDto
+import com.miraimagiclab.novelreadingapp.enumeration.UserRoleEnum
+import com.miraimagiclab.novelreadingapp.enumeration.UserStatusEnum
 import com.miraimagiclab.novelreadingapp.exception.DuplicateUserException
 import com.miraimagiclab.novelreadingapp.exception.UserNotFoundException
 import com.miraimagiclab.novelreadingapp.model.User
@@ -12,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
+import java.util.UUID
 
 data class AuthResult(
     val user: User,
@@ -37,30 +40,36 @@ class UserService(
             throw DuplicateUserException("Email '${request.email}' already exists")
         }
 
+        // Generate verification token
+        val verificationToken = UUID.randomUUID().toString()
+        val tokenExpiresAt = LocalDateTime.now().plusHours(24) // 24 hours expiry
+
         val user = User(
             username = request.username,
             email = request.email,
             password = passwordEncoder.encode(request.password),
-            roles = request.roles,
-            status = request.status,
+            roles = request.roles ?: setOf(UserRoleEnum.USER),
+            status = request.status ?: UserStatusEnum.ACTIVE,
             avatarUrl = request.avatarUrl,
             backgroundUrl = request.backgroundUrl,
             authorName = request.authorName,
             bio = request.bio,
             displayName = request.displayName ?: request.username,
             createdAt = LocalDateTime.now(),
-            updatedAt = LocalDateTime.now()
+            updatedAt = LocalDateTime.now(),
+            verificationToken = verificationToken,
+            verificationTokenExpiresAt = tokenExpiresAt
         )
 
         val savedUser = userRepository.save(user)
 
-        // Send welcome email asynchronously
+        // Send account verification email with activation link
         try {
-            emailService.sendWelcomeEmail(savedUser.email, savedUser.username)
+            emailService.sendVerificationEmail(savedUser.email, savedUser.username, savedUser.verificationToken!!)
         } catch (e: Exception) {
             // Log the error but don't fail registration
             // In a real app, you'd use a logger
-            println("Failed to send welcome email: ${e.message}")
+            println("Failed to send verification email: ${e.message}")
         }
 
         return UserDto.fromEntity(savedUser)
@@ -84,6 +93,11 @@ class UserService(
         val user = userRepository.findByUsername(username)
             .orElseThrow { UserNotFoundException("User with username '$username' not found") }
         return UserDto.fromEntity(user)
+    }
+
+    @Transactional(readOnly = true)
+    fun findByEmail(email: String): User? {
+        return userRepository.findByEmail(email).orElse(null)
     }
 
     @Transactional(readOnly = true)
@@ -149,6 +163,61 @@ class UserService(
         val refreshToken = jwtUtil.generateRefreshToken(user)
 
         return AuthResult(user, token, refreshToken)
+    }
+
+    fun resetPassword(email: String, newPassword: String) {
+        val user = userRepository.findByEmail(email)
+            .orElseThrow { UserNotFoundException("User with email '$email' not found") }
+
+        val updatedUser = user.copy(
+            password = passwordEncoder.encode(newPassword),
+            updatedAt = LocalDateTime.now()
+        )
+
+        userRepository.save(updatedUser)
+    }
+
+    fun activateAccount(email: String) {
+        val user = userRepository.findByEmail(email)
+            .orElseThrow { UserNotFoundException("User with email '$email' not found") }
+
+        val updatedUser = user.copy(
+            status = UserStatusEnum.ACTIVE,
+            updatedAt = LocalDateTime.now()
+        )
+
+        userRepository.save(updatedUser)
+    }
+
+    fun findByVerificationToken(token: String): User? {
+        return userRepository.findByVerificationToken(token)
+    }
+
+    fun activateAccountByToken(token: String) {
+        val user = userRepository.findByVerificationToken(token)
+            ?: throw UserNotFoundException("Invalid verification token")
+
+        val updatedUser = user.copy(
+            status = UserStatusEnum.ACTIVE,
+            verificationToken = null, // Clear the token after use
+            verificationTokenExpiresAt = null,
+            updatedAt = LocalDateTime.now()
+        )
+
+        userRepository.save(updatedUser)
+    }
+
+    fun updateVerificationToken(email: String, newToken: String, expiresAt: LocalDateTime) {
+        val user = userRepository.findByEmail(email)
+            .orElseThrow { UserNotFoundException("User with email '$email' not found") }
+
+        val updatedUser = user.copy(
+            verificationToken = newToken,
+            verificationTokenExpiresAt = expiresAt,
+            updatedAt = LocalDateTime.now()
+        )
+
+        userRepository.save(updatedUser)
     }
 
 }
