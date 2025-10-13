@@ -52,6 +52,9 @@ dependencies {
     
     // Development
     developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+    // Cloudinary
+    implementation("com.cloudinary:cloudinary-http44:1.37.0")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
