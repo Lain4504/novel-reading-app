@@ -169,7 +169,7 @@ fun LoginScreen(
                 text = "Don't have an account?",
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            TextButton(onClick = { /* TODO: Navigate to register screen */ }) {
+            TextButton(onClick = { navController.navigate(Screen.Register.route) }) {
                 Text(
                     text = "Sign up",
                     color = MaterialTheme.colorScheme.primary
