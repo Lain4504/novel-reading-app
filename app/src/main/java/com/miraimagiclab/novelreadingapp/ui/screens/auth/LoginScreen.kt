@@ -9,23 +9,48 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.runtime.*
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.miraimagiclab.novelreadingapp.navigation.Screen
 import com.miraimagiclab.novelreadingapp.ui.components.EmailTextField
 import com.miraimagiclab.novelreadingapp.ui.components.PasswordTextField
 import com.miraimagiclab.novelreadingapp.ui.theme.GreenPrimary
 import com.miraimagiclab.novelreadingapp.ui.theme.GreenPrimaryVariant
+import com.miraimagiclab.novelreadingapp.ui.viewmodel.AuthViewModel
+import com.miraimagiclab.novelreadingapp.util.UiState
 
 @Composable
 fun LoginScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: AuthViewModel = hiltViewModel()
 ) {
     val scrollState = rememberScrollState()
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+
+    val loginState by viewModel.loginState.collectAsStateWithLifecycle()
+
+    // Handle login state changes
+    LaunchedEffect(loginState) {
+        when (loginState) {
+            is UiState.Success -> {
+                // Login successful, navigate to home
+                navController.navigate(Screen.Home.route) {
+                    popUpTo(Screen.Login.route) { inclusive = true }
+                }
+            }
+            is UiState.Error -> {
+                // Show error message (you can add a snackbar or toast here)
+                // For now, just reset the state
+                viewModel.resetLoginState()
+            }
+            else -> {}
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -95,11 +120,7 @@ fun LoginScreen(
         // Sign in button
         Button(
             onClick = {
-                // TODO: Implement login logic
-                // For now, navigate to home
-                navController.navigate(Screen.Home.route) {
-                    popUpTo(Screen.Login.route) { inclusive = true }
-                }
+                viewModel.login(email, password)
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -107,7 +128,8 @@ fun LoginScreen(
             colors = ButtonDefaults.buttonColors(
                 containerColor = GreenPrimary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
-            )
+            ),
+            enabled = email.isNotBlank() && password.isNotBlank()
         ) {
             Text(
                 text = "Sign in",

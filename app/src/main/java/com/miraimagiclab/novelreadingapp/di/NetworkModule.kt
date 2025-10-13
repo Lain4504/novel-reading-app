@@ -3,6 +3,7 @@ package com.miraimagiclab.novelreadingapp.di
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.miraimagiclab.novelreadingapp.data.remote.api.NovelApiService
+import com.miraimagiclab.novelreadingapp.data.remote.api.AuthApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -55,5 +56,11 @@ object NetworkModule {
     @Singleton
     fun provideNovelApiService(retrofit: Retrofit): NovelApiService {
         return retrofit.create(NovelApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthApiService(retrofit: Retrofit): AuthApiService {
+        return retrofit.create(AuthApiService::class.java)
     }
 }

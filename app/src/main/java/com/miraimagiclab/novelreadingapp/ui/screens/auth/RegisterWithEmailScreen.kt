@@ -9,15 +9,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.miraimagiclab.novelreadingapp.navigation.Screen
 import com.miraimagiclab.novelreadingapp.ui.components.EmailTextField
 import com.miraimagiclab.novelreadingapp.ui.components.PasswordTextField
 import com.miraimagiclab.novelreadingapp.ui.theme.GreenPrimary
+import com.miraimagiclab.novelreadingapp.ui.viewmodel.AuthViewModel
+import com.miraimagiclab.novelreadingapp.util.UiState
 
 @Composable
 fun RegisterWithEmailScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: AuthViewModel = hiltViewModel()
 ) {
     val scrollState = rememberScrollState()
     var username by remember { mutableStateOf("") }
@@ -25,6 +29,26 @@ fun RegisterWithEmailScreen(
     var password by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
     var agreeToTerms by remember { mutableStateOf(false) }
+
+    val registerState by viewModel.registerState.collectAsStateWithLifecycle()
+
+    // Handle register state changes
+    LaunchedEffect(registerState) {
+        when (registerState) {
+            is UiState.Success -> {
+                // Registration successful, navigate to home
+                navController.navigate(Screen.Home.route) {
+                    popUpTo(Screen.Register.route) { inclusive = true }
+                }
+            }
+            is UiState.Error -> {
+                // Show error message (you can add a snackbar or toast here)
+                // For now, just reset the state
+                viewModel.resetRegisterState()
+            }
+            else -> {}
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -122,11 +146,7 @@ fun RegisterWithEmailScreen(
         // Sign up button
         Button(
             onClick = {
-                // TODO: Implement registration logic
-                // For now, navigate to home
-                navController.navigate(Screen.Home.route) {
-                    popUpTo(Screen.Register.route) { inclusive = true }
-                }
+                viewModel.register(username, email, password)
             },
             modifier = Modifier
                 .fillMaxWidth()
