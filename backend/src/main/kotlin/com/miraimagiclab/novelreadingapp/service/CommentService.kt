@@ -3,7 +3,7 @@ package com.miraimagiclab.novelreadingapp.service
 import com.miraimagiclab.novelreadingapp.dto.request.CommentCreateRequest
 import com.miraimagiclab.novelreadingapp.dto.request.CommentReplyCreateRequest
 import com.miraimagiclab.novelreadingapp.dto.request.CommentUpdateRequest
-import com.miraimagiclab.novelreadingapp.dto.response.CommentDto
+import com.miraimagiclab.novelreadingapp.dto.response.CommentResponseDto
 import com.miraimagiclab.novelreadingapp.dto.response.PageResponse
 import com.miraimagiclab.novelreadingapp.exception.CommentNotFoundException
 import com.miraimagiclab.novelreadingapp.model.Comment
@@ -21,7 +21,7 @@ class CommentService(
     private val commentRepository: CommentRepository
 ) {
 
-    fun createComment(request: CommentCreateRequest): CommentDto {
+    fun createComment(request: CommentCreateRequest): CommentResponseDto {
         val comment = Comment(
             novelId = request.novelId,
             userId = request.userId,
@@ -35,10 +35,10 @@ class CommentService(
         )
 
         val saved = commentRepository.save(comment)
-        return CommentDto.fromEntity(saved)
+        return CommentResponseDto.fromEntity(saved)
     }
 
-    fun createReply(commentId: String, request: CommentReplyCreateRequest): CommentDto {
+    fun createReply(commentId: String, request: CommentReplyCreateRequest): CommentResponseDto {
         val parent = commentRepository.findById(commentId)
             .orElseThrow { CommentNotFoundException("Parent comment with ID '$commentId' not found") }
 
@@ -57,21 +57,21 @@ class CommentService(
         )
 
         val saved = commentRepository.save(reply)
-        return CommentDto.fromEntity(saved)
+        return CommentResponseDto.fromEntity(saved)
     }
 
     @Transactional(readOnly = true)
-    fun getCommentById(id: String): CommentDto {
+    fun getCommentById(id: String): CommentResponseDto {
         val comment = commentRepository.findById(id)
             .orElseThrow { CommentNotFoundException("Comment with ID '$id' not found") }
-        return CommentDto.fromEntity(comment)
+        return CommentResponseDto.fromEntity(comment)
     }
 
     @Transactional(readOnly = true)
-    fun getCommentsByNovelId(novelId: String, page: Int = 0, size: Int = 20): PageResponse<CommentDto> {
+    fun getCommentsByNovelId(novelId: String, page: Int = 0, size: Int = 20): PageResponse<CommentResponseDto> {
         val pageable: Pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))
         val comments = commentRepository.findByNovelIdAndParentIdIsNullAndDeletedFalse(novelId, pageable)
-        val commentDtos = comments.content.map { CommentDto.fromEntity(it) }
+        val commentDtos = comments.content.map { CommentResponseDto.fromEntity(it) }
 
         return PageResponse(
             content = commentDtos,
@@ -86,10 +86,10 @@ class CommentService(
     }
 
     @Transactional(readOnly = true)
-    fun getRepliesByCommentId(commentId: String, page: Int = 0, size: Int = 10): PageResponse<CommentDto> {
+    fun getRepliesByCommentId(commentId: String, page: Int = 0, size: Int = 10): PageResponse<CommentResponseDto> {
         val pageable: Pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "createdAt"))
         val replies = commentRepository.findByParentIdAndDeletedFalse(commentId, pageable)
-        val replyDtos = replies.content.map { CommentDto.fromEntity(it) }
+        val replyDtos = replies.content.map { CommentResponseDto.fromEntity(it) }
 
         return PageResponse(
             content = replyDtos,
@@ -103,7 +103,7 @@ class CommentService(
         )
     }
 
-    fun updateComment(id: String, request: CommentUpdateRequest): CommentDto {
+    fun updateComment(id: String, request: CommentUpdateRequest): CommentResponseDto {
         val existing = commentRepository.findById(id)
             .orElseThrow { CommentNotFoundException("Comment with ID '$id' not found") }
 
@@ -113,7 +113,7 @@ class CommentService(
         )
 
         val saved = commentRepository.save(updated)
-        return CommentDto.fromEntity(saved)
+        return CommentResponseDto.fromEntity(saved)
     }
 
     fun deleteComment(id: String) {
