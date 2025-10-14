@@ -7,25 +7,48 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.miraimagiclab.novelreadingapp.navigation.Screen
 import com.miraimagiclab.novelreadingapp.ui.components.EmailTextField
 import com.miraimagiclab.novelreadingapp.ui.components.PasswordTextField
 import com.miraimagiclab.novelreadingapp.ui.theme.GreenPrimary
-import com.miraimagiclab.novelreadingapp.ui.theme.GreenPrimaryVariant
+import com.miraimagiclab.novelreadingapp.ui.viewmodel.AuthViewModel
+import com.miraimagiclab.novelreadingapp.util.UiState
+import kotlinx.coroutines.delay
 
 @Composable
 fun LoginScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: AuthViewModel = hiltViewModel()
 ) {
     val scrollState = rememberScrollState()
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
+    var showError by remember { mutableStateOf<String?>(null) }
+
+    val loginState by viewModel.loginState.collectAsStateWithLifecycle()
+
+    // Handle login state changes
+    LaunchedEffect(loginState) {
+        when (loginState) {
+            is UiState.Success -> {
+                // Login successful, navigate to home
+                navController.navigate(Screen.Home.route) {
+                    popUpTo(Screen.Login.route) { inclusive = true }
+                }
+            }
+            is UiState.Error -> {
+                showError = (loginState as UiState.Error).message
+                delay(3000) // Show error for 3 seconds
+                showError = null
+                viewModel.resetLoginState()
+            }
+            else -> {}
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -58,6 +81,21 @@ fun LoginScreen(
         )
 
         Spacer(modifier = Modifier.height(32.dp))
+
+        // Error message
+        showError?.let {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
         // Email field
         EmailTextField(
@@ -94,25 +132,27 @@ fun LoginScreen(
 
         // Sign in button
         Button(
-            onClick = {
-                // TODO: Implement login logic
-                // For now, navigate to home
-                navController.navigate(Screen.Home.route) {
-                    popUpTo(Screen.Login.route) { inclusive = true }
-                }
-            },
+            onClick = { viewModel.login(email, password) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = GreenPrimary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
-            )
+            ),
+            enabled = email.isNotBlank() && password.isNotBlank() && loginState !is UiState.Loading
         ) {
-            Text(
-                text = "Sign in",
-                style = MaterialTheme.typography.titleMedium
-            )
+            if (loginState is UiState.Loading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            } else {
+                Text(
+                    text = "Sign in",
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -187,9 +227,7 @@ private fun SocialLoginButton(
     OutlinedButton(
         onClick = onClick,
         modifier = modifier.height(44.dp),
-        border = ButtonDefaults.outlinedButtonBorder.copy(
-            width = 1.dp
-        )
+        border = ButtonDefaults.outlinedButtonBorder
     ) {
         Text(
             text = text,

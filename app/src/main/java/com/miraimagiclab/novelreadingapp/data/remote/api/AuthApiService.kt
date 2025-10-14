@@ -1,0 +1,28 @@
+package com.miraimagiclab.novelreadingapp.data.remote.api
+
+import com.miraimagiclab.novelreadingapp.data.remote.dto.ApiResponse
+import com.miraimagiclab.novelreadingapp.data.remote.dto.LoginRequest
+import com.miraimagiclab.novelreadingapp.data.remote.dto.RegisterRequest
+import com.miraimagiclab.novelreadingapp.data.remote.dto.LoginResponse
+import com.miraimagiclab.novelreadingapp.data.remote.dto.UserDto
+import retrofit2.Response
+import retrofit2.http.Body
+import retrofit2.http.POST
+
+interface AuthApiService {
+
+    @POST("users")
+    suspend fun register(@Body request: RegisterRequest): Response<ApiResponse<UserDto>>
+
+    @POST("users/login")
+    suspend fun login(@Body request: LoginRequest): Response<ApiResponse<LoginResponse>>
+
+    @POST("api/auth/forgot-password")
+    suspend fun forgotPassword(@Body request: Map<String, String>): Response<ApiResponse<Unit>>
+
+    @POST("api/auth/verify-reset-otp")
+    suspend fun verifyResetOtp(@Body request: Map<String, String>): Response<ApiResponse<Boolean>>
+
+    @POST("api/auth/reset-password")
+    suspend fun resetPassword(@Body request: Map<String, String>): Response<ApiResponse<Unit>>
+}
