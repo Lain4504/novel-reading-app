@@ -12,18 +12,29 @@ import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import org.springframework.http.MediaType
+import org.springframework.web.multipart.MultipartFile
+import com.miraimagiclab.novelreadingapp.service.CloudinaryStorageService
 
 @RestController
 @RequestMapping("/novels")
 @CrossOrigin(origins = ["http://localhost:3000", "http://localhost:8080", "http://127.0.0.1:3000", "http://127.0.0.1:8080"])
 @Tag(name = "Novel Management", description = "APIs for managing novels")
 class NovelController(
-    private val novelService: NovelService
+    private val novelService: NovelService,
+    private val cloudinaryStorageService: CloudinaryStorageService
 ) {
 
-    @PostMapping
-    fun createNovel(@Valid @RequestBody request: NovelCreateRequest): ResponseEntity<ApiResponse<NovelDto>> {
-        val novel = novelService.createNovel(request)
+    @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun createNovel(
+        @Valid @RequestPart("request") request: NovelCreateRequest,
+        @RequestPart(name = "coverImage", required = false) coverImage: MultipartFile?
+    ): ResponseEntity<ApiResponse<NovelDto>> {
+        val finalRequest = if (coverImage != null && !coverImage.isEmpty) {
+            val url = cloudinaryStorageService.uploadAndGetUrl(coverImage, folder = "novels/covers")
+            request.copy(coverImage = url)
+        } else request
+        val novel = novelService.createNovel(finalRequest)
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(ApiResponse.success(novel, "Novel created successfully"))
     }
@@ -34,12 +45,17 @@ class NovelController(
         return ResponseEntity.ok(ApiResponse.success(novel, "Novel retrieved successfully"))
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun updateNovel(
         @PathVariable id: String,
-        @Valid @RequestBody request: NovelUpdateRequest
+        @Valid @RequestPart("request") request: NovelUpdateRequest,
+        @RequestPart(name = "coverImage", required = false) coverImage: MultipartFile?
     ): ResponseEntity<ApiResponse<NovelDto>> {
-        val novel = novelService.updateNovel(id, request)
+        val finalRequest = if (coverImage != null && !coverImage.isEmpty) {
+            val url = cloudinaryStorageService.uploadAndGetUrl(coverImage, folder = "novels/covers")
+            request.copy(coverImage = url)
+        } else request
+        val novel = novelService.updateNovel(id, finalRequest)
         return ResponseEntity.ok(ApiResponse.success(novel, "Novel updated successfully"))
     }
 
