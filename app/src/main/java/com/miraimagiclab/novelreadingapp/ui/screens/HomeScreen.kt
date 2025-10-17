@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -26,23 +25,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.miraimagiclab.novelreadingapp.data.Book
 import com.miraimagiclab.novelreadingapp.ui.components.BannerCard
-import com.miraimagiclab.novelreadingapp.ui.components.BookCard
+import com.miraimagiclab.novelreadingapp.ui.components.NovelCard
 import com.miraimagiclab.novelreadingapp.ui.components.RankingListItem
 import com.miraimagiclab.novelreadingapp.ui.theme.Spacing
 import com.miraimagiclab.novelreadingapp.ui.viewmodel.HomeViewModel
-import com.miraimagiclab.novelreadingapp.util.NovelToBookConverter
 import com.miraimagiclab.novelreadingapp.util.UiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onBookClick: (String) -> Unit,
+    onNovelClick: (String) -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val scrollState = rememberScrollState()
@@ -147,7 +142,7 @@ fun HomeScreen(
                         .verticalScroll(scrollState)
                         .padding(horizontal = Spacing.contentPadding)
                 ) {
-                    // Banner Section with swipeable ranking books
+                    // Banner Section with swipeable ranking novels
                     if (homeData.bannerNovels.isNotEmpty()) {
                         val bannerPagerState = rememberPagerState(pageCount = { homeData.bannerNovels.size })
                         
@@ -156,11 +151,10 @@ fun HomeScreen(
                             modifier = Modifier.height(200.dp)
                         ) { page ->
                             val novel = homeData.bannerNovels[page]
-                            val book = NovelToBookConverter.novelToBook(novel)
                             BannerCard(
-                                title = book.title,
-                                subtitle = "Rank #${page + 1} • ${book.author}",
-                                imageUrl = book.coverUrl
+                                title = novel.title,
+                                subtitle = "Rank #${page + 1} • ${novel.authorName}",
+                                imageUrl = novel.coverImage ?: "",
                             )
                         }
                         
@@ -206,10 +200,9 @@ fun HomeScreen(
                             contentPadding = PaddingValues(horizontal = Spacing.xs)
                         ) {
                             items(homeData.recommendedNovels) { novel ->
-                                val book = NovelToBookConverter.novelToBook(novel)
-                                BookCard(
-                                    book = book,
-                                    onClick = { onBookClick(book.id) }
+                                NovelCard(
+                                    novel = novel,
+                                    onClick = { onNovelClick(novel.id) }
                                 )
                             }
                         }
@@ -231,10 +224,9 @@ fun HomeScreen(
                             contentPadding = PaddingValues(horizontal = Spacing.xs)
                         ) {
                             items(homeData.newNovels.take(5)) { novel ->
-                                val book = NovelToBookConverter.novelToBook(novel)
-                                BookCard(
-                                    book = book,
-                                    onClick = { onBookClick(book.id) }
+                                NovelCard(
+                                    novel = novel,
+                                    onClick = { onNovelClick(novel.id) }
                                 )
                             }
                         }
@@ -267,11 +259,10 @@ fun HomeScreen(
                                     val globalIndex = page * 5 + index
                                     if (globalIndex < homeData.rankingNovels.size) {
                                         val novel = homeData.rankingNovels[globalIndex]
-                                        val book = NovelToBookConverter.novelToBook(novel)
                                         RankingListItem(
-                                            book = book,
+                                            novel = novel,
                                             rank = globalIndex + 1,
-                                            onClick = { onBookClick(book.id) }
+                                            onClick = { onNovelClick(novel.id) }
                                         )
                                     } else {
                                         // Empty space to maintain consistent layout
@@ -284,7 +275,7 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(Spacing.sectionSpacing))
                     }
                     
-                    // New Books section
+                    // New Novels section
                     if (homeData.newNovels.isNotEmpty()) {
                         Text(
                             text = "Truyện mới",
@@ -298,10 +289,9 @@ fun HomeScreen(
                             contentPadding = PaddingValues(horizontal = Spacing.xs)
                         ) {
                             items(homeData.newNovels) { novel ->
-                                val book = NovelToBookConverter.novelToBook(novel)
-                                BookCard(
-                                    book = book,
-                                    onClick = { onBookClick(book.id) }
+                                NovelCard(
+                                    novel = novel,
+                                    onClick = { onNovelClick(novel.id) }
                                 )
                             }
                         }
@@ -309,7 +299,7 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(Spacing.sectionSpacing))
                     }
                     
-                    // Completed Books section
+                    // Completed Novels section
                     if (homeData.completedNovels.isNotEmpty()) {
                         Text(
                             text = "Truyện hoàn thành",
@@ -323,10 +313,9 @@ fun HomeScreen(
                             contentPadding = PaddingValues(horizontal = Spacing.xs)
                         ) {
                             items(homeData.completedNovels) { novel ->
-                                val book = NovelToBookConverter.novelToBook(novel)
-                                BookCard(
-                                    book = book,
-                                    onClick = { onBookClick(book.id) }
+                                NovelCard(
+                                    novel = novel,
+                                    onClick = { onNovelClick(novel.id) }
                                 )
                             }
                         }

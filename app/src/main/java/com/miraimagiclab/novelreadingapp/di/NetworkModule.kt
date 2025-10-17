@@ -4,6 +4,16 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.miraimagiclab.novelreadingapp.data.remote.api.NovelApiService
 import com.miraimagiclab.novelreadingapp.data.remote.api.AuthApiService
+import com.miraimagiclab.novelreadingapp.data.remote.api.ChapterApiService
+import com.miraimagiclab.novelreadingapp.data.remote.api.CommentApiService
+import com.miraimagiclab.novelreadingapp.data.remote.api.ReviewApiService
+import com.miraimagiclab.novelreadingapp.data.auth.SessionManager
+import com.miraimagiclab.novelreadingapp.data.local.prefs.AuthDataStore
+import com.miraimagiclab.novelreadingapp.data.remote.interceptor.AuthInterceptor
+import com.miraimagiclab.novelreadingapp.data.remote.interceptor.TokenAuthenticator
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Named
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,13 +29,20 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
+    private const val BASE_URL = "http://10.0.2.2:8080/api/"
+
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
-        val loggingInterceptor = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
-        }
-        
+    fun provideLoggingInterceptor(): HttpLoggingInterceptor = HttpLoggingInterceptor().apply {
+        level = HttpLoggingInterceptor.Level.BODY
+    }
+
+    @Provides
+    @Singleton
+    @Named("baseOkHttp")
+    fun provideBaseOkHttpClient(
+        loggingInterceptor: HttpLoggingInterceptor
+    ): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
             .connectTimeout(30, TimeUnit.SECONDS)
@@ -33,6 +50,39 @@ object NetworkModule {
             .writeTimeout(30, TimeUnit.SECONDS)
             .build()
     }
+
+    @Provides
+    @Singleton
+    @Named("authOkHttp")
+    fun provideAuthOkHttpClient(
+        @Named("baseOkHttp") baseOkHttp: OkHttpClient,
+        authInterceptor: AuthInterceptor,
+        tokenAuthenticator: TokenAuthenticator
+    ): OkHttpClient {
+        return baseOkHttp.newBuilder()
+            .addInterceptor(authInterceptor)
+            .authenticator(tokenAuthenticator)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthDataStore(@ApplicationContext context: Context): AuthDataStore = AuthDataStore(context)
+
+    @Provides
+    @Singleton
+    fun provideSessionManager(authDataStore: AuthDataStore): SessionManager = SessionManager(authDataStore)
+
+    @Provides
+    @Singleton
+    fun provideAuthInterceptor(sessionManager: SessionManager): AuthInterceptor = AuthInterceptor(sessionManager)
+
+    @Provides
+    @Singleton
+    fun provideTokenAuthenticator(
+        @Named("refreshAuthApi") authApiService: AuthApiService,
+        sessionManager: SessionManager
+    ): TokenAuthenticator = TokenAuthenticator(authApiService, sessionManager)
 
     @Provides
     @Singleton
@@ -44,9 +94,13 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient, gson: Gson): Retrofit {
+    @Named("authlessRetrofit")
+    fun provideAuthlessRetrofit(
+        @Named("baseOkHttp") okHttpClient: OkHttpClient,
+        gson: Gson
+    ): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8080/api/")
+            .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
@@ -54,13 +108,52 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideNovelApiService(retrofit: Retrofit): NovelApiService {
+    @Named("authedRetrofit")
+    fun provideAuthedRetrofit(
+        @Named("authOkHttp") okHttpClient: OkHttpClient,
+        gson: Gson
+    ): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideNovelApiService(@Named("authedRetrofit") retrofit: Retrofit): NovelApiService {
         return retrofit.create(NovelApiService::class.java)
     }
 
     @Provides
     @Singleton
-    fun provideAuthApiService(retrofit: Retrofit): AuthApiService {
+    fun provideAuthApiService(@Named("authedRetrofit") retrofit: Retrofit): AuthApiService {
         return retrofit.create(AuthApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    @Named("refreshAuthApi")
+    fun provideRefreshAuthApi(@Named("authlessRetrofit") retrofit: Retrofit): AuthApiService {
+        return retrofit.create(AuthApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideChapterApiService(@Named("authedRetrofit") retrofit: Retrofit): ChapterApiService {
+        return retrofit.create(ChapterApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCommentApiService(@Named("authedRetrofit") retrofit: Retrofit): CommentApiService {
+        return retrofit.create(CommentApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideReviewApiService(@Named("authedRetrofit") retrofit: Retrofit): ReviewApiService {
+        return retrofit.create(ReviewApiService::class.java)
     }
 }

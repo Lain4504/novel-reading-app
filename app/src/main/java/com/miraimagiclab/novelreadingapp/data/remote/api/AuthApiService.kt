@@ -8,6 +8,7 @@ import com.miraimagiclab.novelreadingapp.data.remote.dto.UserDto
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface AuthApiService {
 
@@ -17,12 +18,15 @@ interface AuthApiService {
     @POST("users/login")
     suspend fun login(@Body request: LoginRequest): Response<ApiResponse<LoginResponse>>
 
-    @POST("api/auth/forgot-password")
+    @POST("auth/forgot-password")
     suspend fun forgotPassword(@Body request: Map<String, String>): Response<ApiResponse<Unit>>
 
-    @POST("api/auth/verify-reset-otp")
+    @POST("auth/verify-reset-otp")
     suspend fun verifyResetOtp(@Body request: Map<String, String>): Response<ApiResponse<Boolean>>
 
-    @POST("api/auth/reset-password")
+    @POST("auth/reset-password")
     suspend fun resetPassword(@Body request: Map<String, String>): Response<ApiResponse<Unit>>
+
+    @POST("users/refresh")
+    suspend fun refreshToken(@Query("refreshToken") refreshToken: String): Response<ApiResponse<LoginResponse>>
 }

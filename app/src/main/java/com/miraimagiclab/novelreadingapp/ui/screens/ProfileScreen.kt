@@ -7,6 +7,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.miraimagiclab.novelreadingapp.ui.viewmodel.ProfileViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -16,10 +20,11 @@ import coil.compose.AsyncImage
 
 @Composable
 fun ProfileScreen(
-    onLoginClick: () -> Unit = {}
+    onLoginClick: () -> Unit = {},
+    viewModel: ProfileViewModel = hiltViewModel()
 ) {
-    // TODO: Replace with actual authentication check
-    val isLoggedIn = false // This should come from your auth state
+    val authState by viewModel.authState.collectAsState()
+    val isLoggedIn = authState.isLoggedIn
 
     if (isLoggedIn) {
         // Show authenticated user profile
@@ -41,11 +46,11 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
-                        text = "Cheyenne Curtis",
+                        text = authState.username ?: "User",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                     )
-                    Text("022-23093", style = MaterialTheme.typography.bodySmall)
-                    Text("Shinei.Nouzen@nordlicht.com", style = MaterialTheme.typography.bodySmall)
+                    Text(authState.userId ?: "", style = MaterialTheme.typography.bodySmall)
+                    Text(authState.email ?: "", style = MaterialTheme.typography.bodySmall)
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 IconButton(onClick = { /* Edit profile */ }) {

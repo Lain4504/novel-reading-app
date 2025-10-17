@@ -20,8 +20,8 @@ fun NovelReadingNavigation(
     ) {
         composable(Screen.Home.route) {
             HomeScreen(
-                onBookClick = { bookId ->
-                    navController.navigate(Screen.BookDetails.createRoute(bookId))
+                onNovelClick = { novelId ->
+                    navController.navigate(Screen.BookDetails.createRoute(novelId))
                 }
             )
         }
