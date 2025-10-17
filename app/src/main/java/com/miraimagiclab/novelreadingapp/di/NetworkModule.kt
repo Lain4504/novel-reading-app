@@ -4,6 +4,9 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.miraimagiclab.novelreadingapp.data.remote.api.NovelApiService
 import com.miraimagiclab.novelreadingapp.data.remote.api.AuthApiService
+import com.miraimagiclab.novelreadingapp.data.remote.api.ChapterApiService
+import com.miraimagiclab.novelreadingapp.data.remote.api.CommentApiService
+import com.miraimagiclab.novelreadingapp.data.remote.api.ReviewApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -62,5 +65,23 @@ object NetworkModule {
     @Singleton
     fun provideAuthApiService(retrofit: Retrofit): AuthApiService {
         return retrofit.create(AuthApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideChapterApiService(retrofit: Retrofit): ChapterApiService {
+        return retrofit.create(ChapterApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCommentApiService(retrofit: Retrofit): CommentApiService {
+        return retrofit.create(CommentApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideReviewApiService(retrofit: Retrofit): ReviewApiService {
+        return retrofit.create(ReviewApiService::class.java)
     }
 }

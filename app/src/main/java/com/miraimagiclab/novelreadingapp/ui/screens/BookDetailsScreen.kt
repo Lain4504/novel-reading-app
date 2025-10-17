@@ -23,28 +23,94 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.miraimagiclab.novelreadingapp.data.MockData
 import com.miraimagiclab.novelreadingapp.ui.components.BookCard
 import com.miraimagiclab.novelreadingapp.ui.theme.CustomShapes
 import com.miraimagiclab.novelreadingapp.ui.theme.ReadButtonColor
 import com.miraimagiclab.novelreadingapp.ui.theme.Spacing
+import com.miraimagiclab.novelreadingapp.ui.viewmodel.NovelDetailViewModel
+import com.miraimagiclab.novelreadingapp.util.UiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookDetailsScreen(
     bookId: String,
     onBackClick: () -> Unit,
-    onChapterClick: (chapter: com.miraimagiclab.novelreadingapp.data.Chapter) -> Unit = {}
+    onChapterClick: (chapter: com.miraimagiclab.novelreadingapp.data.Chapter) -> Unit = {},
+    viewModel: NovelDetailViewModel = hiltViewModel()
 ) {
-    val bookDetail = MockData.getBookDetail(bookId)
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     
-    if (bookDetail == null) {
-        // Handle book not found
-        return
+    // Load novel detail when screen is first displayed
+    LaunchedEffect(bookId) {
+        viewModel.loadNovelDetail(bookId)
     }
     
+    val uiState by viewModel.uiState.collectAsState()
+    
+    when (val currentState = uiState) {
+        is UiState.Idle -> {
+            // Show loading state for idle as well
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+        is UiState.Loading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+        is UiState.Error -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = currentState.message,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(onClick = { viewModel.refreshData() }) {
+                        Text("Retry")
+                    }
+                }
+            }
+        }
+        is UiState.Success -> {
+            val bookDetail = currentState.data
+            BookDetailsContent(
+                bookDetail = bookDetail,
+                selectedTabIndex = selectedTabIndex,
+                onTabSelected = { selectedTabIndex = it },
+                onBackClick = onBackClick,
+                onChapterClick = onChapterClick
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BookDetailsContent(
+    bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail,
+    selectedTabIndex: Int,
+    onTabSelected: (Int) -> Unit,
+    onBackClick: () -> Unit,
+    onChapterClick: (chapter: com.miraimagiclab.novelreadingapp.data.Chapter) -> Unit
+) {
     val tabs = listOf("Overview", "Chapters", "Comments", "Reviews", "Recom")
     
     Scaffold(
@@ -131,7 +197,7 @@ fun BookDetailsScreen(
                 tabs.forEachIndexed { index, title ->
                     Tab(
                         selected = selectedTabIndex == index,
-                        onClick = { selectedTabIndex = index },
+                        onClick = { onTabSelected(index) },
                         text = { 
                             Text(
                                 text = title,
