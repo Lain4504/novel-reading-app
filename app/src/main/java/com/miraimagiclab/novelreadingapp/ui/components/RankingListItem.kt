@@ -1,6 +1,5 @@
 package com.miraimagiclab.novelreadingapp.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,19 +12,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.miraimagiclab.novelreadingapp.data.Book
-import com.miraimagiclab.novelreadingapp.ui.theme.CustomShapes
+import com.miraimagiclab.novelreadingapp.domain.model.Novel
 import com.miraimagiclab.novelreadingapp.ui.theme.RankingAccent
 import com.miraimagiclab.novelreadingapp.ui.theme.Spacing
 
 @Composable
 fun RankingListItem(
-    book: Book,
+    novel: Novel,
     rank: Int,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -47,10 +43,10 @@ fun RankingListItem(
         
         Spacer(modifier = Modifier.width(Spacing.sm))
         
-        // Book thumbnail
+        // Novel thumbnail
         AsyncImage(
-            model = book.coverUrl,
-            contentDescription = book.title,
+            model = novel.coverImage,
+            contentDescription = novel.title,
             modifier = Modifier
                 .width(55.dp)
                 .height(70.dp)
@@ -60,12 +56,12 @@ fun RankingListItem(
         
         Spacer(modifier = Modifier.width(Spacing.sm))
         
-        // Book info
+        // Novel info
         Column(
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = book.title,
+                text = novel.title,
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 2,
@@ -75,7 +71,7 @@ fun RankingListItem(
             Spacer(modifier = Modifier.height(Spacing.xs))
             
             Text(
-                text = book.genres.firstOrNull() ?: "General",
+                text = novel.categories.joinToString(", "),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
@@ -94,8 +90,8 @@ fun RankingListItem(
                 )
                 Spacer(modifier = Modifier.width(Spacing.xs))
                 Text(
-                    text = String.format("%.1f", book.score / 20.0),
                     style = MaterialTheme.typography.titleSmall,
+                    text = String.format("%.1f", novel.rating),
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }

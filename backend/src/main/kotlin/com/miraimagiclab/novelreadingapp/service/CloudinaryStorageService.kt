@@ -19,6 +19,15 @@ class CloudinaryStorageService(
             ?: throw RuntimeException("Upload to Cloudinary failed!")
     }
 
+    fun uploadAndGetUrl(file: MultipartFile, folder: String = "novel_app"): String {
+        val uploadResult = cloudinary.uploader().upload(
+            file.bytes,
+            ObjectUtils.asMap("folder", folder)
+        )
+        return uploadResult["secure_url"]?.toString()
+            ?: throw RuntimeException("Upload to Cloudinary failed: missing secure_url")
+    }
+
     fun delete(publicId: String) {
         cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap())
     }
