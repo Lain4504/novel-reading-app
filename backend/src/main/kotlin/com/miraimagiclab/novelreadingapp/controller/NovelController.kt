@@ -7,8 +7,15 @@ import com.miraimagiclab.novelreadingapp.dto.request.NovelUpdateRequest
 import com.miraimagiclab.novelreadingapp.dto.response.NovelDto
 import com.miraimagiclab.novelreadingapp.dto.response.PageResponse
 import com.miraimagiclab.novelreadingapp.service.NovelService
+import com.miraimagiclab.novelreadingapp.enumeration.CategoryEnum
+import com.miraimagiclab.novelreadingapp.enumeration.NovelStatusEnum
 import io.swagger.v3.oas.annotations.tags.Tag
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.Valid
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotEmpty
+import jakarta.validation.constraints.Size
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -25,15 +32,85 @@ class NovelController(
     private val cloudinaryStorageService: CloudinaryStorageService
 ) {
 
+    @Operation(
+        summary = "Create a new novel",
+        description = "Create a new novel with individual form parameters and optional cover image."
+    )
     @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun createNovel(
-        @Valid @RequestPart("request") request: NovelCreateRequest,
-        @RequestPart(name = "coverImage", required = false) coverImage: MultipartFile?
+        @Valid @RequestParam("title", required = true)
+        @NotBlank(message = "Title is required")
+        @Size(min = 1, max = 200, message = "Title must be between 1 and 200 characters")
+        @Schema(description = "Novel title")
+        title: String,
+        
+        @Valid @RequestParam("description", required = true)
+        @NotBlank(message = "Description is required")
+        @Size(min = 10, max = 5000, message = "Description must be between 10 and 5000 characters")
+        @Schema(description = "Novel description")
+        description: String,
+        
+        @Valid @RequestParam("authorName", required = true)
+        @NotBlank(message = "Author name is required")
+        @Size(min = 1, max = 100, message = "Author name must be between 1 and 100 characters")
+        @Schema(description = "Author name")
+        authorName: String,
+        
+        @RequestParam("authorId", required = false)
+        @Size(min = 1, max = 100, message = "Author ID must be between 1 and 100 characters")
+        @Schema(description = "Author ID (optional)")
+        authorId: String? = null,
+        
+        @RequestParam("categories", required = true)
+        @NotEmpty(message = "At least one category is required")
+        @Schema(description = "Comma-separated list of categories")
+        categories: String,
+        
+        @RequestParam("status", required = false)
+        @Schema(description = "Novel status", defaultValue = "DRAFT")
+        status: NovelStatusEnum = NovelStatusEnum.DRAFT,
+        
+        @RequestParam("isR18", required = false)
+        @Schema(description = "Whether the novel is R18 content", defaultValue = "false")
+        isR18: Boolean = false,
+        
+        @RequestPart(name = "coverImage", required = false) 
+        @Schema(description = "Cover image file (optional)", type = "string", format = "binary")
+        coverImage: MultipartFile?
     ): ResponseEntity<ApiResponse<NovelDto>> {
+        // Parse categories from comma-separated string
+        val categorySet = categories.split(",")
+            .map { it.trim().uppercase() }
+            .mapNotNull { categoryName ->
+                try {
+                    CategoryEnum.valueOf(categoryName)
+                } catch (e: IllegalArgumentException) {
+                    null
+                }
+            }
+            .toSet()
+        
+        if (categorySet.isEmpty()) {
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error("Invalid categories provided"))
+        }
+        
+        // Create NovelCreateRequest object
+        val request = NovelCreateRequest(
+            title = title,
+            description = description,
+            authorName = authorName,
+            authorId = authorId,
+            categories = categorySet,
+            status = status,
+            isR18 = isR18
+        )
+        
         val finalRequest = if (coverImage != null && !coverImage.isEmpty) {
             val url = cloudinaryStorageService.uploadAndGetUrl(coverImage, folder = "novels/covers")
             request.copy(coverImage = url)
         } else request
+        
         val novel = novelService.createNovel(finalRequest)
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(ApiResponse.success(novel, "Novel created successfully"))
@@ -48,13 +125,95 @@ class NovelController(
     @PutMapping("/{id}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun updateNovel(
         @PathVariable id: String,
-        @Valid @RequestPart("request") request: NovelUpdateRequest,
-        @RequestPart(name = "coverImage", required = false) coverImage: MultipartFile?
+        
+        @RequestParam("title", required = false)
+        @Size(min = 1, max = 200, message = "Title must be between 1 and 200 characters")
+        @Schema(description = "Novel title (optional)")
+        title: String? = null,
+        
+        @RequestParam("description", required = false)
+        @Size(min = 10, max = 5000, message = "Description must be between 10 and 5000 characters")
+        @Schema(description = "Novel description (optional)")
+        description: String? = null,
+        
+        @RequestParam("authorName", required = false)
+        @Size(min = 1, max = 100, message = "Author name must be between 1 and 100 characters")
+        @Schema(description = "Author name (optional)")
+        authorName: String? = null,
+        
+        @RequestParam("authorId", required = false)
+        @Size(min = 1, max = 100, message = "Author ID must be between 1 and 100 characters")
+        @Schema(description = "Author ID (optional)")
+        authorId: String? = null,
+        
+        @RequestParam("categories", required = false)
+        @Schema(description = "Comma-separated list of categories (optional)")
+        categories: String? = null,
+        
+        @RequestParam("rating", required = false)
+        @Size(min = 0, max = 5, message = "Rating must be between 0 and 5")
+        @Schema(description = "Novel rating (optional)")
+        rating: Double? = null,
+        
+        @RequestParam("wordCount", required = false)
+        @Schema(description = "Word count (optional)")
+        wordCount: Int? = null,
+        
+        @RequestParam("chapterCount", required = false)
+        @Schema(description = "Chapter count (optional)")
+        chapterCount: Int? = null,
+        
+        @RequestParam("status", required = false)
+        @Schema(description = "Novel status (optional)")
+        status: NovelStatusEnum? = null,
+        
+        @RequestParam("isR18", required = false)
+        @Schema(description = "Whether the novel is R18 content (optional)")
+        isR18: Boolean? = null,
+        
+        @RequestPart(name = "coverImage", required = false) 
+        @Schema(description = "Cover image file (optional)", type = "string", format = "binary")
+        coverImage: MultipartFile?
     ): ResponseEntity<ApiResponse<NovelDto>> {
+        // Parse categories from comma-separated string if provided
+        val categorySet = if (categories != null && categories.isNotBlank()) {
+            val parsed = categories.split(",")
+                .map { it.trim().uppercase() }
+                .mapNotNull { categoryName ->
+                    try {
+                        CategoryEnum.valueOf(categoryName)
+                    } catch (e: IllegalArgumentException) {
+                        null
+                    }
+                }
+                .toSet()
+            
+            if (parsed.isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Invalid categories provided"))
+            }
+            parsed
+        } else null
+        
+        // Create NovelUpdateRequest object
+        val request = NovelUpdateRequest(
+            title = title,
+            description = description,
+            authorName = authorName,
+            authorId = authorId,
+            categories = categorySet,
+            rating = rating,
+            wordCount = wordCount,
+            chapterCount = chapterCount,
+            status = status,
+            isR18 = isR18
+        )
+        
         val finalRequest = if (coverImage != null && !coverImage.isEmpty) {
             val url = cloudinaryStorageService.uploadAndGetUrl(coverImage, folder = "novels/covers")
             request.copy(coverImage = url)
         } else request
+        
         val novel = novelService.updateNovel(id, finalRequest)
         return ResponseEntity.ok(ApiResponse.success(novel, "Novel updated successfully"))
     }
