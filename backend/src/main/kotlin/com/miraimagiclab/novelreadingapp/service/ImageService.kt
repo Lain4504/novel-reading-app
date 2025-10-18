@@ -4,6 +4,7 @@ import com.cloudinary.Cloudinary
 import com.cloudinary.utils.ObjectUtils
 import com.miraimagiclab.novelreadingapp.dto.request.ImageUploadRequest
 import com.miraimagiclab.novelreadingapp.dto.response.ImageResponse
+import com.miraimagiclab.novelreadingapp.exception.FileSizeExceededException
 import com.miraimagiclab.novelreadingapp.exception.ImageNotFoundException
 import com.miraimagiclab.novelreadingapp.model.Image
 import com.miraimagiclab.novelreadingapp.repository.ImageRepository
@@ -16,9 +17,23 @@ class ImageService(
     private val cloudinary: Cloudinary,
     private val imageRepository: ImageRepository
 ) {
+    
+    companion object {
+        private const val MAX_FILE_SIZE = 5 * 1024 * 1024L // 5MB in bytes
+    }
 
     fun uploadImage(request: ImageUploadRequest): ImageResponse {
         val file = request.file
+        
+        // Validate file size
+        if (file.size > MAX_FILE_SIZE) {
+            throw FileSizeExceededException("File size ${file.size} bytes exceeds maximum allowed size of $MAX_FILE_SIZE bytes (5MB)")
+        }
+        
+        // Validate file is not empty
+        if (file.isEmpty) {
+            throw IllegalArgumentException("File cannot be empty")
+        }
 
         val uploadResult: Map<*, *> = try {
             cloudinary.uploader().upload(file.bytes, ObjectUtils.asMap("folder", "novel_app"))
@@ -90,6 +105,16 @@ class ImageService(
      */
     fun updateImage(id: String, newFile: MultipartFile): ImageResponse {
         val image = imageRepository.findById(id).orElseThrow { ImageNotFoundException(id) }
+        
+        // Validate new file size
+        if (newFile.size > MAX_FILE_SIZE) {
+            throw FileSizeExceededException("File size ${newFile.size} bytes exceeds maximum allowed size of $MAX_FILE_SIZE bytes (5MB)")
+        }
+        
+        // Validate file is not empty
+        if (newFile.isEmpty) {
+            throw IllegalArgumentException("File cannot be empty")
+        }
 
         // delete old
         try {
