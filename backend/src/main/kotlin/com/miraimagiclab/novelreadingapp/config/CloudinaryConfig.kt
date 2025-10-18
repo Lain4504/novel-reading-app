@@ -19,7 +19,11 @@ class CloudinaryConfig {
             ObjectUtils.asMap(
                 "cloud_name", cloudName,
                 "api_key", apiKey,
-                "api_secret", apiSecret
+                "api_secret", apiSecret,
+                "secure", true,
+                "chunk_size", 6000000, // 6MB chunk size for large file uploads
+                "timeout", 60000, // 60 seconds timeout
+                "upload_preset", "ml_default" // Optional: set a default upload preset
             )
         )
     }
