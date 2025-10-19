@@ -5,6 +5,7 @@ import com.miraimagiclab.novelreadingapp.data.remote.dto.*
 import com.miraimagiclab.novelreadingapp.data.auth.SessionManager
 import com.miraimagiclab.novelreadingapp.util.NetworkResult
 import com.miraimagiclab.novelreadingapp.util.NetworkResult.Loading
+import com.miraimagiclab.novelreadingapp.util.JwtTokenHelper
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import retrofit2.Response
@@ -24,13 +25,20 @@ class AuthRepository @Inject constructor(
             val result = handleApiResponse(response)
             if (result is NetworkResult.Success) {
                 val login = result.data
+                // Calculate expiration time for the token
+                val expirationTime = try {
+                    JwtTokenHelper.getExpirationTime(login.token).time
+                } catch (e: Exception) {
+                    null
+                }
                 // Persist session
                 sessionManager.saveSession(
                     login.token,
                     login.refreshToken,
                     login.user.id,
                     login.user.username,
-                    login.user.email
+                    login.user.email,
+                    expirationTime
                 )
             }
             emit(result)

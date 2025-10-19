@@ -28,16 +28,31 @@ class TokenAuthenticator(
                     val body = apiResponse.body()
                     if (body != null && body.success == true && body.data != null) {
                         val loginResponse = body.data
+                        
+                        // Calculate expiration time for the new token
+                        val expirationTime = try {
+                            com.miraimagiclab.novelreadingapp.util.JwtTokenHelper.getExpirationTime(loginResponse.token).time
+                        } catch (e: Exception) {
+                            null
+                        }
+                        
                         sessionManager.saveSession(
                             loginResponse.token,
                             loginResponse.refreshToken,
                             loginResponse.user.id,
                             loginResponse.user.username,
-                            loginResponse.user.email
+                            loginResponse.user.email,
+                            expirationTime
                         )
                         loginResponse.token
                     } else null
-                } else null
+                } else {
+                    // If refresh fails with 401/403, refresh token is expired
+                    if (apiResponse.code() == 401 || apiResponse.code() == 403) {
+                        sessionManager.clearSession()
+                    }
+                    null
+                }
             } catch (_: Exception) {
                 null
             }

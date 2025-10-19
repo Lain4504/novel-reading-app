@@ -1,18 +1,36 @@
 package com.miraimagiclab.novelreadingapp.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.miraimagiclab.novelreadingapp.ui.screens.*
 import com.miraimagiclab.novelreadingapp.ui.screens.auth.*
+import com.miraimagiclab.novelreadingapp.data.auth.SessionManager
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 
 @Composable
 fun NovelReadingNavigation(
     navController: NavHostController,
+    sessionManager: SessionManager,
     modifier: Modifier = Modifier
 ) {
+    val authState by sessionManager.authState.collectAsState()
+    
+    // Handle automatic logout when session is cleared
+    LaunchedEffect(authState.isLoggedIn) {
+        if (!authState.isLoggedIn) {
+            // Navigate to login screen and clear back stack
+            navController.navigate(Screen.Login.route) {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+    }
     NavHost(
         navController = navController,
         startDestination = Screen.Home.route,

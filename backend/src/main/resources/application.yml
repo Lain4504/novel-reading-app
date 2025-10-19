@@ -56,7 +56,7 @@ app:
 
 jwt:
   secret: "mySecretKeyThatIsAtLeast32CharactersLongForJWTTokenGenerationAndValidation"
-  expiration: 86400000  # 24 hours in milliseconds
+  expiration: 3600000  # 1 hour in milliseconds
   refresh-expiration: 604800000  # 7 days in milliseconds
 
 # Swagger/OpenAPI Configuration
