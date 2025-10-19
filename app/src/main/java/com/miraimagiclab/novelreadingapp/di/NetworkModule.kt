@@ -67,10 +67,6 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideAuthDataStore(@ApplicationContext context: Context): AuthDataStore = AuthDataStore(context)
-
-    @Provides
-    @Singleton
     fun provideSessionManager(authDataStore: AuthDataStore): SessionManager = SessionManager(authDataStore)
 
     @Provides

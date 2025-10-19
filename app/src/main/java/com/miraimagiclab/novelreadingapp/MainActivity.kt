@@ -9,12 +9,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.miraimagiclab.novelreadingapp.navigation.NovelReadingNavigation
 import com.miraimagiclab.novelreadingapp.navigation.Screen
 import com.miraimagiclab.novelreadingapp.ui.components.BottomNavigationBar
 import com.miraimagiclab.novelreadingapp.ui.theme.NovelReadingAppTheme
+import com.miraimagiclab.novelreadingapp.ui.viewmodel.SettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -23,7 +25,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            NovelReadingAppTheme {
+            val settingsViewModel: SettingsViewModel = hiltViewModel()
+            val isDarkMode by settingsViewModel.isDarkMode.collectAsState()
+            
+            NovelReadingAppTheme(darkTheme = isDarkMode) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

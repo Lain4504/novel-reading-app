@@ -18,11 +18,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import com.miraimagiclab.novelreadingapp.ui.theme.GreenPrimary
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.miraimagiclab.novelreadingapp.ui.components.ReadingSettingsDialog
+import com.miraimagiclab.novelreadingapp.ui.theme.GreenPrimary
+import com.miraimagiclab.novelreadingapp.ui.theme.ReadingThemes
+import com.miraimagiclab.novelreadingapp.ui.theme.getFontFamilyByName
+import com.miraimagiclab.novelreadingapp.ui.viewmodel.ReadingSettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,15 +39,26 @@ fun ReadingScreen(
     onNextChapter: () -> Unit,
     hasPreviousChapter: Boolean = true,
     hasNextChapter: Boolean = true,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: ReadingSettingsViewModel = hiltViewModel()
 ) {
     var showUI by remember { mutableStateOf(false) }
     var showChapterList by remember { mutableStateOf(false) }
+    var showReadingSettings by remember { mutableStateOf(false) }
+
+    // Collect reading settings
+    val fontFamily by viewModel.fontFamily.collectAsState()
+    val fontSize by viewModel.fontSize.collectAsState()
+    val lineSpacing by viewModel.lineSpacing.collectAsState()
+    val readingTheme by viewModel.readingTheme.collectAsState()
+
+    // Get current reading theme
+    val currentTheme = ReadingThemes.getThemeByName(readingTheme)
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(currentTheme.backgroundColor)
             .clickable { showUI = !showUI }
     ) {
         // Top App Bar - Only show when showUI is true
@@ -92,7 +108,7 @@ fun ReadingScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
+                .background(currentTheme.backgroundColor)
         ) {
             // Chapter content
             Column(
@@ -103,10 +119,11 @@ fun ReadingScreen(
             ) {
                 Text(
                     text = chapterContent,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = currentTheme.textColor,
                     style = MaterialTheme.typography.bodyLarge.copy(
-                        lineHeight = 24.sp,
-                        fontSize = 16.sp
+                        fontFamily = getFontFamilyByName(fontFamily),
+                        lineHeight = (fontSize * lineSpacing).sp,
+                        fontSize = fontSize.sp
                     ),
                     textAlign = TextAlign.Justify
                 )
@@ -183,39 +200,13 @@ fun ReadingScreen(
                              }
                              
                              // Settings Icon
-                             var expanded by remember { mutableStateOf(false) }
-                             
-                             Box {
-                                 IconButton(onClick = { expanded = true }) {
-                                     Icon(
-                                         imageVector = Icons.Default.Settings,
-                                         contentDescription = "Reading Settings",
-                                         tint = MaterialTheme.colorScheme.onSurface,
-                                         modifier = Modifier.size(24.dp)
-                                     )
-                                 }
-                                 
-                                 DropdownMenu(
-                                     expanded = expanded,
-                                     onDismissRequest = { expanded = false }
-                                 ) {
-                                     DropdownMenuItem(
-                                         text = { Text("Font Size") },
-                                         onClick = { expanded = false }
-                                     )
-                                     DropdownMenuItem(
-                                         text = { Text("Line Spacing") },
-                                         onClick = { expanded = false }
-                                     )
-                                     DropdownMenuItem(
-                                         text = { Text("Theme") },
-                                         onClick = { expanded = false }
-                                     )
-                                     DropdownMenuItem(
-                                         text = { Text("Auto Scroll") },
-                                         onClick = { expanded = false }
-                                     )
-                                 }
+                             IconButton(onClick = { showReadingSettings = true }) {
+                                 Icon(
+                                     imageVector = Icons.Default.Settings,
+                                     contentDescription = "Reading Settings",
+                                     tint = MaterialTheme.colorScheme.onSurface,
+                                     modifier = Modifier.size(24.dp)
+                                 )
                              }
                          }
 
@@ -263,7 +254,7 @@ fun ReadingScreen(
                             .fillMaxHeight(0.7f)
                             .align(Alignment.Center),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
+                            containerColor = currentTheme.surfaceColor
                         )
                     ) {
                         Column(
@@ -272,6 +263,7 @@ fun ReadingScreen(
                             Text(
                                 text = "Chapter List",
                                 style = MaterialTheme.typography.headlineSmall,
+                                color = currentTheme.onSurfaceColor,
                                 modifier = Modifier.padding(bottom = 16.dp)
                             )
 
@@ -280,6 +272,7 @@ fun ReadingScreen(
                                 Text(
                                     text = "Chapter ${index + 1}: Sample Chapter Title",
                                     style = MaterialTheme.typography.bodyMedium,
+                                    color = currentTheme.onSurfaceColor,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clickable {
@@ -292,6 +285,14 @@ fun ReadingScreen(
                         }
                     }
                 }
+            }
+
+            // Reading Settings Dialog
+            if (showReadingSettings) {
+                ReadingSettingsDialog(
+                    viewModel = viewModel,
+                    onDismiss = { showReadingSettings = false }
+                )
             }
         }
     }
