@@ -24,7 +24,8 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.miraimagiclab.novelreadingapp.data.MockData
+import com.miraimagiclab.novelreadingapp.domain.model.Novel
+import com.miraimagiclab.novelreadingapp.domain.model.NovelStatus
 import com.miraimagiclab.novelreadingapp.ui.components.BookCard
 import com.miraimagiclab.novelreadingapp.ui.components.StatsCard
 
@@ -35,25 +36,25 @@ fun BookListScreen(
     onNavigateCompleted: () -> Unit = {},
     onBackClick: () -> Unit = {}
 ) {
-    // Combine mock lists (an toàn — tránh tham chiếu MockData.books nếu bạn không có)
-    val allBooks = remember { MockData.recommendedBooks + MockData.ourPickBooks }
+    // TODO: Load all books from API
+    val allBooks = remember { emptyList<Novel>() }
 
     var query by remember { mutableStateOf("") }
     var showFilterMenu by remember { mutableStateOf(false) }
     var selectedFilter by remember { mutableStateOf("All") }
 
     // Filter logic (giữ giống Explore)
-    fun matchesFilter(book: com.miraimagiclab.novelreadingapp.data.Book): Boolean {
+    fun matchesFilter(book: Novel): Boolean {
         val filterOk = when (selectedFilter) {
             "All" -> true
-            "Novel" -> book.type == com.miraimagiclab.novelreadingapp.data.BookType.NOVEL
-            "Light Novel" -> book.type == com.miraimagiclab.novelreadingapp.data.BookType.LIGHT_NOVEL
-            "Manga" -> book.type == com.miraimagiclab.novelreadingapp.data.BookType.MANGA
+            "Novel" -> book.status.name == "NOVEL"
+            "Light Novel" -> book.status.name == "LIGHT_NOVEL"
+            "Manga" -> book.status.name == "MANGA"
             else -> true
         }
         val queryOk = query.isBlank() ||
                 book.title.contains(query, ignoreCase = true) ||
-                book.author.contains(query, ignoreCase = true)
+                book.authorName.contains(query, ignoreCase = true)
         return filterOk && queryOk
     }
 
@@ -190,7 +191,7 @@ fun BookListScreen(
             StatsCard(
                 icon = Icons.Default.Favorite,
                 title = "In Progress",
-                value = "${allBooks.count { !it.isCompleted }} Books",
+                value = "${allBooks.count { it.status != NovelStatus.COMPLETED }} Books",
                 modifier = Modifier
                     .weight(1f)
                     .clickable(onClick = onNavigateInProgress)
@@ -200,7 +201,7 @@ fun BookListScreen(
             StatsCard(
                 icon = Icons.Default.Check,
                 title = "Completed Books",
-                value = "${allBooks.count { it.isCompleted }} Books",
+                value = "${allBooks.count { it.status == NovelStatus.COMPLETED }} Books",
                 modifier = Modifier
                     .weight(1f)
                     .clickable(onClick = onNavigateCompleted)

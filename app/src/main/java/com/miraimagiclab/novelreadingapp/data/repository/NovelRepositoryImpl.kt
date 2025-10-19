@@ -17,6 +17,104 @@ class NovelRepositoryImpl @Inject constructor(
     private val novelDao: NovelDao
 ) : NovelRepository {
 
+    // Home screen specific implementations
+    override fun getBannerNovels(): Flow<List<Novel>> {
+        return novelDao.getTopNovelsByViewCount().map { entities ->
+            entities.map { NovelMapper.mapEntityToDomain(it) }
+        }
+    }
+
+    override fun getRecommendedNovels(): Flow<List<Novel>> {
+        return novelDao.getTopNovelsByFollowCount().map { entities ->
+            entities.map { NovelMapper.mapEntityToDomain(it) }
+        }
+    }
+
+    override fun getRankingNovels(): Flow<List<Novel>> {
+        return novelDao.getTopNovelsByRating().map { entities ->
+            entities.map { NovelMapper.mapEntityToDomain(it) }
+        }
+    }
+
+    override fun getNewNovels(): Flow<List<Novel>> {
+        return novelDao.getRecentlyUpdatedNovels().map { entities ->
+            entities.map { NovelMapper.mapEntityToDomain(it) }
+        }
+    }
+
+    override fun getCompletedNovels(): Flow<List<Novel>> {
+        return novelDao.getCompletedNovels().map { entities ->
+            entities.map { NovelMapper.mapEntityToDomain(it) }
+        }
+    }
+
+    // Home screen specific refresh methods
+    override suspend fun refreshBannerNovels() {
+        try {
+            val response = novelApiService.getBannerNovels()
+            if (response.success && response.data != null) {
+                val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
+                val entities = novels.map { NovelMapper.mapDomainToEntity(it) }
+                novelDao.insertNovels(entities)
+            }
+        } catch (e: Exception) {
+            // Handle error - data will come from cache
+        }
+    }
+
+    override suspend fun refreshRecommendedNovels() {
+        try {
+            val response = novelApiService.getRecommendedNovels()
+            if (response.success && response.data != null) {
+                val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
+                val entities = novels.map { NovelMapper.mapDomainToEntity(it) }
+                novelDao.insertNovels(entities)
+            }
+        } catch (e: Exception) {
+            // Handle error - data will come from cache
+        }
+    }
+
+    override suspend fun refreshRankingNovels() {
+        try {
+            val response = novelApiService.getRankingNovels()
+            if (response.success && response.data != null) {
+                val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
+                val entities = novels.map { NovelMapper.mapDomainToEntity(it) }
+                novelDao.insertNovels(entities)
+            }
+        } catch (e: Exception) {
+            // Handle error - data will come from cache
+        }
+    }
+
+    override suspend fun refreshNewNovels() {
+        try {
+            val response = novelApiService.getNewNovels()
+            if (response.success && response.data != null) {
+                val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
+                val entities = novels.map { NovelMapper.mapDomainToEntity(it) }
+                novelDao.insertNovels(entities)
+            }
+        } catch (e: Exception) {
+            // Handle error - data will come from cache
+        }
+    }
+
+    override suspend fun refreshCompletedNovels() {
+        try {
+            val response = novelApiService.getCompletedNovels()
+            if (response.success && response.data != null) {
+                val novels = response.data.content.map { NovelMapper.mapDtoToDomain(it) }
+                val entities = novels.map { NovelMapper.mapDomainToEntity(it) }
+                novelDao.insertNovels(entities)
+            }
+        } catch (e: Exception) {
+            // Handle error - data will come from cache
+        }
+    }
+
+    // Legacy implementations (kept for backward compatibility)
     override fun getTopNovelsByRating(): Flow<List<Novel>> {
         return novelDao.getTopNovelsByRating().map { entities ->
             entities.map { NovelMapper.mapEntityToDomain(it) }
@@ -37,12 +135,6 @@ class NovelRepositoryImpl @Inject constructor(
 
     override fun getRecentlyUpdatedNovels(): Flow<List<Novel>> {
         return novelDao.getRecentlyUpdatedNovels().map { entities ->
-            entities.map { NovelMapper.mapEntityToDomain(it) }
-        }
-    }
-
-    override fun getCompletedNovels(): Flow<List<Novel>> {
-        return novelDao.getCompletedNovels().map { entities ->
             entities.map { NovelMapper.mapEntityToDomain(it) }
         }
     }
@@ -91,19 +183,6 @@ class NovelRepositoryImpl @Inject constructor(
             val response = novelApiService.getRecentlyUpdatedNovels()
             if (response.success && response.data != null) {
                 val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
-                val entities = novels.map { NovelMapper.mapDomainToEntity(it) }
-                novelDao.insertNovels(entities)
-            }
-        } catch (e: Exception) {
-            // Handle error - data will come from cache
-        }
-    }
-
-    override suspend fun refreshCompletedNovels() {
-        try {
-            val response = novelApiService.getCompletedNovels()
-            if (response.success && response.data != null) {
-                val novels = response.data.content.map { NovelMapper.mapDtoToDomain(it) }
                 val entities = novels.map { NovelMapper.mapDomainToEntity(it) }
                 novelDao.insertNovels(entities)
             }

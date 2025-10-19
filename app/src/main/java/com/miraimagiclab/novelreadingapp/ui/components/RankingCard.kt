@@ -18,11 +18,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.miraimagiclab.novelreadingapp.data.Book
+import com.miraimagiclab.novelreadingapp.domain.model.Novel
 
 @Composable
 fun RankingCard(
-    book: Book,
+    book: Novel,
     rank: Int,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -47,7 +47,7 @@ fun RankingCard(
                     .height(200.dp)
             ) {
                 AsyncImage(
-                    model = book.coverUrl,
+                    model = book.coverImage,
                     contentDescription = book.title,
                     modifier = Modifier
                         .fillMaxSize()
