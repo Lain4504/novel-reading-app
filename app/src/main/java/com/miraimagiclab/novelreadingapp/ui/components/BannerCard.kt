@@ -1,6 +1,7 @@
 package com.miraimagiclab.novelreadingapp.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -24,12 +25,20 @@ fun BannerCard(
     title: String,
     subtitle: String,
     imageUrl: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .height(160.dp),
+            .height(160.dp)
+            .then(
+                if (onClick != null) {
+                    Modifier.clickable { onClick() }
+                } else {
+                    Modifier
+                }
+            ),
         shape = CustomShapes.bannerShape,
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {

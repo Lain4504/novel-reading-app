@@ -6,6 +6,8 @@ import com.miraimagiclab.novelreadingapp.domain.model.Novel
 import com.miraimagiclab.novelreadingapp.domain.repository.NovelRepository
 import com.miraimagiclab.novelreadingapp.util.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,25 +32,31 @@ class HomeViewModel @Inject constructor(
             try {
                 _uiState.value = UiState.Loading
                 
-                // Refresh data from API
-                novelRepository.refreshTopNovelsByRating()
-                novelRepository.refreshTopNovelsByFollowCount()
-                novelRepository.refreshTopNovelsByViewCount()
-                novelRepository.refreshRecentlyUpdatedNovels()
-                novelRepository.refreshCompletedNovels()
+                // Refresh data from API using new home screen specific methods
+                // Use parallel execution for better performance
+                val refreshJobs = listOf(
+                    async { novelRepository.refreshBannerNovels() },
+                    async { novelRepository.refreshRecommendedNovels() },
+                    async { novelRepository.refreshRankingNovels() },
+                    async { novelRepository.refreshNewNovels() },
+                    async { novelRepository.refreshCompletedNovels() }
+                )
+                
+                // Wait for all refresh operations to complete
+                refreshJobs.awaitAll()
 
-                // Combine all data streams
+                // Combine all data streams using new home screen specific methods
                 combine(
-                    novelRepository.getTopNovelsByRating(),
-                    novelRepository.getTopNovelsByFollowCount(),
-                    novelRepository.getTopNovelsByViewCount(),
-                    novelRepository.getRecentlyUpdatedNovels(),
+                    novelRepository.getBannerNovels(),
+                    novelRepository.getRecommendedNovels(),
+                    novelRepository.getRankingNovels(),
+                    novelRepository.getNewNovels(),
                     novelRepository.getCompletedNovels()
-                ) { rankingNovels, recommendedNovels, bannerNovels, newNovels, completedNovels ->
+                ) { bannerNovels, recommendedNovels, rankingNovels, newNovels, completedNovels ->
                     HomeUiState(
-                        rankingNovels = rankingNovels,
-                        recommendedNovels = recommendedNovels,
                         bannerNovels = bannerNovels.take(5), // Top 5 for banner
+                        recommendedNovels = recommendedNovels,
+                        rankingNovels = rankingNovels,
                         newNovels = newNovels,
                         completedNovels = completedNovels
                     )
@@ -56,7 +64,18 @@ class HomeViewModel @Inject constructor(
                     _uiState.value = UiState.Success(homeUiState)
                 }
             } catch (e: Exception) {
-                _uiState.value = UiState.Error("Failed to load data: ${e.message}")
+                val errorMessage = when {
+                    e.message?.contains("Unable to resolve host") == true -> 
+                        "Unable to connect to the server. Please check your internet connection."
+                    e.message?.contains("timeout") == true -> 
+                        "Request timed out. Please try again."
+                    e.message?.contains("404") == true -> 
+                        "The requested content was not found."
+                    e.message?.contains("500") == true -> 
+                        "Server error. Please try again later."
+                    else -> "Failed to load data: ${e.message ?: "Unknown error"}"
+                }
+                _uiState.value = UiState.Error(errorMessage)
             }
         }
     }

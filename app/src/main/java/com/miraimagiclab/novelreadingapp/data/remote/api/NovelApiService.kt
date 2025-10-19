@@ -18,6 +18,27 @@ interface NovelApiService {
     @GET("novels/{id}")
     suspend fun getNovelById(@Path("id") id: String): ApiResponse<NovelDto>
 
+    // Home screen specific endpoints
+    @GET("novels/top/view-count")
+    suspend fun getBannerNovels(): ApiResponse<List<NovelDto>>
+
+    @GET("novels/top/follow-count")
+    suspend fun getRecommendedNovels(): ApiResponse<List<NovelDto>>
+
+    @GET("novels/top/rating")
+    suspend fun getRankingNovels(): ApiResponse<List<NovelDto>>
+
+    @GET("novels/recent")
+    suspend fun getNewNovels(): ApiResponse<List<NovelDto>>
+
+    @GET("novels")
+    suspend fun getCompletedNovels(
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 20,
+        @Query("status") status: String = "COMPLETED"
+    ): ApiResponse<PageResponse<NovelDto>>
+
+    // Legacy endpoints (kept for backward compatibility)
     @GET("novels/top/view-count")
     suspend fun getTopNovelsByViewCount(): ApiResponse<List<NovelDto>>
 
@@ -29,11 +50,4 @@ interface NovelApiService {
 
     @GET("novels/recent")
     suspend fun getRecentlyUpdatedNovels(): ApiResponse<List<NovelDto>>
-
-    @GET("novels")
-    suspend fun getCompletedNovels(
-        @Query("page") page: Int = 0,
-        @Query("size") size: Int = 20,
-        @Query("status") status: String = "COMPLETED"
-    ): ApiResponse<PageResponse<NovelDto>>
 }
