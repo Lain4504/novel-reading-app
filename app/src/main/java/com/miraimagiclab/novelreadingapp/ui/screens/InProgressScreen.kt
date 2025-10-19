@@ -22,7 +22,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.miraimagiclab.novelreadingapp.data.MockData
+import com.miraimagiclab.novelreadingapp.domain.model.Novel
+import com.miraimagiclab.novelreadingapp.domain.model.NovelStatus
 import com.miraimagiclab.novelreadingapp.navigation.Screen
 import com.miraimagiclab.novelreadingapp.ui.components.BookCard
 import com.miraimagiclab.novelreadingapp.ui.components.BottomNavigationBar
@@ -37,19 +38,20 @@ fun InProgressScreen(
     var selectedFilter by remember { mutableStateOf("All") }
 
     // Lọc sách chưa hoàn thành
-    val allBooks = MockData.recommendedBooks + MockData.ourPickBooks
-    fun matchesFilter(book: com.miraimagiclab.novelreadingapp.data.Book): Boolean {
+    // TODO: Load in-progress books from API
+    val allBooks = emptyList<Novel>()
+    fun matchesFilter(book: Novel): Boolean {
         val filterOk = when (selectedFilter) {
             "All" -> true
-            "Novel" -> book.type == com.miraimagiclab.novelreadingapp.data.BookType.NOVEL
-            "Light Novel" -> book.type == com.miraimagiclab.novelreadingapp.data.BookType.LIGHT_NOVEL
-            "Manga" -> book.type == com.miraimagiclab.novelreadingapp.data.BookType.MANGA
+            "Novel" -> book.status.name == "NOVEL"
+            "Light Novel" -> book.status.name == "LIGHT_NOVEL"
+            "Manga" -> book.status.name == "MANGA"
             else -> true
         }
         val queryOk = query.isBlank() ||
                 book.title.contains(query, ignoreCase = true) ||
-                book.author.contains(query, ignoreCase = true)
-        return filterOk && queryOk && !book.isCompleted
+                book.authorName.contains(query, ignoreCase = true)
+        return filterOk && queryOk && book.status != NovelStatus.COMPLETED
     }
 
     val filteredBooks = remember(query, selectedFilter) {

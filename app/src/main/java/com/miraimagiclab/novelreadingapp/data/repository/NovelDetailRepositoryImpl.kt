@@ -1,11 +1,11 @@
 package com.miraimagiclab.novelreadingapp.data.repository
 
-import com.miraimagiclab.novelreadingapp.data.BookDetail
 import com.miraimagiclab.novelreadingapp.data.mapper.NovelDetailMapper
 import com.miraimagiclab.novelreadingapp.data.remote.api.ChapterApiService
 import com.miraimagiclab.novelreadingapp.data.remote.api.CommentApiService
 import com.miraimagiclab.novelreadingapp.data.remote.api.NovelApiService
 import com.miraimagiclab.novelreadingapp.data.remote.api.ReviewApiService
+import com.miraimagiclab.novelreadingapp.domain.model.NovelDetail
 import com.miraimagiclab.novelreadingapp.domain.repository.NovelDetailRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -22,10 +22,10 @@ class NovelDetailRepositoryImpl @Inject constructor(
     private val reviewApiService: ReviewApiService
 ) : NovelDetailRepository {
 
-    private val cachedBookDetails = mutableMapOf<String, BookDetail>()
+    private val cachedNovelDetails = mutableMapOf<String, NovelDetail>()
 
-    override fun getNovelDetail(id: String): Flow<BookDetail?> = flow {
-        emit(cachedBookDetails[id])
+    override fun getNovelDetail(id: String): Flow<NovelDetail?> = flow {
+        emit(cachedNovelDetails[id])
     }
 
     override suspend fun refreshNovelDetail(id: String) {
@@ -58,8 +58,8 @@ class NovelDetailRepositoryImpl @Inject constructor(
                     val reviews = reviewsResponse.data!!.content
                     val recommendations = recommendationsResponse.data!!.filter { it.id != id }.take(3) // Exclude current novel
 
-                    // Create BookDetail using mapper
-                    val bookDetail = NovelDetailMapper.createBookDetail(
+                    // Create NovelDetail using mapper
+                    val novelDetail = NovelDetailMapper.createNovelDetail(
                         novelDto = novelDto,
                         chapters = chapters,
                         comments = comments,
@@ -68,7 +68,7 @@ class NovelDetailRepositoryImpl @Inject constructor(
                     )
 
                     // Cache the result
-                    cachedBookDetails[id] = bookDetail
+                    cachedNovelDetails[id] = novelDetail
                 }
             }
         } catch (e: Exception) {

@@ -21,7 +21,8 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.miraimagiclab.novelreadingapp.data.MockData
+import com.miraimagiclab.novelreadingapp.domain.model.Novel
+import com.miraimagiclab.novelreadingapp.domain.model.NovelStatus
 import com.miraimagiclab.novelreadingapp.ui.components.BookCard
 import androidx.compose.ui.draw.clip
 
@@ -36,25 +37,25 @@ fun ExploreScreen(
     var selectedFilter by remember { mutableStateOf("All") }
 
     // Filter logic
-    fun matchesFilter(book: com.miraimagiclab.novelreadingapp.data.Book): Boolean {
+    fun matchesFilter(book: Novel): Boolean {
         val filterOk = when (selectedFilter) {
             "All" -> true
-            "Novel" -> book.type == com.miraimagiclab.novelreadingapp.data.BookType.NOVEL
-            "Light Novel" -> book.type == com.miraimagiclab.novelreadingapp.data.BookType.LIGHT_NOVEL
-            "Manga" -> book.type == com.miraimagiclab.novelreadingapp.data.BookType.MANGA
+            "Novel" -> book.status.name == "NOVEL"
+            "Light Novel" -> book.status.name == "LIGHT_NOVEL"
+            "Manga" -> book.status.name == "MANGA"
             else -> true
         }
         val queryOk = query.isBlank() ||
                 book.title.contains(query, ignoreCase = true) ||
-                book.author.contains(query, ignoreCase = true)
+                book.authorName.contains(query, ignoreCase = true)
         return filterOk && queryOk
     }
 
     val recommended = remember(query, selectedFilter) {
-        MockData.recommendedBooks.filter { matchesFilter(it) }
+        emptyList<Novel>() // TODO: Load recommended books from API
     }
     val ourPicks = remember(query, selectedFilter) {
-        MockData.ourPickBooks.filter { matchesFilter(it) }
+        emptyList<Novel>() // TODO: Load our picks from API
     }
 
     Column(

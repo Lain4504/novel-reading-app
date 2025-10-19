@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.miraimagiclab.novelreadingapp.data.MockData
+import com.miraimagiclab.novelreadingapp.domain.model.*
 import com.miraimagiclab.novelreadingapp.ui.components.BookCard
 import com.miraimagiclab.novelreadingapp.ui.theme.CustomShapes
 import com.miraimagiclab.novelreadingapp.ui.theme.ReadButtonColor
@@ -38,7 +38,7 @@ import com.miraimagiclab.novelreadingapp.util.UiState
 fun BookDetailsScreen(
     bookId: String,
     onBackClick: () -> Unit,
-    onChapterClick: (chapter: com.miraimagiclab.novelreadingapp.data.Chapter) -> Unit = {},
+    onChapterClick: (chapter: Chapter) -> Unit = {},
     viewModel: NovelDetailViewModel = hiltViewModel()
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
@@ -90,9 +90,9 @@ fun BookDetailsScreen(
             }
         }
         is UiState.Success -> {
-            val bookDetail = currentState.data
+            val novelDetail = currentState.data
             BookDetailsContent(
-                bookDetail = bookDetail,
+                novelDetail = novelDetail,
                 selectedTabIndex = selectedTabIndex,
                 onTabSelected = { selectedTabIndex = it },
                 onBackClick = onBackClick,
@@ -105,11 +105,11 @@ fun BookDetailsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BookDetailsContent(
-    bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail,
+    novelDetail: NovelDetail,
     selectedTabIndex: Int,
     onTabSelected: (Int) -> Unit,
     onBackClick: () -> Unit,
-    onChapterClick: (chapter: com.miraimagiclab.novelreadingapp.data.Chapter) -> Unit
+    onChapterClick: (chapter: Chapter) -> Unit
 ) {
     val tabs = listOf("Overview", "Chapters", "Comments", "Reviews", "Recom")
     
@@ -118,7 +118,7 @@ private fun BookDetailsContent(
             TopAppBar(
                 title = {
                     Text(
-                        text = bookDetail.book.title,
+                        text = novelDetail.novel.title,
                         style = MaterialTheme.typography.titleLarge,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -152,7 +152,7 @@ private fun BookDetailsContent(
         bottomBar = {
             Button(
                 onClick = { 
-                    val firstChapter = bookDetail.chapters.firstOrNull()
+                    val firstChapter = novelDetail.chapters.firstOrNull()
                     if (firstChapter != null) {
                         onChapterClick(firstChapter)
                     }
@@ -179,7 +179,7 @@ private fun BookDetailsContent(
                 .padding(innerPadding)
         ) {
             // Book Header
-            BookHeader(bookDetail = bookDetail)
+            BookHeader(novelDetail = novelDetail)
             
             // Tab Row with horizontal scrolling
             ScrollableTabRow(
@@ -212,18 +212,18 @@ private fun BookDetailsContent(
             
             // Tab Content
             when (selectedTabIndex) {
-                0 -> OverviewContent(bookDetail = bookDetail)
-                1 -> ChaptersContent(bookDetail = bookDetail, onChapterClick = onChapterClick)
-                2 -> CommentsContent(bookDetail = bookDetail)
-                3 -> ReviewsContent(bookDetail = bookDetail)
-                4 -> RecommendationsContent(bookDetail = bookDetail)
+                0 -> OverviewContent(novelDetail = novelDetail)
+                1 -> ChaptersContent(novelDetail = novelDetail, onChapterClick = onChapterClick)
+                2 -> CommentsContent(novelDetail = novelDetail)
+                3 -> ReviewsContent(novelDetail = novelDetail)
+                4 -> RecommendationsContent(novelDetail = novelDetail)
             }
         }
     }
 }
 
 @Composable
-fun BookHeader(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail) {
+fun BookHeader(novelDetail: NovelDetail) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -232,8 +232,8 @@ fun BookHeader(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail) {
     ) {
         // Book Cover
         AsyncImage(
-            model = bookDetail.book.coverUrl,
-            contentDescription = bookDetail.book.title,
+            model = novelDetail.novel.coverImage,
+            contentDescription = novelDetail.novel.title,
             modifier = Modifier
                 .width(120.dp)
                 .height(160.dp)
@@ -247,31 +247,19 @@ fun BookHeader(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail) {
             verticalArrangement = Arrangement.spacedBy(Spacing.xs)
         ) {
             Text(
-                text = "Author: ${bookDetail.book.author}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            
-            if (bookDetail.book.series != null) {
-                Text(
-                    text = "Series: ${bookDetail.book.series}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-            
-            Text(
-                text = "Type: ${when (bookDetail.book.type) {
-                    com.miraimagiclab.novelreadingapp.data.BookType.NOVEL -> "Novel"
-                    com.miraimagiclab.novelreadingapp.data.BookType.LIGHT_NOVEL -> "Light Novel"
-                    com.miraimagiclab.novelreadingapp.data.BookType.MANGA -> "Manga"
-                }}",
+                text = "Author: ${novelDetail.novel.authorName}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
             
             Text(
-                text = "Genre: ${bookDetail.book.genres.joinToString(" | ")}",
+                text = "Status: ${novelDetail.novel.status.name}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            
+            Text(
+                text = "Categories: ${novelDetail.novel.categories.joinToString(" | ")}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 2,
@@ -279,13 +267,13 @@ fun BookHeader(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail) {
             )
             
             Text(
-                text = "Release: ${bookDetail.book.releaseDate}",
+                text = "Created: ${novelDetail.novel.createdAt}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
             
             Text(
-                text = "Pages: ${bookDetail.book.readTime}",
+                text = "Word Count: ${novelDetail.novel.wordCount}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -294,7 +282,7 @@ fun BookHeader(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail) {
 }
 
 @Composable
-fun OverviewContent(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail) {
+fun OverviewContent(novelDetail: NovelDetail) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -310,7 +298,7 @@ fun OverviewContent(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetai
         )
         
         Text(
-            text = bookDetail.summary,
+            text = novelDetail.novel.description,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
@@ -349,15 +337,15 @@ fun OverviewContent(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetai
 
 @Composable
 fun ChaptersContent(
-    bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail,
-    onChapterClick: (chapter: com.miraimagiclab.novelreadingapp.data.Chapter) -> Unit
+    novelDetail: NovelDetail,
+    onChapterClick: (chapter: Chapter) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(Spacing.lg),
         verticalArrangement = Arrangement.spacedBy(Spacing.sm)
     ) {
-        items(bookDetail.chapters) { chapter ->
+        items(novelDetail.chapters) { chapter ->
             ChapterItem(
                 chapter = chapter,
                 onClick = { onChapterClick(chapter) }
@@ -368,7 +356,7 @@ fun ChaptersContent(
 
 @Composable
 fun ChapterItem(
-    chapter: com.miraimagiclab.novelreadingapp.data.Chapter,
+    chapter: Chapter,
     onClick: () -> Unit = {}
 ) {
     Column(
@@ -379,7 +367,7 @@ fun ChapterItem(
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         Text(
-            text = chapter.title,
+            text = chapter.chapterTitle,
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurface
@@ -394,20 +382,20 @@ fun ChapterItem(
 }
 
 @Composable
-fun CommentsContent(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail) {
+fun CommentsContent(novelDetail: NovelDetail) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(Spacing.lg),
         verticalArrangement = Arrangement.spacedBy(Spacing.sm)
     ) {
-        items(bookDetail.comments) { comment ->
+        items(novelDetail.comments) { comment ->
             CommentItem(comment = comment)
         }
     }
 }
 
 @Composable
-fun CommentItem(comment: com.miraimagiclab.novelreadingapp.data.Comment) {
+fun CommentItem(comment: Comment) {
     var showReplies by remember { mutableStateOf(false) }
     
     Column(
@@ -422,7 +410,7 @@ fun CommentItem(comment: com.miraimagiclab.novelreadingapp.data.Comment) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = comment.username,
+                text = comment.userId,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface
@@ -430,7 +418,7 @@ fun CommentItem(comment: com.miraimagiclab.novelreadingapp.data.Comment) {
         }
         
         Text(
-            text = comment.comment,
+            text = comment.content,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
             lineHeight = 20.sp
@@ -442,18 +430,18 @@ fun CommentItem(comment: com.miraimagiclab.novelreadingapp.data.Comment) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = comment.date,
+                text = comment.createdAt,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
             )
             
             // Reply button
-            if (comment.replies.isNotEmpty()) {
+            if (comment.replyCount > 0) {
                 TextButton(
                     onClick = { showReplies = !showReplies }
                 ) {
                     Text(
-                        text = if (showReplies) "Hide replies" else "Show ${comment.replies.size} replies",
+                        text = if (showReplies) "Hide replies" else "Show ${comment.replyCount} replies",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -461,70 +449,22 @@ fun CommentItem(comment: com.miraimagiclab.novelreadingapp.data.Comment) {
             }
         }
         
-        // Show replies if expanded
-        if (showReplies && comment.replies.isNotEmpty()) {
-            Column(
-                modifier = Modifier.padding(start = Spacing.md, top = Spacing.sm),
-                verticalArrangement = Arrangement.spacedBy(Spacing.sm)
-            ) {
-                comment.replies.forEach { reply ->
-                    ReplyItem(reply = reply)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun ReplyItem(reply: com.miraimagiclab.novelreadingapp.data.Reply) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        verticalAlignment = Alignment.Top
-    ) {
-        // Reply indicator line
-        Box(
-            modifier = Modifier
-                .width(2.dp)
-                .height(40.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                    shape = RoundedCornerShape(1.dp)
-                )
-        )
-        
-        Spacer(modifier = Modifier.width(Spacing.sm))
-        
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(2.dp)
-        ) {
+        // Show replies if expanded - Note: Backend doesn't have nested replies in Comment model
+        // This would need to be handled differently with separate API calls for replies
+        if (showReplies && comment.replyCount > 0) {
             Text(
-                text = reply.username,
+                text = "Replies functionality needs to be implemented with separate API calls",
                 style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            
-            Text(
-                text = reply.comment,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface,
-                lineHeight = 18.sp
-            )
-            
-            Text(
-                text = reply.date,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                modifier = Modifier.padding(start = Spacing.md, top = Spacing.sm)
             )
         }
     }
 }
 
+
 @Composable
-fun ReviewsContent(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail) {
+fun ReviewsContent(novelDetail: NovelDetail) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(Spacing.lg),
@@ -532,7 +472,7 @@ fun ReviewsContent(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail
     ) {
         // Average Rating Section
         item {
-            AverageRatingSection(bookDetail = bookDetail)
+            AverageRatingSection(novelDetail = novelDetail)
         }
         
         // Top Reviews Header
@@ -541,16 +481,16 @@ fun ReviewsContent(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail
         }
         
         // Individual Reviews
-        items(bookDetail.reviews) { review ->
+        items(novelDetail.reviews) { review ->
             DetailedReviewItem(review = review)
         }
     }
 }
 
 @Composable
-fun AverageRatingSection(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail) {
-    val averageRating = bookDetail.reviews.map { it.rating }.average()
-    val totalReviews = bookDetail.reviews.size
+fun AverageRatingSection(novelDetail: NovelDetail) {
+    val averageRating = novelDetail.reviews.map { it.overallRating }.average()
+    val totalReviews = novelDetail.reviews.size
     
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -598,7 +538,7 @@ fun AverageRatingSection(bookDetail: com.miraimagiclab.novelreadingapp.data.Book
         ) {
             // Calculate rating distribution
             val ratingDistribution = (1..5).map { star ->
-                bookDetail.reviews.count { it.rating == star }.toFloat() / totalReviews
+                novelDetail.reviews.count { it.overallRating.toInt() == star }.toFloat() / totalReviews
             }
             
             (5 downTo 1).forEachIndexed { index, star ->
@@ -690,7 +630,7 @@ fun TopReviewsHeader() {
 }
 
 @Composable
-fun DetailedReviewItem(review: com.miraimagiclab.novelreadingapp.data.Review) {
+fun DetailedReviewItem(review: Review) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -717,7 +657,7 @@ fun DetailedReviewItem(review: com.miraimagiclab.novelreadingapp.data.Review) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = review.username.take(1).uppercase(),
+                        text = review.userId.take(1).uppercase(),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -728,14 +668,14 @@ fun DetailedReviewItem(review: com.miraimagiclab.novelreadingapp.data.Review) {
                 
                 Column {
                     Text(
-                        text = review.username,
+                        text = review.userId,
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     
                     Text(
-                        text = review.date,
+                        text = review.createdAt,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
@@ -746,7 +686,7 @@ fun DetailedReviewItem(review: com.miraimagiclab.novelreadingapp.data.Review) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                repeat(review.rating) {
+                repeat(review.overallRating.toInt()) {
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = "Star",
@@ -766,7 +706,7 @@ fun DetailedReviewItem(review: com.miraimagiclab.novelreadingapp.data.Review) {
             
             // Review content
             Text(
-                text = review.comment,
+                text = review.reviewText,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 lineHeight = 20.sp
@@ -775,65 +715,17 @@ fun DetailedReviewItem(review: com.miraimagiclab.novelreadingapp.data.Review) {
     }
 }
 
-@Composable
-fun ReviewItem(review: com.miraimagiclab.novelreadingapp.data.Review) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(Spacing.xs)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = review.username,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                repeat(review.rating) {
-                    Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = "Star",
-                        tint = Color(0xFFFFD700),
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-            }
-        }
-        
-        Text(
-            text = review.comment,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            lineHeight = 20.sp
-        )
-        
-        Text(
-            text = review.date,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-        )
-    }
-}
 
 @Composable
-fun RecommendationsContent(bookDetail: com.miraimagiclab.novelreadingapp.data.BookDetail) {
+fun RecommendationsContent(novelDetail: NovelDetail) {
     LazyRow(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(bookDetail.recommendations) { book ->
+        items(novelDetail.recommendations) { novel ->
             BookCard(
-                book = book,
+                book = novel,
                 onClick = { /* Handle recommendation click */ }
             )
         }

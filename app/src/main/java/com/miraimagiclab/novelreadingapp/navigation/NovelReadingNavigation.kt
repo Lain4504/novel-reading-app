@@ -161,42 +161,23 @@ fun NovelReadingNavigation(
             val bookId = backStackEntry.arguments?.getString("bookId") ?: ""
             val chapterId = backStackEntry.arguments?.getString("chapterId") ?: ""
             
-            // Get book detail and chapter
-            val bookDetail = com.miraimagiclab.novelreadingapp.data.MockData.getBookDetail(bookId)
-            val chapter = bookDetail?.chapters?.find { it.id == chapterId }
-            
-            if (chapter != null) {
-                val chapters = bookDetail.chapters
-                val currentIndex = chapters.indexOf(chapter)
-                val hasPrevious = currentIndex > 0
-                val hasNext = currentIndex < chapters.size - 1
-                
-                ReadingScreen(
-                    chapterTitle = chapter.title,
-                    chapterContent = chapter.content.ifEmpty { "Chapter content not available." },
-                    onBackClick = {
-                        navController.popBackStack()
-                    },
-                    onPreviousChapter = {
-                        if (hasPrevious) {
-                            val prevChapter = chapters[currentIndex - 1]
-                            navController.navigate(Screen.Reading.createRoute(bookId, prevChapter.id)) {
-                                popUpTo(Screen.Reading.createRoute(bookId, chapterId))
-                            }
-                        }
-                    },
-                    onNextChapter = {
-                        if (hasNext) {
-                            val nextChapter = chapters[currentIndex + 1]
-                            navController.navigate(Screen.Reading.createRoute(bookId, nextChapter.id)) {
-                                popUpTo(Screen.Reading.createRoute(bookId, chapterId))
-                            }
-                        }
-                    },
-                    hasPreviousChapter = hasPrevious,
-                    hasNextChapter = hasNext
-                )
-            }
+            // TODO: Implement proper chapter loading from API
+            // For now, show placeholder content
+            ReadingScreen(
+                chapterTitle = "Chapter $chapterId",
+                chapterContent = "Chapter content will be loaded from the API. This is a placeholder.",
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onPreviousChapter = {
+                    // TODO: Implement previous chapter navigation
+                },
+                onNextChapter = {
+                    // TODO: Implement next chapter navigation
+                },
+                hasPreviousChapter = false,
+                hasNextChapter = false
+            )
         }
     }
 }

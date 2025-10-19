@@ -1,116 +1,122 @@
 package com.miraimagiclab.novelreadingapp.data.mapper
 
-import com.miraimagiclab.novelreadingapp.data.Book
-import com.miraimagiclab.novelreadingapp.data.BookDetail
-import com.miraimagiclab.novelreadingapp.data.BookType
-import com.miraimagiclab.novelreadingapp.data.Chapter
-import com.miraimagiclab.novelreadingapp.data.Comment
-import com.miraimagiclab.novelreadingapp.data.Reply
-import com.miraimagiclab.novelreadingapp.data.Review
 import com.miraimagiclab.novelreadingapp.data.remote.dto.ChapterDto
 import com.miraimagiclab.novelreadingapp.data.remote.dto.CommentDto
 import com.miraimagiclab.novelreadingapp.data.remote.dto.NovelDto
 import com.miraimagiclab.novelreadingapp.data.remote.dto.ReviewDto
-import com.miraimagiclab.novelreadingapp.domain.model.Novel
+import com.miraimagiclab.novelreadingapp.domain.model.*
 
 object NovelDetailMapper {
 
-    fun mapNovelDtoToBook(novelDto: NovelDto): Book {
-        return Book(
+    fun mapNovelDtoToNovel(novelDto: NovelDto): Novel {
+        return Novel(
             id = novelDto.id,
             title = novelDto.title,
-            author = novelDto.authorName,
-            series = null, // Backend doesn't have series field
-            type = mapStatusToBookType(novelDto.status),
-            genres = novelDto.categories.toList(),
-            score = novelDto.rating.toInt(),
-            coverUrl = novelDto.coverImage ?: "",
-            readTime = "${novelDto.wordCount} words",
-            releaseDate = novelDto.createdAt,
-            isCompleted = novelDto.status.equals("COMPLETED", ignoreCase = true)
+            description = novelDto.description,
+            authorName = novelDto.authorName,
+            coverImage = novelDto.coverImage,
+            categories = novelDto.categories.map { it.toString() },
+            viewCount = novelDto.viewCount,
+            followCount = novelDto.followCount,
+            commentCount = novelDto.commentCount,
+            rating = novelDto.rating,
+            ratingCount = novelDto.ratingCount,
+            wordCount = novelDto.wordCount,
+            chapterCount = novelDto.chapterCount,
+            authorId = novelDto.authorId,
+            status = mapStatusToNovelStatus(novelDto.status.toString()),
+            createdAt = novelDto.createdAt.toString(),
+            updatedAt = novelDto.updatedAt.toString(),
+            isR18 = novelDto.isR18
         )
     }
 
     fun mapChapterDtoToChapter(chapterDto: ChapterDto): Chapter {
         return Chapter(
             id = chapterDto.id,
-            title = chapterDto.chapterTitle,
-            isUnlocked = true, // Assume all chapters are unlocked
+            novelId = chapterDto.novelId,
+            chapterTitle = chapterDto.chapterTitle,
+            chapterNumber = chapterDto.chapterNumber,
+            content = chapterDto.content,
+            wordCount = chapterDto.wordCount,
+            viewCount = chapterDto.viewCount,
             createdAt = chapterDto.createdAt,
-            content = chapterDto.content
+            updatedAt = chapterDto.updatedAt
         )
     }
 
-    fun mapCommentDtoToComment(commentDto: CommentDto, replies: List<CommentDto> = emptyList()): Comment {
-        val replyList = replies.map { replyDto ->
-            Reply(
-                id = replyDto.id,
-                username = replyDto.userId, // TODO: Replace with actual username when user service is available
-                comment = replyDto.content,
-                date = replyDto.createdAt,
-                parentCommentId = replyDto.parentId ?: ""
-            )
-        }
-
+    fun mapCommentDtoToComment(commentDto: CommentDto): Comment {
         return Comment(
             id = commentDto.id,
-            username = commentDto.userId, // TODO: Replace with actual username when user service is available
-            comment = commentDto.content,
-            date = commentDto.createdAt,
-            replies = replyList
+            content = commentDto.content,
+            userId = commentDto.userId,
+            targetType = commentDto.targetType,
+            novelId = commentDto.novelId,
+            parentId = commentDto.parentId,
+            level = commentDto.level,
+            replyToId = commentDto.replyToId,
+            replyToUserName = commentDto.replyToUserName,
+            likeCount = commentDto.likeCount,
+            replyCount = commentDto.replyCount,
+            deleted = false, // Default value
+            message = null, // Default value
+            createdAt = commentDto.createdAt.toString(),
+            updatedAt = commentDto.updatedAt.toString()
         )
     }
 
     fun mapReviewDtoToReview(reviewDto: ReviewDto): Review {
         return Review(
             id = reviewDto.id,
-            username = reviewDto.userId, // TODO: Replace with actual username when user service is available
-            rating = reviewDto.overallRating.toInt(),
-            comment = reviewDto.reviewText,
-            date = reviewDto.createdAt
+            userId = reviewDto.userId,
+            novelId = reviewDto.novelId,
+            overallRating = reviewDto.overallRating,
+            writingQuality = reviewDto.writingQuality,
+            stabilityOfUpdates = reviewDto.stabilityOfUpdates,
+            storyDevelopment = reviewDto.storyDevelopment,
+            characterDesign = reviewDto.characterDesign,
+            worldBackground = reviewDto.worldBackground,
+            reviewText = reviewDto.reviewText,
+            wordCount = reviewDto.wordCount,
+            chaptersReadWhenReviewed = reviewDto.chaptersReadWhenReviewed,
+            totalChaptersAtReview = reviewDto.totalChaptersAtReview,
+            createdAt = reviewDto.createdAt.toString(),
+            updatedAt = reviewDto.updatedAt.toString()
         )
     }
 
-    fun createBookDetail(
+    fun createNovelDetail(
         novelDto: NovelDto,
         chapters: List<ChapterDto>,
         comments: List<CommentDto>,
         reviews: List<ReviewDto>,
         recommendations: List<NovelDto>
-    ): BookDetail {
-        val book = mapNovelDtoToBook(novelDto)
+    ): NovelDetail {
+        val novel = mapNovelDtoToNovel(novelDto)
         
         val chapterList = chapters.map { mapChapterDtoToChapter(it) }
-        
-        // Group comments by parent-child relationship
-        val topLevelComments = comments.filter { it.parentId == null }
-        val replies = comments.filter { it.parentId != null }
-        
-        val commentList = topLevelComments.map { comment ->
-            val commentReplies = replies.filter { it.parentId == comment.id }
-            mapCommentDtoToComment(comment, commentReplies)
-        }
-        
+        val commentList = comments.map { mapCommentDtoToComment(it) }
         val reviewList = reviews.map { mapReviewDtoToReview(it) }
-        val recommendationBooks = recommendations.map { mapNovelDtoToBook(it) }
+        val recommendationNovels = recommendations.map { mapNovelDtoToNovel(it) }
         
-        return BookDetail(
-            book = book,
-            summary = novelDto.description,
+        return NovelDetail(
+            novel = novel,
             chapters = chapterList,
-            volumes = emptyList(), // Backend doesn't have volumes
             reviews = reviewList,
             comments = commentList,
-            recommendations = recommendationBooks
+            recommendations = recommendationNovels
         )
     }
 
-    private fun mapStatusToBookType(status: String): BookType {
+    private fun mapStatusToNovelStatus(status: String): NovelStatus {
         return when (status.uppercase()) {
-            "COMPLETED" -> BookType.NOVEL
-            "ONGOING" -> BookType.NOVEL
-            "HIATUS" -> BookType.NOVEL
-            else -> BookType.NOVEL
+            "COMPLETED" -> NovelStatus.COMPLETED
+            "ONGOING" -> NovelStatus.ONGOING
+            "HIATUS" -> NovelStatus.HIATUS
+            "DRAFT" -> NovelStatus.DRAFT
+            "PUBLISHED" -> NovelStatus.PUBLISHED
+            "CANCELLED" -> NovelStatus.CANCELLED
+            else -> NovelStatus.OTHER
         }
     }
 
