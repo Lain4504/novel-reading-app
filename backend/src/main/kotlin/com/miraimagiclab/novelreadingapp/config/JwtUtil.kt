@@ -88,6 +88,10 @@ class JwtUtil {
         }
     }
 
+    fun getExpirationTime(token: String): Date {
+        return getClaimsFromToken(token).expiration
+    }
+
     private fun getClaimsFromToken(token: String): Claims {
         return Jwts.parser()
             .setSigningKey(key)
