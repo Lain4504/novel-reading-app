@@ -161,22 +161,12 @@ fun NovelReadingNavigation(
             val bookId = backStackEntry.arguments?.getString("bookId") ?: ""
             val chapterId = backStackEntry.arguments?.getString("chapterId") ?: ""
             
-            // TODO: Implement proper chapter loading from API
-            // For now, show placeholder content
             ReadingScreen(
-                chapterTitle = "Chapter $chapterId",
-                chapterContent = "Chapter content will be loaded from the API. This is a placeholder.",
+                novelId = bookId,
+                chapterId = chapterId,
                 onBackClick = {
                     navController.popBackStack()
-                },
-                onPreviousChapter = {
-                    // TODO: Implement previous chapter navigation
-                },
-                onNextChapter = {
-                    // TODO: Implement next chapter navigation
-                },
-                hasPreviousChapter = false,
-                hasNextChapter = false
+                }
             )
         }
     }

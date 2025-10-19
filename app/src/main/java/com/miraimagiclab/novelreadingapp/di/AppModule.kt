@@ -6,10 +6,13 @@ import com.miraimagiclab.novelreadingapp.data.local.prefs.ReadingSettingsDataSto
 import com.miraimagiclab.novelreadingapp.data.local.prefs.SettingsDataStore
 import com.miraimagiclab.novelreadingapp.data.repository.NovelRepositoryImpl
 import com.miraimagiclab.novelreadingapp.data.repository.NovelDetailRepositoryImpl
+import com.miraimagiclab.novelreadingapp.data.repository.ChapterRepositoryImpl
 import com.miraimagiclab.novelreadingapp.data.repository.ReadingSettingsRepository
 import com.miraimagiclab.novelreadingapp.data.repository.SettingsRepository
+import com.miraimagiclab.novelreadingapp.data.repository.ReadingProgressRepository
 import com.miraimagiclab.novelreadingapp.domain.repository.NovelRepository
 import com.miraimagiclab.novelreadingapp.domain.repository.NovelDetailRepository
+import com.miraimagiclab.novelreadingapp.domain.repository.ChapterRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -34,6 +37,12 @@ abstract class AppModule {
         novelDetailRepositoryImpl: NovelDetailRepositoryImpl
     ): NovelDetailRepository
 
+    @Binds
+    @Singleton
+    abstract fun bindChapterRepository(
+        chapterRepositoryImpl: ChapterRepositoryImpl
+    ): ChapterRepository
+
 
     companion object {
         @Provides
@@ -53,5 +62,14 @@ abstract class AppModule {
         fun provideReadingSettingsDataStore(@ApplicationContext context: Context): ReadingSettingsDataStore {
             return ReadingSettingsDataStore(context)
         }
+
+        @Provides
+        @Singleton
+        fun provideReadingProgressRepository(
+            userNovelInteractionApiService: com.miraimagiclab.novelreadingapp.data.remote.api.UserNovelInteractionApiService
+        ): ReadingProgressRepository {
+            return ReadingProgressRepository(userNovelInteractionApiService)
+        }
+
     }
 }
