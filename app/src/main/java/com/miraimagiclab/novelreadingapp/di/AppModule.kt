@@ -71,5 +71,6 @@ abstract class AppModule {
             return ReadingProgressRepository(userNovelInteractionApiService)
         }
 
+
     }
 }

@@ -73,6 +73,7 @@ class TokenRefreshRepository @Inject constructor(
                         loginResponse.user.id,
                         loginResponse.user.username,
                         loginResponse.user.email,
+                        null, // roles - will be updated later
                         expirationTime
                     )
                     

@@ -3,9 +3,10 @@ package com.miraimagiclab.novelreadingapp.data.remote.api
 import com.miraimagiclab.novelreadingapp.data.remote.dto.ApiResponse
 import com.miraimagiclab.novelreadingapp.data.remote.dto.NovelDto
 import com.miraimagiclab.novelreadingapp.data.remote.dto.PageResponse
-import retrofit2.http.GET
-import retrofit2.http.Path
-import retrofit2.http.Query
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import retrofit2.Response
+import retrofit2.http.*
 
 interface NovelApiService {
 
@@ -50,4 +51,45 @@ interface NovelApiService {
 
     @GET("novels/recent")
     suspend fun getRecentlyUpdatedNovels(): ApiResponse<List<NovelDto>>
+
+    // Author endpoints
+    @Multipart
+    @POST("novels")
+    suspend fun createNovel(
+        @Part("title") title: RequestBody,
+        @Part("description") description: RequestBody,
+        @Part("authorName") authorName: RequestBody,
+        @Part("authorId") authorId: RequestBody?,
+        @Part("categories") categories: RequestBody,
+        @Part("status") status: RequestBody,
+        @Part("isR18") isR18: RequestBody,
+        @Part coverImage: MultipartBody.Part?
+    ): Response<ApiResponse<NovelDto>>
+
+    @Multipart
+    @PUT("novels/{id}")
+    suspend fun updateNovel(
+        @Path("id") id: String,
+        @Part("title") title: RequestBody?,
+        @Part("description") description: RequestBody?,
+        @Part("authorName") authorName: RequestBody?,
+        @Part("authorId") authorId: RequestBody?,
+        @Part("categories") categories: RequestBody?,
+        @Part("rating") rating: RequestBody?,
+        @Part("wordCount") wordCount: RequestBody?,
+        @Part("chapterCount") chapterCount: RequestBody?,
+        @Part("status") status: RequestBody?,
+        @Part("isR18") isR18: RequestBody?,
+        @Part coverImage: MultipartBody.Part?
+    ): Response<ApiResponse<NovelDto>>
+
+    @DELETE("novels/{id}")
+    suspend fun deleteNovel(@Path("id") id: String): Response<ApiResponse<Nothing>>
+
+    @GET("novels/author/{authorId}")
+    suspend fun getNovelsByAuthor(
+        @Path("authorId") authorId: String,
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 20
+    ): Response<ApiResponse<PageResponse<NovelDto>>>
 }

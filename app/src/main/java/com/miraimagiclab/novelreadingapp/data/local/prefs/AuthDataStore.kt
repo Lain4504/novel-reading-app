@@ -20,6 +20,7 @@ class AuthDataStore(private val context: Context) {
         val USER_ID = stringPreferencesKey("user_id")
         val USERNAME = stringPreferencesKey("username")
         val EMAIL = stringPreferencesKey("email")
+        val USER_ROLES = stringPreferencesKey("user_roles")
     }
 
     val accessToken: Flow<String?> = context.dataStore.data.map { it[Keys.ACCESS_TOKEN] }
@@ -28,6 +29,7 @@ class AuthDataStore(private val context: Context) {
     val userId: Flow<String?> = context.dataStore.data.map { it[Keys.USER_ID] }
     val username: Flow<String?> = context.dataStore.data.map { it[Keys.USERNAME] }
     val email: Flow<String?> = context.dataStore.data.map { it[Keys.EMAIL] }
+    val userRoles: Flow<String?> = context.dataStore.data.map { it[Keys.USER_ROLES] }
 
     suspend fun saveTokens(accessToken: String, refreshToken: String, expirationTime: Long? = null) {
         context.dataStore.edit { prefs ->
@@ -37,11 +39,12 @@ class AuthDataStore(private val context: Context) {
         }
     }
 
-    suspend fun saveUser(userId: String, username: String, email: String) {
+    suspend fun saveUser(userId: String, username: String, email: String, roles: Set<String>? = null) {
         context.dataStore.edit { prefs ->
             prefs[Keys.USER_ID] = userId
             prefs[Keys.USERNAME] = username
             prefs[Keys.EMAIL] = email
+            roles?.let { prefs[Keys.USER_ROLES] = it.joinToString(",") }
         }
     }
 

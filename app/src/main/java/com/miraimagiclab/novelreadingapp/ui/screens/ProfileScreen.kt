@@ -22,6 +22,8 @@ import coil.compose.AsyncImage
 @Composable
 fun ProfileScreen(
     onLoginClick: () -> Unit = {},
+    onBecomeAuthorClick: () -> Unit = {},
+    onMyNovelsClick: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel(),
     settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
@@ -71,6 +73,18 @@ fun ProfileScreen(
             ProfileMenuItem("Subscription", Icons.Default.ShoppingCart) { }
             ProfileMenuItem("My Booklist", Icons.Default.Check) { }
             ProfileMenuItem("Reading progression", Icons.Default.DateRange) { }
+            
+            // Author features
+            if (!authState.roles.contains("AUTHOR")) {
+                ProfileMenuItem("Become Author", Icons.Default.Edit) { 
+                    onBecomeAuthorClick()
+                }
+            } else {
+                ProfileMenuItem("My Novels", Icons.Default.Info) {
+                    onMyNovelsClick()
+                }
+            }
+            
             ProfileMenuItem("Language options", Icons.Default.Place) { }
             ProfileMenuItem("Image quality", Icons.Default.FavoriteBorder) { }
             ProfileMenuItem("Clear cache", Icons.Default.Delete) { }

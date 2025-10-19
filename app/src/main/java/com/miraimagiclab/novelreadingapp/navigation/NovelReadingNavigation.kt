@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.miraimagiclab.novelreadingapp.ui.screens.*
 import com.miraimagiclab.novelreadingapp.ui.screens.auth.*
+import com.miraimagiclab.novelreadingapp.ui.screens.author.*
 import com.miraimagiclab.novelreadingapp.data.auth.SessionManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -59,6 +60,12 @@ fun NovelReadingNavigation(
                         // Clear the back stack to prevent going back to profile
                         popUpTo(Screen.Profile.route) { inclusive = true }
                     }
+                },
+                onBecomeAuthorClick = {
+                    navController.navigate(Screen.BecomeAuthor.route)
+                },
+                onMyNovelsClick = {
+                    navController.navigate(Screen.AuthorDashboard.route)
                 }
             )
         }
@@ -165,6 +172,121 @@ fun NovelReadingNavigation(
                 novelId = bookId,
                 chapterId = chapterId,
                 onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // Author screens
+        composable(Screen.BecomeAuthor.route) {
+            BecomeAuthorScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onSuccess = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.AuthorDashboard.route) {
+            AuthorDashboardScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onCreateNovelClick = {
+                    navController.navigate(Screen.CreateNovel.route)
+                },
+                onNovelClick = { novelId ->
+                    navController.navigate(Screen.NovelManage.createRoute(novelId))
+                }
+            )
+        }
+
+        composable(Screen.CreateNovel.route) {
+            CreateNovelScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onSuccess = { novelId ->
+                    navController.navigate(Screen.NovelManage.createRoute(novelId)) {
+                        popUpTo(Screen.AuthorDashboard.route)
+                    }
+                }
+            )
+        }
+
+        composable(
+            route = Screen.EditNovel.route,
+            arguments = Screen.EditNovel.arguments
+        ) { backStackEntry ->
+            val novelId = backStackEntry.arguments?.getString("novelId") ?: ""
+            
+            EditNovelScreen(
+                novelId = novelId,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onSuccess = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(
+            route = Screen.NovelManage.route,
+            arguments = Screen.NovelManage.arguments
+        ) { backStackEntry ->
+            val novelId = backStackEntry.arguments?.getString("novelId") ?: ""
+            
+            NovelManageScreen(
+                novelId = novelId,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onCreateChapterClick = {
+                    navController.navigate(Screen.CreateChapter.createRoute(novelId))
+                },
+                onEditChapterClick = { chapterId ->
+                    navController.navigate(Screen.EditChapter.createRoute(novelId, chapterId))
+                },
+                onEditNovelClick = {
+                    navController.navigate(Screen.EditNovel.createRoute(novelId))
+                }
+            )
+        }
+
+        composable(
+            route = Screen.CreateChapter.route,
+            arguments = Screen.CreateChapter.arguments
+        ) { backStackEntry ->
+            val novelId = backStackEntry.arguments?.getString("novelId") ?: ""
+            
+            CreateChapterScreen(
+                novelId = novelId,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onSuccess = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(
+            route = Screen.EditChapter.route,
+            arguments = Screen.EditChapter.arguments
+        ) { backStackEntry ->
+            val novelId = backStackEntry.arguments?.getString("novelId") ?: ""
+            val chapterId = backStackEntry.arguments?.getString("chapterId") ?: ""
+            
+            EditChapterScreen(
+                novelId = novelId,
+                chapterId = chapterId,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onSuccess = {
                     navController.popBackStack()
                 }
             )

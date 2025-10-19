@@ -38,6 +38,7 @@ class AuthRepository @Inject constructor(
                     login.user.id,
                     login.user.username,
                     login.user.email,
+                    null, // roles - will be updated later
                     expirationTime
                 )
             }
