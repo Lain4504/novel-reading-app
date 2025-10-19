@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
@@ -52,42 +53,23 @@ fun BookDetailsScreen(
     
     when (val currentState = uiState) {
         is UiState.Idle -> {
-            // Show loading state for idle as well
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
+            // Show skeleton loading state
+            BookDetailsSkeleton(
+                onBackClick = onBackClick
+            )
         }
         is UiState.Loading -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
+            // Show skeleton loading state
+            BookDetailsSkeleton(
+                onBackClick = onBackClick
+            )
         }
         is UiState.Error -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = currentState.message,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = { viewModel.refreshData() }) {
-                        Text("Retry")
-                    }
-                }
-            }
+            BookDetailsErrorState(
+                errorMessage = currentState.message,
+                onRetry = { viewModel.refreshData() },
+                onBackClick = onBackClick
+            )
         }
         is UiState.Success -> {
             val novelDetail = currentState.data
@@ -290,24 +272,42 @@ fun OverviewContent(novelDetail: NovelDetail) {
             .padding(Spacing.lg),
         verticalArrangement = Arrangement.spacedBy(Spacing.lg)
     ) {
+        // Novel Statistics Section
+        NovelStatsSection(novelDetail = novelDetail)
+        
         // Summary Section
         Text(
             text = "Summary",
             style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = FontWeight.Bold
         )
         
-        Text(
-            text = novelDetail.novel.description,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Text(
+                text = novelDetail.novel.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                lineHeight = 20.sp,
+                modifier = Modifier.padding(Spacing.md)
+            )
+        }
+        
+        // Novel Details Section
+        NovelDetailsSection(novelDetail = novelDetail)
         
         // Illustration Section
         Text(
             text = "Illustration",
             style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = FontWeight.Bold
         )
         
         Row(
@@ -336,20 +336,261 @@ fun OverviewContent(novelDetail: NovelDetail) {
 }
 
 @Composable
+fun NovelStatsSection(novelDetail: NovelDetail) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(Spacing.md),
+            verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+        ) {
+            Text(
+                text = "Novel Statistics",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                StatItem(
+                    label = "Views",
+                    value = novelDetail.novel.viewCount.toString(),
+                    icon = Icons.Default.Info
+                )
+                StatItem(
+                    label = "Follows",
+                    value = novelDetail.novel.followCount.toString(),
+                    icon = Icons.Default.Favorite
+                )
+                StatItem(
+                    label = "Comments",
+                    value = novelDetail.novel.commentCount.toString(),
+                    icon = Icons.Default.Info
+                )
+            }
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                StatItem(
+                    label = "Rating",
+                    value = String.format("%.1f", novelDetail.novel.rating),
+                    icon = Icons.Default.Star
+                )
+                StatItem(
+                    label = "Chapters",
+                    value = novelDetail.novel.chapterCount.toString(),
+                    icon = Icons.Default.Info
+                )
+                StatItem(
+                    label = "Words",
+                    value = "${novelDetail.novel.wordCount / 1000}K",
+                    icon = Icons.Default.Info
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun StatItem(
+    label: String,
+    value: String,
+    icon: ImageVector
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(Spacing.xs)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+            modifier = Modifier.size(20.dp)
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+        )
+    }
+}
+
+@Composable
+fun NovelDetailsSection(novelDetail: NovelDetail) {
+    Text(
+        text = "Novel Details",
+        style = MaterialTheme.typography.headlineSmall,
+        color = MaterialTheme.colorScheme.onSurface,
+        fontWeight = FontWeight.Bold
+    )
+    
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(Spacing.md),
+            verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+        ) {
+            DetailRow(
+                label = "Author",
+                value = novelDetail.novel.authorName,
+                icon = Icons.Default.Person
+            )
+            DetailRow(
+                label = "Status",
+                value = novelDetail.novel.status.name,
+                icon = Icons.Default.Info
+            )
+            DetailRow(
+                label = "Categories",
+                value = novelDetail.novel.categories.joinToString(", "),
+                icon = Icons.Default.Info
+            )
+            DetailRow(
+                label = "Created",
+                value = novelDetail.novel.createdAt,
+                icon = Icons.Default.Info
+            )
+            DetailRow(
+                label = "Updated",
+                value = novelDetail.novel.updatedAt,
+                icon = Icons.Default.Info
+            )
+            if (novelDetail.novel.isR18) {
+                DetailRow(
+                    label = "Content Rating",
+                    value = "R18",
+                    icon = Icons.Default.Warning,
+                    valueColor = MaterialTheme.colorScheme.error
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun DetailRow(
+    label: String,
+    value: String,
+    icon: ImageVector,
+    valueColor: Color = MaterialTheme.colorScheme.onSurface
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(16.dp)
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+            modifier = Modifier.width(80.dp)
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = valueColor,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
 fun ChaptersContent(
     novelDetail: NovelDetail,
     onChapterClick: (chapter: Chapter) -> Unit
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(Spacing.lg),
-        verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+    Column(
+        modifier = Modifier.fillMaxSize()
     ) {
-        items(novelDetail.chapters) { chapter ->
-            ChapterItem(
-                chapter = chapter,
-                onClick = { onChapterClick(chapter) }
+        // Chapters Header with count
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.lg),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Chapters (${novelDetail.chapters.size})",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
             )
+            
+            // Sort options (placeholder for future enhancement)
+            IconButton(onClick = { /* Handle sort */ }) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = "Sort chapters",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+        
+        if (novelDetail.chapters.isEmpty()) {
+            // Empty state
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(Spacing.xl),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(Spacing.md)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "No chapters",
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Text(
+                        text = "No chapters available",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = Spacing.lg, vertical = Spacing.sm),
+                verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+            ) {
+                items(novelDetail.chapters) { chapter ->
+                    ChapterItem(
+                        chapter = chapter,
+                        onClick = { onChapterClick(chapter) }
+                    )
+                }
+            }
         }
     }
 }
@@ -359,37 +600,156 @@ fun ChapterItem(
     chapter: Chapter,
     onClick: () -> Unit = {}
 ) {
-    Column(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(vertical = 8.dp, horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp)
+            .clickable { onClick() },
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Text(
-            text = chapter.chapterTitle,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        
-        Text(
-            text = "Created: ${chapter.createdAt}",
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-        )
+        Column(
+            modifier = Modifier.padding(Spacing.md),
+            verticalArrangement = Arrangement.spacedBy(Spacing.xs)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = chapter.chapterTitle,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f)
+                )
+                
+                Text(
+                    text = "Ch. ${chapter.chapterNumber}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "Views",
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Text(
+                        text = "${chapter.viewCount}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                    
+                    Spacer(modifier = Modifier.width(Spacing.sm))
+                    
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "Word count",
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Text(
+                        text = "${chapter.wordCount}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                }
+                
+                Text(
+                    text = chapter.createdAt,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
+            }
+        }
     }
 }
 
 @Composable
 fun CommentsContent(novelDetail: NovelDetail) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(Spacing.lg),
-        verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+    Column(
+        modifier = Modifier.fillMaxSize()
     ) {
-        items(novelDetail.comments) { comment ->
-            CommentItem(comment = comment)
+        // Comments Header with count
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.lg),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Comments (${novelDetail.comments.size})",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            
+            // Add comment button (placeholder for future enhancement)
+            IconButton(onClick = { /* Handle add comment */ }) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add comment",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+        
+        if (novelDetail.comments.isEmpty()) {
+            // Empty state
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(Spacing.xl),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(Spacing.md)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "No comments",
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Text(
+                        text = "No comments yet",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                    Text(
+                        text = "Be the first to comment!",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    )
+                }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = Spacing.lg, vertical = Spacing.sm),
+                verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+            ) {
+                items(novelDetail.comments) { comment ->
+                    CommentItem(comment = comment)
+                }
+            }
         }
     }
 }
@@ -398,66 +758,168 @@ fun CommentsContent(novelDetail: NovelDetail) {
 fun CommentItem(comment: Comment) {
     var showReplies by remember { mutableStateOf(false) }
     
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(Spacing.xs)
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.padding(Spacing.md),
+            verticalArrangement = Arrangement.spacedBy(Spacing.sm)
         ) {
-            Text(
-                text = comment.userId,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-        
-        Text(
-            text = comment.content,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            lineHeight = 20.sp
-        )
-        
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = comment.createdAt,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-            )
-            
-            // Reply button
-            if (comment.replyCount > 0) {
-                TextButton(
-                    onClick = { showReplies = !showReplies }
+            // User info row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
                 ) {
-                    Text(
-                        text = if (showReplies) "Hide replies" else "Show ${comment.replyCount} replies",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary
+                    // User avatar placeholder
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                shape = androidx.compose.foundation.shape.CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = comment.userId.take(1).uppercase(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    
+                    Column {
+                        Text(
+                            text = comment.userId,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = comment.createdAt,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
+                    }
+                }
+                
+                // Like button (placeholder)
+                IconButton(
+                    onClick = { /* Handle like */ },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ThumbUp,
+                        contentDescription = "Like comment",
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        modifier = Modifier.size(16.dp)
                     )
                 }
             }
-        }
-        
-        // Show replies if expanded - Note: Backend doesn't have nested replies in Comment model
-        // This would need to be handled differently with separate API calls for replies
-        if (showReplies && comment.replyCount > 0) {
+            
+            // Comment content
             Text(
-                text = "Replies functionality needs to be implemented with separate API calls",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                modifier = Modifier.padding(start = Spacing.md, top = Spacing.sm)
+                text = comment.content,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                lineHeight = 20.sp
             )
+            
+            // Action buttons row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.md)
+                ) {
+                    // Like count
+                    if (comment.likeCount > 0) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(Spacing.xs)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ThumbUp,
+                                contentDescription = "Likes",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Text(
+                                text = comment.likeCount.toString(),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                    
+                    // Reply button
+                    TextButton(
+                        onClick = { showReplies = !showReplies }
+                    ) {
+                        Text(
+                            text = if (showReplies) "Hide replies" else "Reply",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+                
+                // Reply count
+                if (comment.replyCount > 0) {
+                    TextButton(
+                        onClick = { showReplies = !showReplies }
+                    ) {
+                        Text(
+                            text = "${comment.replyCount} replies",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
+            
+            // Show replies if expanded
+            if (showReplies && comment.replyCount > 0) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = Spacing.sm),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(Spacing.md),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+                    ) {
+                        Text(
+                            text = "Replies functionality requires separate API call to load replies for comment ID: ${comment.id}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                        )
+                        Text(
+                            text = "Use CommentApiService.getRepliesByCommentId() to load replies",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -465,24 +927,85 @@ fun CommentItem(comment: Comment) {
 
 @Composable
 fun ReviewsContent(novelDetail: NovelDetail) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(Spacing.lg),
-        verticalArrangement = Arrangement.spacedBy(Spacing.lg)
+    Column(
+        modifier = Modifier.fillMaxSize()
     ) {
-        // Average Rating Section
-        item {
-            AverageRatingSection(novelDetail = novelDetail)
+        // Reviews Header with count
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.lg),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Reviews (${novelDetail.reviews.size})",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            
+            // Add review button (placeholder for future enhancement)
+            IconButton(onClick = { /* Handle add review */ }) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add review",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
         }
         
-        // Top Reviews Header
-        item {
-            TopReviewsHeader()
-        }
-        
-        // Individual Reviews
-        items(novelDetail.reviews) { review ->
-            DetailedReviewItem(review = review)
+        if (novelDetail.reviews.isEmpty()) {
+            // Empty state
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(Spacing.xl),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(Spacing.md)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "No reviews",
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Text(
+                        text = "No reviews yet",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                    Text(
+                        text = "Be the first to review this novel!",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    )
+                }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = Spacing.lg, vertical = Spacing.sm),
+                verticalArrangement = Arrangement.spacedBy(Spacing.lg)
+            ) {
+                // Average Rating Section
+                item {
+                    AverageRatingSection(novelDetail = novelDetail)
+                }
+                
+                // Top Reviews Header
+                item {
+                    TopReviewsHeader()
+                }
+                
+                // Individual Reviews
+                items(novelDetail.reviews) { review ->
+                    DetailedReviewItem(review = review)
+                }
+            }
         }
     }
 }
@@ -718,16 +1241,367 @@ fun DetailedReviewItem(review: Review) {
 
 @Composable
 fun RecommendationsContent(novelDetail: NovelDetail) {
-    LazyRow(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    Column(
+        modifier = Modifier.fillMaxSize()
     ) {
-        items(novelDetail.recommendations) { novel ->
-            BookCard(
-                book = novel,
-                onClick = { /* Handle recommendation click */ }
+        // Recommendations Header with count
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.lg),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Recommendations (${novelDetail.recommendations.size})",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
             )
+            
+            // Refresh recommendations button (placeholder for future enhancement)
+            IconButton(onClick = { /* Handle refresh recommendations */ }) {
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = "Refresh recommendations",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+        
+        if (novelDetail.recommendations.isEmpty()) {
+            // Empty state
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(Spacing.xl),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(Spacing.md)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "No recommendations",
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Text(
+                        text = "No recommendations available",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                    Text(
+                        text = "Check back later for similar novels!",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    )
+                }
+            }
+        } else {
+            LazyRow(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = Spacing.lg, vertical = Spacing.sm),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.md)
+            ) {
+                items(novelDetail.recommendations) { novel ->
+                    RecommendationCard(
+                        novel = novel,
+                        onClick = { /* Handle recommendation click */ }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun RecommendationCard(
+    novel: Novel,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .width(140.dp)
+            .clickable { onClick() },
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(Spacing.sm),
+            verticalArrangement = Arrangement.spacedBy(Spacing.xs)
+        ) {
+            // Book cover
+            AsyncImage(
+                model = novel.coverImage,
+                contentDescription = novel.title,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Crop
+            )
+            
+            // Book title
+            Text(
+                text = novel.title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            
+            // Author
+            Text(
+                text = novel.authorName,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            
+            // Rating
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.xs)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription = "Rating",
+                    tint = Color(0xFFFFD700),
+                    modifier = Modifier.size(12.dp)
+                )
+                Text(
+                    text = String.format("%.1f", novel.rating),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BookDetailsSkeleton(
+    onBackClick: () -> Unit
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Box(
+                        modifier = Modifier
+                            .width(200.dp)
+                            .height(24.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                                shape = RoundedCornerShape(4.dp)
+                            )
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                ),
+                windowInsets = WindowInsets(0)
+            )
+        },
+        bottomBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .padding(Spacing.lg)
+                    .background(
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            // Book Header Skeleton
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(Spacing.lg),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.lg)
+            ) {
+                // Book Cover Skeleton
+                Box(
+                    modifier = Modifier
+                        .width(120.dp)
+                        .height(160.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                )
+                
+                // Book Info Skeleton
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+                ) {
+                    repeat(5) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(16.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                                    shape = RoundedCornerShape(4.dp)
+                                )
+                        )
+                    }
+                }
+            }
+            
+            // Tab Row Skeleton
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Spacing.lg),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.md)
+            ) {
+                repeat(5) {
+                    Box(
+                        modifier = Modifier
+                            .width(80.dp)
+                            .height(32.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                                shape = RoundedCornerShape(16.dp)
+                            )
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(Spacing.lg))
+            
+            // Content Skeleton
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(Spacing.lg),
+                verticalArrangement = Arrangement.spacedBy(Spacing.md)
+            ) {
+                repeat(8) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(20.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                                shape = RoundedCornerShape(4.dp)
+                            )
+                    )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BookDetailsErrorState(
+    errorMessage: String,
+    onRetry: () -> Unit,
+    onBackClick: () -> Unit
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Error",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                ),
+                windowInsets = WindowInsets(0)
+            )
+        }
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(Spacing.lg),
+                modifier = Modifier.padding(Spacing.xl)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = "Error",
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(64.dp)
+                )
+                
+                Text(
+                    text = "Something went wrong",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                
+                Text(
+                    text = errorMessage,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+                
+                Spacer(modifier = Modifier.height(Spacing.lg))
+                
+                Button(
+                    onClick = onRetry,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Retry",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(Spacing.sm))
+                    Text("Try Again")
+                }
+            }
         }
     }
 }

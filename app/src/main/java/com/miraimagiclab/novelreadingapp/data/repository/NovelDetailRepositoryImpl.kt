@@ -45,31 +45,49 @@ class NovelDetailRepositoryImpl @Inject constructor(
                 val reviewsResponse = reviewsDeferred.await()
                 val recommendationsResponse = recommendationsDeferred.await()
 
-                // Check if all responses are successful
-                if (novelResponse.success && novelResponse.data != null &&
-                    chaptersResponse.success && chaptersResponse.data != null &&
-                    commentsResponse.success && commentsResponse.data != null &&
-                    reviewsResponse.success && reviewsResponse.data != null &&
-                    recommendationsResponse.success && recommendationsResponse.data != null) {
-
-                    val novelDto = novelResponse.data!!
-                    val chapters = chaptersResponse.data!!.content
-                    val comments = commentsResponse.data!!.content
-                    val reviews = reviewsResponse.data!!.content
-                    val recommendations = recommendationsResponse.data!!.filter { it.id != id }.take(3) // Exclude current novel
-
-                    // Create NovelDetail using mapper
-                    val novelDetail = NovelDetailMapper.createNovelDetail(
-                        novelDto = novelDto,
-                        chapters = chapters,
-                        comments = comments,
-                        reviews = reviews,
-                        recommendations = recommendations
-                    )
-
-                    // Cache the result
-                    cachedNovelDetails[id] = novelDetail
+                // Check if novel response is successful (required)
+                if (!novelResponse.success || novelResponse.data == null) {
+                    throw Exception("Failed to load novel details: ${novelResponse.message ?: "Unknown error"}")
                 }
+
+                val novelDto = novelResponse.data!!
+                
+                // Handle other responses with fallbacks for partial failures
+                val chapters = if (chaptersResponse.success && chaptersResponse.data != null) {
+                    chaptersResponse.data!!.content
+                } else {
+                    emptyList() // Fallback to empty list
+                }
+                
+                val comments = if (commentsResponse.success && commentsResponse.data != null) {
+                    commentsResponse.data!!.content
+                } else {
+                    emptyList() // Fallback to empty list
+                }
+                
+                val reviews = if (reviewsResponse.success && reviewsResponse.data != null) {
+                    reviewsResponse.data!!.content
+                } else {
+                    emptyList() // Fallback to empty list
+                }
+                
+                val recommendations = if (recommendationsResponse.success && recommendationsResponse.data != null) {
+                    recommendationsResponse.data!!.filter { it.id != id }.take(3) // Exclude current novel
+                } else {
+                    emptyList() // Fallback to empty list
+                }
+
+                // Create NovelDetail using mapper
+                val novelDetail = NovelDetailMapper.createNovelDetail(
+                    novelDto = novelDto,
+                    chapters = chapters,
+                    comments = comments,
+                    reviews = reviews,
+                    recommendations = recommendations
+                )
+
+                // Cache the result
+                cachedNovelDetails[id] = novelDetail
             }
         } catch (e: Exception) {
             // Handle error - cached data will still be available if it exists

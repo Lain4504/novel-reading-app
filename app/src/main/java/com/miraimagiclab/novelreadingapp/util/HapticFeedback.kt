@@ -1,6 +1,7 @@
 package com.miraimagiclab.novelreadingapp.util
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -8,6 +9,7 @@ import android.os.VibratorManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 
 @Composable
 fun rememberHapticFeedback(): HapticFeedback {
@@ -27,7 +29,20 @@ class HapticFeedback(private val context: Context) {
         }
     }
     
+    private val hasVibratePermission: Boolean by lazy {
+        ContextCompat.checkSelfPermission(
+            context,
+            android.Manifest.permission.VIBRATE
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+    
+    private fun canVibrate(): Boolean {
+        return hasVibratePermission && vibrator?.hasVibrator() == true
+    }
+    
     fun light() {
+        if (!canVibrate()) return
+        
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibrator?.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
         } else {
@@ -37,6 +52,8 @@ class HapticFeedback(private val context: Context) {
     }
     
     fun medium() {
+        if (!canVibrate()) return
+        
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibrator?.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
         } else {
@@ -46,6 +63,8 @@ class HapticFeedback(private val context: Context) {
     }
     
     fun heavy() {
+        if (!canVibrate()) return
+        
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibrator?.vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE))
         } else {
@@ -55,6 +74,8 @@ class HapticFeedback(private val context: Context) {
     }
     
     fun success() {
+        if (!canVibrate()) return
+        
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val pattern = longArrayOf(0, 50, 50, 50)
             val amplitudes = intArrayOf(0, 100, 0, 100)
@@ -66,6 +87,8 @@ class HapticFeedback(private val context: Context) {
     }
     
     fun error() {
+        if (!canVibrate()) return
+        
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val pattern = longArrayOf(0, 100, 50, 100)
             val amplitudes = intArrayOf(0, 150, 0, 150)
