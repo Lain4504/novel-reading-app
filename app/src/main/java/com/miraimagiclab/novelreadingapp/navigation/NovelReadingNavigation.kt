@@ -66,6 +66,12 @@ fun NovelReadingNavigation(
                 },
                 onMyNovelsClick = {
                     navController.navigate(Screen.AuthorDashboard.route)
+                },
+                onLogoutClick = {
+                    sessionManager.clearSession()
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Profile.route) { inclusive = true }
+                    }
                 }
             )
         }

@@ -24,6 +24,7 @@ fun ProfileScreen(
     onLoginClick: () -> Unit = {},
     onBecomeAuthorClick: () -> Unit = {},
     onMyNovelsClick: () -> Unit = {},
+    onLogoutClick: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel(),
     settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
@@ -105,6 +106,14 @@ fun ProfileScreen(
             SectionTitle("About katalis")
             ProfileMenuItem("Get to know katalis", Icons.Default.Add) { }
             ProfileMenuItem("Copyright", Icons.Default.Close) { }
+            
+            Divider(modifier = Modifier.padding(vertical = 8.dp))
+            
+            // Logout section
+            SectionTitle("Account")
+            ProfileMenuItem("Logout", Icons.Default.ExitToApp) {
+                onLogoutClick()
+            }
         }
     } else {
         // Show beautiful login prompt centered on screen
