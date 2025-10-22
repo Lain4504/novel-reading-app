@@ -45,6 +45,13 @@ hilt {
     enableAggregatingTask = false
 }
 
+<<<<<<< HEAD
+=======
+kapt {
+    correctErrorTypes = true
+}
+
+>>>>>>> 199f9453c9e2d3aa69691174bb0c5aaaab53e2eb
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -73,7 +80,11 @@ dependencies {
     
     // Dependency Injection - Hilt
     implementation("com.google.dagger:hilt-android:2.48")
+<<<<<<< HEAD
     kapt("com.google.dagger:hilt-compiler:2.48")
+=======
+    kapt("com.google.dagger:hilt-android-compiler:2.48")
+>>>>>>> 199f9453c9e2d3aa69691174bb0c5aaaab53e2eb
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
     
     // Room
@@ -89,6 +100,11 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.0.0")
     
     testImplementation(libs.junit)
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
+    testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation("androidx.test:core:1.5.0")
+    testImplementation("androidx.test.ext:junit:1.1.5")
+    testImplementation("androidx.compose.ui:ui-test-junit4")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

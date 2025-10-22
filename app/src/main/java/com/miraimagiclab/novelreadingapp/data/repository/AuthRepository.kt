@@ -2,8 +2,10 @@ package com.miraimagiclab.novelreadingapp.data.repository
 
 import com.miraimagiclab.novelreadingapp.data.remote.api.AuthApiService
 import com.miraimagiclab.novelreadingapp.data.remote.dto.*
+import com.miraimagiclab.novelreadingapp.data.auth.SessionManager
 import com.miraimagiclab.novelreadingapp.util.NetworkResult
 import com.miraimagiclab.novelreadingapp.util.NetworkResult.Loading
+import com.miraimagiclab.novelreadingapp.util.JwtTokenHelper
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import retrofit2.Response
@@ -12,14 +14,35 @@ import javax.inject.Singleton
 
 @Singleton
 class AuthRepository @Inject constructor(
-    private val authApiService: AuthApiService
+    private val authApiService: AuthApiService,
+    private val sessionManager: SessionManager
 ) {
 
     fun login(request: LoginRequest): Flow<NetworkResult<LoginResponse>> = flow {
         try {
             emit(Loading)
             val response = authApiService.login(request)
-            emit(handleApiResponse(response))
+            val result = handleApiResponse(response)
+            if (result is NetworkResult.Success) {
+                val login = result.data
+                // Calculate expiration time for the token
+                val expirationTime = try {
+                    JwtTokenHelper.getExpirationTime(login.token).time
+                } catch (e: Exception) {
+                    null
+                }
+                // Persist session
+                sessionManager.saveSession(
+                    login.token,
+                    login.refreshToken,
+                    login.user.id,
+                    login.user.username,
+                    login.user.email,
+                    null, // roles - will be updated later
+                    expirationTime
+                )
+            }
+            emit(result)
         } catch (e: Exception) {
             emit(NetworkResult.Error(e.message ?: "Unknown error occurred"))
         }
@@ -33,6 +56,10 @@ class AuthRepository @Inject constructor(
         } catch (e: Exception) {
             emit(NetworkResult.Error(e.message ?: "Unknown error occurred"))
         }
+    }
+
+    suspend fun logout() {
+        sessionManager.clearSession()
     }
 
     fun forgotPassword(email: String): Flow<NetworkResult<Unit>> = flow {

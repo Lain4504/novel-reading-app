@@ -4,8 +4,9 @@ data class UserDto(
     val id: String,
     val username: String,
     val email: String,
-    val role: String,
+    val roles: List<String>,
     val status: String,
+    val displayName: String? = null,
     val createdAt: String,
     val updatedAt: String
 )

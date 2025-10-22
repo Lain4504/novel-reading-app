@@ -11,7 +11,6 @@ sealed class Screen(
     object Home : Screen("home")
     object Explore : Screen("explore")
     object BookList : Screen("book_list")
-    object CompletedBook : Screen("completed_book")
     object InProgress : Screen("in_progress")
     object Profile : Screen("profile")
 
@@ -62,5 +61,43 @@ sealed class Screen(
         )
     ) {
         fun createRoute(bookId: String, chapterId: String) = "reading/$bookId/$chapterId"
+    }
+
+    // Author screens
+    object BecomeAuthor : Screen("become_author")
+    object AuthorDashboard : Screen("author_dashboard")
+    object CreateNovel : Screen("create_novel")
+    object EditNovel : Screen(
+        route = "edit_novel/{novelId}",
+        arguments = listOf(
+            navArgument("novelId") { type = NavType.StringType }
+        )
+    ) {
+        fun createRoute(novelId: String) = "edit_novel/$novelId"
+    }
+    object NovelManage : Screen(
+        route = "novel_manage/{novelId}",
+        arguments = listOf(
+            navArgument("novelId") { type = NavType.StringType }
+        )
+    ) {
+        fun createRoute(novelId: String) = "novel_manage/$novelId"
+    }
+    object CreateChapter : Screen(
+        route = "create_chapter/{novelId}",
+        arguments = listOf(
+            navArgument("novelId") { type = NavType.StringType }
+        )
+    ) {
+        fun createRoute(novelId: String) = "create_chapter/$novelId"
+    }
+    object EditChapter : Screen(
+        route = "edit_chapter/{novelId}/{chapterId}",
+        arguments = listOf(
+            navArgument("novelId") { type = NavType.StringType },
+            navArgument("chapterId") { type = NavType.StringType }
+        )
+    ) {
+        fun createRoute(novelId: String, chapterId: String) = "edit_chapter/$novelId/$chapterId"
     }
 }

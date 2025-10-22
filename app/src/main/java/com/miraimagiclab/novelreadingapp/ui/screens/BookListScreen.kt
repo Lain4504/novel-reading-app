@@ -1,8 +1,11 @@
 package com.miraimagiclab.novelreadingapp.ui.screens
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -11,8 +14,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -20,45 +23,137 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.miraimagiclab.novelreadingapp.data.MockData
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.miraimagiclab.novelreadingapp.domain.model.Novel
+import com.miraimagiclab.novelreadingapp.domain.model.NovelStatus
 import com.miraimagiclab.novelreadingapp.ui.components.BookCard
+import com.miraimagiclab.novelreadingapp.ui.components.ErrorState
 import com.miraimagiclab.novelreadingapp.ui.components.StatsCard
+import com.miraimagiclab.novelreadingapp.ui.viewmodel.BookListViewModel
+import com.miraimagiclab.novelreadingapp.util.UiState
 
 @Composable
 fun BookListScreen(
     onBookClick: (String) -> Unit = {},
     onNavigateInProgress: () -> Unit = {},
-    onNavigateCompleted: () -> Unit = {},
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    viewModel: BookListViewModel = hiltViewModel()
 ) {
-    // Combine mock lists (an toàn — tránh tham chiếu MockData.books nếu bạn không có)
-    val allBooks = remember { MockData.recommendedBooks + MockData.ourPickBooks }
+    val uiState by viewModel.uiState.collectAsState()
+    
+    when (val currentState = uiState) {
+        is UiState.Idle, is UiState.Loading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+        is UiState.Error -> {
+            ErrorState(
+                message = currentState.message,
+                onRetry = { viewModel.refreshData() },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+        is UiState.Success -> {
+            BookListContent(
+                novels = currentState.data.novels,
+                onBookClick = onBookClick,
+                onNavigateInProgress = onNavigateInProgress,
+                onBackClick = onBackClick,
+                onDeleteNovel = { novelId -> viewModel.deleteNovel(novelId) }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun BookListContent(
+    novels: List<Novel>,
+    onBookClick: (String) -> Unit,
+    onNavigateInProgress: () -> Unit,
+    onBackClick: () -> Unit,
+    onDeleteNovel: (String) -> Unit
+) {
 
     var query by remember { mutableStateOf("") }
     var showFilterMenu by remember { mutableStateOf(false) }
     var selectedFilter by remember { mutableStateOf("All") }
+    
+    // Drag and Drop state
+    var draggedNovelId by remember { mutableStateOf<String?>(null) }
+    var deleteButtonPosition by remember { mutableStateOf(Offset.Zero) }
+    var deleteButtonSize by remember { mutableStateOf(IntSize.Zero) }
+    var isHoveringDeleteButton by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var novelToDelete by remember { mutableStateOf<String?>(null) }
 
     // Filter logic (giữ giống Explore)
-    fun matchesFilter(book: com.miraimagiclab.novelreadingapp.data.Book): Boolean {
+    fun matchesFilter(book: Novel): Boolean {
         val filterOk = when (selectedFilter) {
             "All" -> true
-            "Novel" -> book.type == com.miraimagiclab.novelreadingapp.data.BookType.NOVEL
-            "Light Novel" -> book.type == com.miraimagiclab.novelreadingapp.data.BookType.LIGHT_NOVEL
-            "Manga" -> book.type == com.miraimagiclab.novelreadingapp.data.BookType.MANGA
+            "Novel" -> book.status.name == "NOVEL"
+            "Light Novel" -> book.status.name == "LIGHT_NOVEL"
+            "Manga" -> book.status.name == "MANGA"
             else -> true
         }
         val queryOk = query.isBlank() ||
                 book.title.contains(query, ignoreCase = true) ||
-                book.author.contains(query, ignoreCase = true)
+                book.authorName.contains(query, ignoreCase = true)
         return filterOk && queryOk
     }
 
-    val filteredBooks = remember(query, selectedFilter) {
-        allBooks.filter { matchesFilter(it) }
+    val filteredBooks = remember(novels, query, selectedFilter) {
+        novels.filter { matchesFilter(it) }
+    }
+    
+    val inProgressCount = remember(novels) {
+        novels.count { it.status != NovelStatus.COMPLETED }
+    }
+
+    // Delete confirmation dialog
+    if (showDeleteDialog && novelToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { 
+                showDeleteDialog = false
+                novelToDelete = null
+            },
+            title = { Text("Xóa Novel") },
+            text = { Text("Bạn có chắc chắn muốn xóa novel này khỏi danh sách của bạn?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        novelToDelete?.let { onDeleteNovel(it) }
+                        showDeleteDialog = false
+                        novelToDelete = null
+                    }
+                ) {
+                    Text("Đồng ý")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        novelToDelete = null
+                    }
+                ) {
+                    Text("Hủy")
+                }
+            }
+        )
     }
 
     Column(
@@ -66,28 +161,53 @@ fun BookListScreen(
             .fillMaxSize()
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        // Top bar (giống Explore)
+        // Top bar with Delete button
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onSurface
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                Text(
+                    text = "Book List",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 )
             }
-
-            Text(
-                text = "Book List",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            )
+            
+            // Delete Button (Drop Zone)
+            Box(
+                modifier = Modifier
+                    .onGloballyPositioned { coordinates ->
+                        deleteButtonPosition = coordinates.positionInRoot()
+                        deleteButtonSize = coordinates.size
+                    }
+            ) {
+                IconButton(
+                    onClick = { /* No direct click action */ }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = if (isHoveringDeleteButton) 
+                            MaterialTheme.colorScheme.error 
+                        else 
+                            androidx.compose.ui.graphics.Color(0xFF118B50)
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -179,7 +299,7 @@ fun BookListScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Stats row (2 sectors) — keep clickable via Modifier outside StatsCard
+        // Stats row (1 sector) — keep clickable via Modifier outside StatsCard
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -190,20 +310,10 @@ fun BookListScreen(
             StatsCard(
                 icon = Icons.Default.Favorite,
                 title = "In Progress",
-                value = "${allBooks.count { !it.isCompleted }} Books",
+                value = "$inProgressCount Books",
                 modifier = Modifier
-                    .weight(1f)
+                    .fillMaxWidth()
                     .clickable(onClick = onNavigateInProgress)
-            )
-
-            // Completed Books
-            StatsCard(
-                icon = Icons.Default.Check,
-                title = "Completed Books",
-                value = "${allBooks.count { it.isCompleted }} Books",
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable(onClick = onNavigateCompleted)
             )
         }
 
@@ -218,10 +328,49 @@ fun BookListScreen(
             contentPadding = PaddingValues(bottom = 80.dp)
         ) {
             items(filteredBooks, key = { it.id }) { book ->
-                BookCard(
-                    book = book,
-                    onClick = { onBookClick(book.id) }
-                )
+                Box(
+                    modifier = Modifier
+                        .pointerInput(book.id) {
+                            detectDragGesturesAfterLongPress(
+                                onDragStart = {
+                                    draggedNovelId = book.id
+                                },
+                                onDrag = { change, dragAmount ->
+                                    change.consume()
+                                    val currentPosition = change.position
+                                    
+                                    // Check if hovering over delete button
+                                    val isOver = currentPosition.x + deleteButtonPosition.x in 
+                                        deleteButtonPosition.x..(deleteButtonPosition.x + deleteButtonSize.width) &&
+                                        currentPosition.y in 
+                                        deleteButtonPosition.y..(deleteButtonPosition.y + deleteButtonSize.height)
+                                    
+                                    isHoveringDeleteButton = isOver
+                                },
+                                onDragEnd = {
+                                    if (isHoveringDeleteButton && draggedNovelId != null) {
+                                        novelToDelete = draggedNovelId
+                                        showDeleteDialog = true
+                                    }
+                                    draggedNovelId = null
+                                    isHoveringDeleteButton = false
+                                },
+                                onDragCancel = {
+                                    draggedNovelId = null
+                                    isHoveringDeleteButton = false
+                                }
+                            )
+                        }
+                ) {
+                    BookCard(
+                        book = book,
+                        onClick = { 
+                            if (draggedNovelId == null) {
+                                onBookClick(book.id) 
+                            }
+                        }
+                    )
+                }
             }
         }
     }

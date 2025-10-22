@@ -16,13 +16,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.miraimagiclab.novelreadingapp.data.Book
+import com.miraimagiclab.novelreadingapp.domain.model.Novel
 import com.miraimagiclab.novelreadingapp.ui.theme.CustomShapes
 import com.miraimagiclab.novelreadingapp.ui.theme.Spacing
 
 @Composable
 fun BookCard(
-    book: Book,
+    book: Novel,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -43,7 +43,7 @@ fun BookCard(
         ) {
             // Book cover
             AsyncImage(
-                model = book.coverUrl,
+                model = book.coverImage,
                 contentDescription = book.title,
                 modifier = Modifier
                     .fillMaxWidth()

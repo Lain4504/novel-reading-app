@@ -19,15 +19,20 @@ class ImageController(
     private val imageService: ImageService
 ) {
 
-    @Operation(summary = "Upload image", description = "Upload an image by selecting a file from local device")
+    @Operation(
+        summary = "Upload image", 
+        description = "Upload an image by selecting a file from local device. Maximum file size: 5MB. Supported formats: JPEG, PNG, GIF, WebP"
+    )
     @ApiResponses(
         value = [
-            ApiResponse(responseCode = "200", description = "Image uploaded successfully")
+            ApiResponse(responseCode = "200", description = "Image uploaded successfully"),
+            ApiResponse(responseCode = "413", description = "File size exceeds 5MB limit"),
+            ApiResponse(responseCode = "400", description = "Invalid file or empty file")
         ]
     )
     @PostMapping("/upload", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadImage(
-        @Parameter(description = "Image file to upload", required = true)
+        @Parameter(description = "Image file to upload (max 5MB, supported formats: JPEG, PNG, GIF, WebP)", required = true)
         @RequestPart("file") file: MultipartFile,
 
         @Parameter(description = "Owner ID", example = "123")
@@ -57,12 +62,23 @@ class ImageController(
         return ResponseEntity.status(302).headers(headers).build()
     }
 
-    @Operation(summary = "Update image file", description = "Replace existing image with a new one")
+    @Operation(
+        summary = "Update image file", 
+        description = "Replace existing image with a new one. Maximum file size: 5MB. Supported formats: JPEG, PNG, GIF, WebP"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Image updated successfully"),
+            ApiResponse(responseCode = "404", description = "Image not found"),
+            ApiResponse(responseCode = "413", description = "File size exceeds 5MB limit"),
+            ApiResponse(responseCode = "400", description = "Invalid file or empty file")
+        ]
+    )
     @PutMapping("/{id}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun updateImage(
         @PathVariable id: String,
 
-        @Parameter(description = "New image file to replace old one")
+        @Parameter(description = "New image file to replace old one (max 5MB, supported formats: JPEG, PNG, GIF, WebP)")
         @RequestPart("file") file: MultipartFile
     ): ResponseEntity<ImageResponse> {
         val res = imageService.updateImage(id, file)

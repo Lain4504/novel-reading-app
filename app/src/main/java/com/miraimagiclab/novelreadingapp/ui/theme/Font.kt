@@ -9,6 +9,26 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
+// Custom font families for reading
+val PalatinoFontFamily = FontFamily.Serif // Using system serif as Palatino alternative
+
+val NunitoFontFamily = FontFamily.SansSerif // Using system sans-serif as Nunito alternative
+
+val LiterataFontFamily = FontFamily.Serif // Using system serif as Literata alternative
+
+val AndikaFontFamily = FontFamily.SansSerif // Using system sans-serif as Andika alternative
+
+// Font family mapping for reading settings
+fun getFontFamilyByName(name: String): FontFamily {
+    return when (name) {
+        "palatino" -> PalatinoFontFamily
+        "nunito" -> NunitoFontFamily
+        "literata" -> LiterataFontFamily
+        "andika" -> AndikaFontFamily
+        else -> FontFamily.Default
+    }
+}
+
 // Simple font families using system fonts optimized for reading
 val ReadingFontFamily = FontFamily.Default // Uses system default which is usually Roboto on Android
 val UIFontFamily = FontFamily.Default
