@@ -31,4 +31,7 @@ interface NovelRepository {
     suspend fun refreshRecentlyUpdatedNovels()
     
     suspend fun getNovelById(id: String): Novel?
+    
+    // Get multiple novels by their IDs
+    suspend fun getNovelsByIds(ids: List<String>): List<Novel>
 }

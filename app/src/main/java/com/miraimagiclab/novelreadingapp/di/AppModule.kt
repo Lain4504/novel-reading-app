@@ -7,12 +7,14 @@ import com.miraimagiclab.novelreadingapp.data.local.prefs.SettingsDataStore
 import com.miraimagiclab.novelreadingapp.data.repository.NovelRepositoryImpl
 import com.miraimagiclab.novelreadingapp.data.repository.NovelDetailRepositoryImpl
 import com.miraimagiclab.novelreadingapp.data.repository.ChapterRepositoryImpl
+import com.miraimagiclab.novelreadingapp.data.repository.UserNovelInteractionRepositoryImpl
 import com.miraimagiclab.novelreadingapp.data.repository.ReadingSettingsRepository
 import com.miraimagiclab.novelreadingapp.data.repository.SettingsRepository
 import com.miraimagiclab.novelreadingapp.data.repository.ReadingProgressRepository
 import com.miraimagiclab.novelreadingapp.domain.repository.NovelRepository
 import com.miraimagiclab.novelreadingapp.domain.repository.NovelDetailRepository
 import com.miraimagiclab.novelreadingapp.domain.repository.ChapterRepository
+import com.miraimagiclab.novelreadingapp.domain.repository.UserNovelInteractionRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -43,6 +45,11 @@ abstract class AppModule {
         chapterRepositoryImpl: ChapterRepositoryImpl
     ): ChapterRepository
 
+    @Binds
+    @Singleton
+    abstract fun bindUserNovelInteractionRepository(
+        userNovelInteractionRepositoryImpl: UserNovelInteractionRepositoryImpl
+    ): UserNovelInteractionRepository
 
     companion object {
         @Provides

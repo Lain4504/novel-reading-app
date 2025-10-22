@@ -11,7 +11,6 @@ sealed class Screen(
     object Home : Screen("home")
     object Explore : Screen("explore")
     object BookList : Screen("book_list")
-    object CompletedBook : Screen("completed_book")
     object InProgress : Screen("in_progress")
     object Profile : Screen("profile")
 
