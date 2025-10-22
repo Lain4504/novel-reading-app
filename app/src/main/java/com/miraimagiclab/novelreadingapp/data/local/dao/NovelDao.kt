@@ -25,6 +25,9 @@ interface NovelDao {
     @Query("SELECT * FROM novels WHERE id = :id")
     suspend fun getNovelById(id: String): NovelEntity?
 
+    @Query("SELECT * FROM novels WHERE id IN (:ids)")
+    suspend fun getNovelsByIds(ids: List<String>): List<NovelEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertNovels(novels: List<NovelEntity>)
 

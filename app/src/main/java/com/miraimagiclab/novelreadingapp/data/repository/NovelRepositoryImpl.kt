@@ -194,4 +194,39 @@ class NovelRepositoryImpl @Inject constructor(
     override suspend fun getNovelById(id: String): Novel? {
         return novelDao.getNovelById(id)?.let { NovelMapper.mapEntityToDomain(it) }
     }
+
+    override suspend fun getNovelsByIds(ids: List<String>): List<Novel> {
+        // First try to get from local cache
+        val cachedNovels = novelDao.getNovelsByIds(ids).map { NovelMapper.mapEntityToDomain(it) }
+        
+        // Find missing novels
+        val cachedIds = cachedNovels.map { it.id }.toSet()
+        val missingIds = ids.filter { it !in cachedIds }
+        
+        // Fetch missing novels from API
+        if (missingIds.isNotEmpty()) {
+            try {
+                val fetchedNovels = mutableListOf<Novel>()
+                missingIds.forEach { novelId ->
+                    try {
+                        val response = novelApiService.getNovelById(novelId)
+                        if (response.success && response.data != null) {
+                            val novel = NovelMapper.mapDtoToDomain(response.data)
+                            fetchedNovels.add(novel)
+                            // Cache the novel
+                            novelDao.insertNovel(NovelMapper.mapDomainToEntity(novel))
+                        }
+                    } catch (e: Exception) {
+                        // Skip this novel if fetch fails
+                    }
+                }
+                return cachedNovels + fetchedNovels
+            } catch (e: Exception) {
+                // Return only cached novels if API call fails
+                return cachedNovels
+            }
+        }
+        
+        return cachedNovels
+    }
 }
