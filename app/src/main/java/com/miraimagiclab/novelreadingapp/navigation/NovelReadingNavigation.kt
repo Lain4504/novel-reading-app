@@ -46,11 +46,37 @@ fun NovelReadingNavigation(
         }
         
         composable(Screen.Explore.route) {
-            ExploreScreen()
+            ExploreScreen(
+                onBookClick = { novelId ->
+                    navController.navigate(Screen.BookDetails.createRoute(novelId))
+                },
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
         }
         
         composable(Screen.BookList.route) {
-            BookListScreen()
+            BookListScreen(
+                onBookClick = { novelId ->
+                    navController.navigate(Screen.BookDetails.createRoute(novelId))
+                },
+                onNavigateInProgress = {
+                    navController.navigate(Screen.InProgress.route)
+                },
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        
+        composable(Screen.InProgress.route) {
+            InProgressScreen(
+                navController = navController,
+                onBookClick = { novelId ->
+                    navController.navigate(Screen.BookDetails.createRoute(novelId))
+                }
+            )
         }
         
         composable(Screen.Profile.route) {

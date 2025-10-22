@@ -2,6 +2,7 @@ package com.miraimagiclab.novelreadingapp.data.remote.api
 
 import com.miraimagiclab.novelreadingapp.data.remote.dto.ApiResponse
 import com.miraimagiclab.novelreadingapp.data.remote.dto.UserNovelInteractionDto
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -49,4 +50,10 @@ interface UserNovelInteractionApiService {
     suspend fun getUserWishlist(
         @Path("userId") userId: String
     ): ApiResponse<List<UserNovelInteractionDto>>
+
+    @DELETE("interactions/users/{userId}/novels/{novelId}")
+    suspend fun deleteUserNovelInteraction(
+        @Path("userId") userId: String,
+        @Path("novelId") novelId: String
+    ): ApiResponse<Unit>
 }
