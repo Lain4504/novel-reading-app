@@ -23,7 +23,18 @@ class InProgressViewModel @Inject constructor(
     val uiState: StateFlow<UiState<InProgressUiState>> = _uiState.asStateFlow()
 
     init {
-        loadInProgressNovels()
+        // Observe auth state and reset data when logged out
+        viewModelScope.launch {
+            sessionManager.authState.collect { state ->
+                if (!state.isLoggedIn) {
+                    // Reset to idle state when user logs out
+                    _uiState.value = UiState.Idle
+                } else if (_uiState.value is UiState.Idle || _uiState.value is UiState.Loading) {
+                    // Load data when user is logged in and state is idle/loading
+                    loadInProgressNovels()
+                }
+            }
+        }
     }
 
     private fun loadInProgressNovels() {

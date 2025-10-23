@@ -33,6 +33,19 @@ class ProfileViewModel @Inject constructor(
     private val _uploadImageState = MutableStateFlow<UiState<String>>(UiState.Idle)
     val uploadImageState: StateFlow<UiState<String>> = _uploadImageState
 
+    init {
+        // Observe auth state and reset user details when logged out
+        viewModelScope.launch {
+            authState.collect { state ->
+                if (!state.isLoggedIn) {
+                    _userDetails.value = UiState.Idle
+                    _updateUserState.value = UiState.Idle
+                    _uploadImageState.value = UiState.Idle
+                }
+            }
+        }
+    }
+
     fun loadUserDetails() {
         val userId = authState.value.userId ?: return
         viewModelScope.launch {

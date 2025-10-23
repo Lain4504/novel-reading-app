@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
@@ -28,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.miraimagiclab.novelreadingapp.data.auth.SessionManager
 import com.miraimagiclab.novelreadingapp.ui.components.BannerCard
 import com.miraimagiclab.novelreadingapp.ui.components.ErrorState
 import com.miraimagiclab.novelreadingapp.ui.components.HomeScreenSkeleton
@@ -43,27 +45,42 @@ import com.miraimagiclab.novelreadingapp.util.rememberHapticFeedback
 @Composable
 fun HomeScreen(
     onNovelClick: (String) -> Unit,
-    viewModel: HomeViewModel = hiltViewModel()
+    onLoginClick: () -> Unit = {},
+    viewModel: HomeViewModel = hiltViewModel(),
+    sessionManager: SessionManager
 ) {
     val scrollState = rememberScrollState()
     val uiState by viewModel.uiState.collectAsState()
     val hapticFeedback = rememberHapticFeedback()
+    val authState by sessionManager.authState.collectAsState()
     
     Scaffold(
         contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
                 title = {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(Spacing.xs)
-                    ) {
+                    if (authState.isLoggedIn) {
+                        // Show personalized welcome when logged in
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(Spacing.xs)
+                        ) {
+                            Text(
+                                text = "Welcome back,",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            )
+                            Text(
+                                text = authState.username ?: "Reader",
+                                style = MaterialTheme.typography.headlineMedium.copy(
+                                    fontWeight = FontWeight.SemiBold
+                                ),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    } else {
+                        // Show app name when not logged in
                         Text(
-                            text = "Welcome back,",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                        )
-                        Text(
-                            text = "Cheyenne Curtis",
+                            text = "Novel Reading App",
                             style = MaterialTheme.typography.headlineMedium.copy(
                                 fontWeight = FontWeight.SemiBold
                             ),
@@ -72,6 +89,28 @@ fun HomeScreen(
                     }
                 },
                 actions = {
+                    // Login button - only show when not logged in
+                    if (!authState.isLoggedIn) {
+                        TextButton(
+                            onClick = onLoginClick,
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AccountCircle,
+                                contentDescription = "Login",
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Login",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                    
                     IconButton(onClick = { /* Handle notification */ }) {
                         Icon(
                             imageVector = Icons.Default.Notifications,
