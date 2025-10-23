@@ -6,31 +6,76 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Create
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.miraimagiclab.novelreadingapp.domain.model.Novel
 import com.miraimagiclab.novelreadingapp.domain.model.NovelStatus
 import com.miraimagiclab.novelreadingapp.ui.components.BookCard
-import androidx.compose.ui.draw.clip
+import com.miraimagiclab.novelreadingapp.ui.components.ErrorState
+import com.miraimagiclab.novelreadingapp.ui.components.NovelCard
+import com.miraimagiclab.novelreadingapp.ui.theme.Spacing
+import com.miraimagiclab.novelreadingapp.ui.viewmodel.ExploreViewModel
+import com.miraimagiclab.novelreadingapp.util.UiState
 
 
 @Composable
 fun ExploreScreen(
     onBookClick: (String) -> Unit = {},
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    viewModel: ExploreViewModel = hiltViewModel()
+) {
+    val scrollState = rememberScrollState()
+    val uiState by viewModel.uiState.collectAsState()
+    when (val currentState = uiState) {
+        is UiState.Idle, is UiState.Loading -> {
+            // Show loading state
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+        is UiState.Error -> {
+            ErrorState(
+                message = currentState.message,
+                onRetry = { viewModel.refreshData() },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+        is UiState.Success -> {
+            ExploreContent(
+                exploreData = currentState.data,
+                onBookClick = onBookClick,
+                onBackClick = onBackClick,
+                scrollState = scrollState
+            )
+        }
+    }
+}
+
+@Composable
+private fun ExploreContent(
+    exploreData: com.miraimagiclab.novelreadingapp.ui.viewmodel.ExploreUiState,
+    onBookClick: (String) -> Unit,
+    onBackClick: () -> Unit,
+    scrollState: androidx.compose.foundation.ScrollState
 ) {
     var query by remember { mutableStateOf("") }
     var showFilterMenu by remember { mutableStateOf(false) }
@@ -51,53 +96,41 @@ fun ExploreScreen(
         return filterOk && queryOk
     }
 
-    val recommended = remember(query, selectedFilter) {
-        emptyList<Novel>() // TODO: Load recommended books from API
+    val recommended = remember(exploreData, query, selectedFilter) {
+        exploreData.recommendedNovels.filter { matchesFilter(it) }
     }
-    val ourPicks = remember(query, selectedFilter) {
-        emptyList<Novel>() // TODO: Load our picks from API
+    val ourPicks = remember(exploreData, query, selectedFilter) {
+        exploreData.ourPicksNovels.filter { matchesFilter(it) }
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(scrollState)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
 
-        // 🔙 Top bar with Back + Title + Trash Button
+        // 🔙 Top bar with Back + Title
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween // cho 2 phần ở 2 đầu
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-                Text(
-                    text = "Explore Books",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                )
-            }
-
-            // Trash Button
-            IconButton(onClick = { /* TODO: handle delete action */ }) {
+            IconButton(onClick = onBackClick) {
                 Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete",
-                    tint = androidx.compose.ui.graphics.Color(0xFF118B50) // xanh lá chuẩn Material
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
-
+            Text(
+                text = "Explore Books",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            )
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -216,10 +249,22 @@ fun ExploreScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(recommended) { book ->
-                BookCard(book = book, onClick = { onBookClick(book.id) })
+        if (recommended.isNotEmpty()) {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                contentPadding = PaddingValues(horizontal = Spacing.xs)
+            ) {
+                items(recommended) { book ->
+                    NovelCard(novel = book, onClick = { onBookClick(book.id) })
+                }
             }
+        } else {
+            Text(
+                text = "No recommended books found",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                modifier = Modifier.padding(vertical = 16.dp)
+            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -250,10 +295,22 @@ fun ExploreScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(ourPicks) { book ->
-                BookCard(book = book, onClick = { onBookClick(book.id) })
+        if (ourPicks.isNotEmpty()) {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                contentPadding = PaddingValues(horizontal = Spacing.xs)
+            ) {
+                items(ourPicks) { book ->
+                    NovelCard(novel = book, onClick = { onBookClick(book.id) })
+                }
             }
+        } else {
+            Text(
+                text = "No books found in our picks",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                modifier = Modifier.padding(vertical = 16.dp)
+            )
         }
     }
 }
