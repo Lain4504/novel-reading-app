@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.miraimagiclab.novelreadingapp.domain.model.Novel
 import com.miraimagiclab.novelreadingapp.domain.model.NovelStatus
-import com.miraimagiclab.novelreadingapp.ui.components.BookCard
 import com.miraimagiclab.novelreadingapp.ui.components.ErrorState
 import com.miraimagiclab.novelreadingapp.ui.components.NovelCard
 import com.miraimagiclab.novelreadingapp.ui.theme.Spacing

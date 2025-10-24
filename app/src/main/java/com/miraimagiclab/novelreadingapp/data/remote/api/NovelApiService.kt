@@ -92,4 +92,10 @@ interface NovelApiService {
         @Query("page") page: Int = 0,
         @Query("size") size: Int = 20
     ): Response<ApiResponse<PageResponse<NovelDto>>>
+
+    @GET("novels/{novelId}/recommendations")
+    suspend fun getRecommendationsByNovel(
+        @Path("novelId") novelId: String,
+        @Query("limit") limit: Int = 5
+    ): ApiResponse<List<NovelDto>>
 }

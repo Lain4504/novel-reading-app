@@ -38,15 +38,15 @@ sealed class Screen(
         fun createRoute(email: String, code: String) = "reset_password/$email/$code"
     }
 
-    object BookDetails : Screen(
-        route = "book_details/{bookId}",
+    object NovelDetail : Screen(
+        route = "novel_detail/{bookId}",
         arguments = listOf(
             navArgument("bookId") {
                 type = NavType.StringType
             }
         )
     ) {
-        fun createRoute(bookId: String) = "book_details/$bookId"
+        fun createRoute(bookId: String) = "novel_detail/$bookId"
     }
 
     object Reading : Screen(
@@ -61,6 +61,28 @@ sealed class Screen(
         )
     ) {
         fun createRoute(bookId: String, chapterId: String) = "reading/$bookId/$chapterId"
+    }
+
+    object Comments : Screen(
+        route = "comments/{novelId}",
+        arguments = listOf(
+            navArgument("novelId") {
+                type = NavType.StringType
+            }
+        )
+    ) {
+        fun createRoute(novelId: String) = "comments/$novelId"
+    }
+
+    object CreateReview : Screen(
+        route = "create_review/{novelId}",
+        arguments = listOf(
+            navArgument("novelId") {
+                type = NavType.StringType
+            }
+        )
+    ) {
+        fun createRoute(novelId: String) = "create_review/$novelId"
     }
 
     // Author screens

@@ -80,7 +80,7 @@ fun HomeScreen(
                     } else {
                         // Show app name when not logged in
                         Text(
-                            text = "Novel Reading App",
+                            text = "Ranoku",
                             style = MaterialTheme.typography.headlineMedium.copy(
                                 fontWeight = FontWeight.SemiBold
                             ),
@@ -109,32 +109,12 @@ fun HomeScreen(
                                 fontWeight = FontWeight.SemiBold
                             )
                         }
-                    }
-                    
-                    IconButton(onClick = { /* Handle notification */ }) {
-                        Icon(
-                            imageVector = Icons.Default.Notifications,
-                            contentDescription = "Notifications",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                },
-                navigationIcon = {
-                    if (authState.isLoggedIn) {
-                        IconButton(onClick = { /* Handle profile */ }) {
-                            Icon(
-                                imageVector = Icons.Default.AccountCircle,
-                                contentDescription = "Profile",
-                                modifier = Modifier.size(32.dp),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
                     } else {
-                        IconButton(onClick = onLoginClick) {
+                        // Show notification bell only when logged in
+                        IconButton(onClick = { /* Handle notification */ }) {
                             Icon(
-                                imageVector = Icons.Default.AccountCircle,
-                                contentDescription = "Login",
-                                modifier = Modifier.size(32.dp),
+                                imageVector = Icons.Default.Notifications,
+                                contentDescription = "Notifications",
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }

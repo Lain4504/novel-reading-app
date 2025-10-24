@@ -36,8 +36,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.miraimagiclab.novelreadingapp.data.auth.SessionManager
 import com.miraimagiclab.novelreadingapp.domain.model.Novel
 import com.miraimagiclab.novelreadingapp.domain.model.NovelStatus
-import com.miraimagiclab.novelreadingapp.ui.components.BookCard
 import com.miraimagiclab.novelreadingapp.ui.components.ErrorState
+import com.miraimagiclab.novelreadingapp.ui.components.NovelCard
 import com.miraimagiclab.novelreadingapp.ui.components.StatsCard
 import com.miraimagiclab.novelreadingapp.ui.theme.GreenPrimary
 import com.miraimagiclab.novelreadingapp.ui.viewmodel.BookListViewModel
@@ -446,8 +446,8 @@ private fun BookListContent(
                             )
                         }
                 ) {
-                    BookCard(
-                        book = book,
+                    NovelCard(
+                        novel = book,
                         onClick = { 
                             if (draggedNovelId == null) {
                                 onBookClick(book.id) 

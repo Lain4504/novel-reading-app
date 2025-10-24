@@ -121,7 +121,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideNovelApiService(@Named("authedRetrofit") retrofit: Retrofit): NovelApiService {
+    fun provideNovelApiService(@Named("authlessRetrofit") retrofit: Retrofit): NovelApiService {
         return retrofit.create(NovelApiService::class.java)
     }
 
@@ -140,7 +140,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideChapterApiService(@Named("authedRetrofit") retrofit: Retrofit): ChapterApiService {
+    fun provideChapterApiService(@Named("authlessRetrofit") retrofit: Retrofit): ChapterApiService {
         return retrofit.create(ChapterApiService::class.java)
     }
 
@@ -152,7 +152,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideReviewApiService(@Named("authedRetrofit") retrofit: Retrofit): ReviewApiService {
+    fun provideReviewApiService(@Named("authlessRetrofit") retrofit: Retrofit): ReviewApiService {
         return retrofit.create(ReviewApiService::class.java)
     }
 
@@ -170,7 +170,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideImageApiService(@Named("authedRetrofit") retrofit: Retrofit): ImageApiService {
+    fun provideImageApiService(@Named("authlessRetrofit") retrofit: Retrofit): ImageApiService {
         return retrofit.create(ImageApiService::class.java)
     }
 }

@@ -33,7 +33,7 @@ fun NovelReadingNavigation(
         composable(Screen.Home.route) {
             HomeScreen(
                 onNovelClick = { novelId ->
-                    navController.navigate(Screen.BookDetails.createRoute(novelId))
+                    navController.navigate(Screen.NovelDetail.createRoute(novelId))
                 },
                 onLoginClick = {
                     navController.navigate(Screen.Login.route)
@@ -45,7 +45,7 @@ fun NovelReadingNavigation(
         composable(Screen.Explore.route) {
             ExploreScreen(
                 onBookClick = { novelId ->
-                    navController.navigate(Screen.BookDetails.createRoute(novelId))
+                    navController.navigate(Screen.NovelDetail.createRoute(novelId))
                 },
                 onBackClick = {
                     navController.popBackStack()
@@ -56,7 +56,7 @@ fun NovelReadingNavigation(
         composable(Screen.BookList.route) {
             BookListScreen(
                 onBookClick = { novelId ->
-                    navController.navigate(Screen.BookDetails.createRoute(novelId))
+                    navController.navigate(Screen.NovelDetail.createRoute(novelId))
                 },
                 onNavigateInProgress = {
                     navController.navigate(Screen.InProgress.route)
@@ -75,7 +75,7 @@ fun NovelReadingNavigation(
             InProgressScreen(
                 navController = navController,
                 onBookClick = { novelId ->
-                    navController.navigate(Screen.BookDetails.createRoute(novelId))
+                    navController.navigate(Screen.NovelDetail.createRoute(novelId))
                 }
             )
         }
@@ -183,17 +183,23 @@ fun NovelReadingNavigation(
         }
         
         composable(
-            route = Screen.BookDetails.route,
-            arguments = Screen.BookDetails.arguments
+            route = Screen.NovelDetail.route,
+            arguments = Screen.NovelDetail.arguments
         ) { backStackEntry ->
             val bookId = backStackEntry.arguments?.getString("bookId") ?: ""
-            BookDetailsScreen(
+            NovelDetailScreen(
                 bookId = bookId,
                 onBackClick = {
                     navController.popBackStack()
                 },
                 onChapterClick = { chapter ->
                     navController.navigate(Screen.Reading.createRoute(bookId, chapter.id))
+                },
+                onNavigateToComments = { novelId ->
+                    navController.navigate(Screen.Comments.createRoute(novelId))
+                },
+                onNavigateToCreateReview = { novelId ->
+                    navController.navigate(Screen.CreateReview.createRoute(novelId))
                 }
             )
         }
@@ -209,6 +215,35 @@ fun NovelReadingNavigation(
                 novelId = bookId,
                 chapterId = chapterId,
                 onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(
+            route = Screen.Comments.route,
+            arguments = Screen.Comments.arguments
+        ) { backStackEntry ->
+            val novelId = backStackEntry.arguments?.getString("novelId") ?: ""
+            CommentsScreen(
+                novelId = novelId,
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(
+            route = Screen.CreateReview.route,
+            arguments = Screen.CreateReview.arguments
+        ) { backStackEntry ->
+            val novelId = backStackEntry.arguments?.getString("novelId") ?: ""
+            CreateReviewScreen(
+                novelId = novelId,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onReviewSubmitted = {
                     navController.popBackStack()
                 }
             )
