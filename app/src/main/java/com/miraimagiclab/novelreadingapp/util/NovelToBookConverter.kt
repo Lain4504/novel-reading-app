@@ -5,6 +5,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 object NovelToBookConverter {
+
     // Commented out until Book and BookType are defined
     /*
     fun novelToBook(novel: Novel): Book {
