@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface OTPRepository : MongoRepository<OTP, String> {
     fun findByEmailAndCodeAndType(email: String, code: String, type: OTPType): OTP?
+    fun findByEmailAndTypeOrderByCreatedAtDesc(email: String, type: OTPType): List<OTP>
 }

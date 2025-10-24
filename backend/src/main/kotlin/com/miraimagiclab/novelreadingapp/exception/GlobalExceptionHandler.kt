@@ -29,6 +29,26 @@ class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(body)
     }
 
+    @ExceptionHandler(DuplicateUserException::class)
+    fun handleDuplicateUser(ex: DuplicateUserException): ResponseEntity<Map<String, String>> {
+        val body: Map<String, String> = mapOf(
+            "error" to "Duplicate user",
+            "message" to (ex.message ?: "User already exists"),
+            "status" to "409"
+        )
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body)
+    }
+
+    @ExceptionHandler(UserNotFoundException::class)
+    fun handleUserNotFound(ex: UserNotFoundException): ResponseEntity<Map<String, String>> {
+        val body: Map<String, String> = mapOf(
+            "error" to "User not found",
+            "message" to (ex.message ?: "User not found"),
+            "status" to "404"
+        )
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body)
+    }
+
     @ExceptionHandler(IllegalArgumentException::class)
     fun handleIllegalArgument(ex: IllegalArgumentException): ResponseEntity<Map<String, String>> {
         val body: Map<String, String> = mapOf(
