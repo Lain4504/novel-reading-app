@@ -25,7 +25,6 @@ fun NovelReadingNavigation(
 ) {
     val authState by sessionManager.authState.collectAsState()
     
-    
     NavHost(
         navController = navController,
         startDestination = Screen.Home.route,
@@ -35,10 +34,11 @@ fun NovelReadingNavigation(
             HomeScreen(
                 onNovelClick = { novelId ->
                     navController.navigate(Screen.BookDetails.createRoute(novelId))
-                    },
+                },
                 onLoginClick = {
                     navController.navigate(Screen.Login.route)
-                }
+                },
+                sessionManager = sessionManager
             )
         }
         
@@ -63,7 +63,11 @@ fun NovelReadingNavigation(
                 },
                 onBackClick = {
                     navController.popBackStack()
-                }
+                },
+                onLoginClick = {
+                    navController.navigate(Screen.Login.route)
+                },
+                sessionManager = sessionManager
             )
         }
         
@@ -92,8 +96,8 @@ fun NovelReadingNavigation(
                 },
                 onLogoutClick = {
                     sessionManager.clearSession()
-                    navController.navigate(Screen.Login.route) {
-                        popUpTo(Screen.Profile.route) { inclusive = true }
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(0) { inclusive = true }
                     }
                 }
             )
@@ -101,7 +105,14 @@ fun NovelReadingNavigation(
 
         // Auth routes
         composable(Screen.Login.route) {
-            LoginScreen(navController = navController)
+            LoginScreen(
+                navController = navController,
+                onBackClick = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                }
+            )
         }
 
         composable(Screen.Register.route) {

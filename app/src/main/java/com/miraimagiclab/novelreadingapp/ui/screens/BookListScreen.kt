@@ -33,11 +33,13 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.miraimagiclab.novelreadingapp.data.auth.SessionManager
 import com.miraimagiclab.novelreadingapp.domain.model.Novel
 import com.miraimagiclab.novelreadingapp.domain.model.NovelStatus
 import com.miraimagiclab.novelreadingapp.ui.components.BookCard
 import com.miraimagiclab.novelreadingapp.ui.components.ErrorState
 import com.miraimagiclab.novelreadingapp.ui.components.StatsCard
+import com.miraimagiclab.novelreadingapp.ui.theme.GreenPrimary
 import com.miraimagiclab.novelreadingapp.ui.viewmodel.BookListViewModel
 import com.miraimagiclab.novelreadingapp.util.UiState
 
@@ -46,10 +48,92 @@ fun BookListScreen(
     onBookClick: (String) -> Unit = {},
     onNavigateInProgress: () -> Unit = {},
     onBackClick: () -> Unit = {},
-    viewModel: BookListViewModel = hiltViewModel()
+    onLoginClick: () -> Unit = {},
+    viewModel: BookListViewModel = hiltViewModel(),
+    sessionManager: SessionManager
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val authState by sessionManager.authState.collectAsState()
     
+    // Show login prompt if not logged in
+    if (!authState.isLoggedIn) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // App branding
+            Text(
+                text = "📚",
+                style = MaterialTheme.typography.displayLarge
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Novel Reading App",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            // Welcome message
+            Text(
+                text = "Your Book Collection",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Please login to access your book list and reading progress",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 32.dp)
+            )
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            // Beautiful login button
+            Button(
+                onClick = { onLoginClick() },
+                modifier = Modifier
+                    .fillMaxWidth(0.8f)
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = GreenPrimary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                shape = MaterialTheme.shapes.large
+            ) {
+                Text(
+                    text = "Login to Continue",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Additional info
+            Text(
+                text = "Track your favorite novels and continue where you left off",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 24.dp)
+            )
+        }
+        return
+    }
+    
+    // Show content when logged in
     when (val currentState = uiState) {
         is UiState.Idle, is UiState.Loading -> {
             Box(
