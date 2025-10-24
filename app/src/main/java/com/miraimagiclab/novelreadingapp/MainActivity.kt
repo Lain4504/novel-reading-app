@@ -46,7 +46,8 @@ class MainActivity : ComponentActivity() {
                     // Navigation will handle redirecting to login
                 }
                 is com.miraimagiclab.novelreadingapp.data.repository.TokenRefreshResult.Error -> {
-                    // Log error but don't force logout for network errors
+                    // Session will be automatically cleared by the repository
+                    // Navigation will handle redirecting to login
                     android.util.Log.w("MainActivity", "Token refresh failed: ${result.message}")
                 }
                 else -> {

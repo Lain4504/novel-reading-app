@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -22,16 +24,7 @@ fun NovelReadingNavigation(
     modifier: Modifier = Modifier
 ) {
     val authState by sessionManager.authState.collectAsState()
-    
-    // Handle automatic logout when session is cleared
-    LaunchedEffect(authState.isLoggedIn) {
-        if (!authState.isLoggedIn) {
-            // Navigate to login screen and clear back stack
-            navController.navigate(Screen.Login.route) {
-                popUpTo(0) { inclusive = true }
-            }
-        }
-    }
+
     NavHost(
         navController = navController,
         startDestination = Screen.Home.route,
@@ -41,6 +34,9 @@ fun NovelReadingNavigation(
             HomeScreen(
                 onNovelClick = { novelId ->
                     navController.navigate(Screen.BookDetails.createRoute(novelId))
+                },
+                onLoginClick = {
+                    navController.navigate(Screen.Login.route)
                 }
             )
         }
@@ -142,15 +138,17 @@ fun NovelReadingNavigation(
                 onSubmit = { code ->
                     if (type == "password-reset") {
                         navController.navigate(Screen.ResetPassword.createRoute(email, code))
-                    } else {
-                        // Handle account verification success
-                        navController.navigate(Screen.Home.route) {
-                            popUpTo(0) { inclusive = true }
-                        }
+                    } else if (type == "account-verification") {
+                        // Account verification is handled by the ViewModel, navigation will be triggered on success
                     }
                 },
                 onResendCode = {
                     // Implement resend logic
+                },
+                onSuccess = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.OTPVerification.route) { inclusive = true }
+                    }
                 }
             )
         }

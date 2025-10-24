@@ -116,25 +116,6 @@ fun ProfileScreen(
             }
 
             Divider()
-
-            // Account settings
-            SectionTitle("Account settings")
-            ProfileMenuItem("Personal data", Icons.Default.Person) { }
-            ProfileMenuItem("Account security", Icons.Default.AccountBox) { }
-            ProfileMenuItem("Notification", Icons.Default.Notifications) { }
-            ProfileMenuItem("Subscription", Icons.Default.ShoppingCart) { }
-            ProfileMenuItem("My Booklist", Icons.Default.Check) { }
-            ProfileMenuItem("Reading progression", Icons.Default.DateRange) { }
-            ProfileMenuItem("Language options", Icons.Default.Place) { }
-            ProfileMenuItem("Image quality", Icons.Default.FavoriteBorder) { }
-            ProfileMenuItem("Clear cache", Icons.Default.Delete) { }
-
-            Divider(modifier = Modifier.padding(vertical = 8.dp))
-
-            // About katalis
-            SectionTitle("About katalis")
-            ProfileMenuItem("Get to know katalis", Icons.Default.Add) { }
-            ProfileMenuItem("Copyright", Icons.Default.Close) { }
         }
     } else {
         // Show beautiful login prompt centered on screen

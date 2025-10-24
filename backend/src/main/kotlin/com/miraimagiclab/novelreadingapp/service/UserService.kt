@@ -8,6 +8,7 @@ import com.miraimagiclab.novelreadingapp.enumeration.UserRoleEnum
 import com.miraimagiclab.novelreadingapp.enumeration.UserStatusEnum
 import com.miraimagiclab.novelreadingapp.exception.DuplicateUserException
 import com.miraimagiclab.novelreadingapp.exception.UserNotFoundException
+import com.miraimagiclab.novelreadingapp.model.OTPType
 import com.miraimagiclab.novelreadingapp.model.User
 import com.miraimagiclab.novelreadingapp.repository.UserRepository
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -28,7 +29,8 @@ class UserService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder,
     private val jwtUtil: JwtUtil,
-    private val emailService: EmailService
+    private val emailService: EmailService,
+    private val otpService: OTPService
 ) {
 
     fun createUser(request: UserCreateRequest): UserDto {
@@ -49,7 +51,7 @@ class UserService(
             email = request.email,
             password = passwordEncoder.encode(request.password),
             roles = request.roles ?: setOf(UserRoleEnum.USER),
-            status = request.status ?: UserStatusEnum.ACTIVE,
+            status = UserStatusEnum.INACTIVE, // Set status to INACTIVE until verified
             avatarUrl = request.avatarUrl,
             backgroundUrl = request.backgroundUrl,
             authorName = request.authorName,
@@ -63,13 +65,15 @@ class UserService(
 
         val savedUser = userRepository.save(user)
 
-        // Send account verification email with activation link
+        // Send account verification OTP instead of email link
         try {
-            emailService.sendVerificationEmail(savedUser.email, savedUser.username, savedUser.verificationToken!!)
+            val otp = otpService.generateOTP(savedUser.email, OTPType.ACCOUNT_VERIFICATION)
+            println("DEBUG: Generated OTP for ${savedUser.email}: ${otp.code}")
         } catch (e: Exception) {
             // Log the error but don't fail registration
             // In a real app, you'd use a logger
-            println("Failed to send verification email: ${e.message}")
+            println("Failed to send verification OTP: ${e.message}")
+            e.printStackTrace()
         }
 
         return UserDto.fromEntity(savedUser)
@@ -159,6 +163,11 @@ class UserService(
             throw UserNotFoundException("Invalid username/email or password")
         }
 
+        // Check if account is active
+        if (user.status != UserStatusEnum.ACTIVE) {
+            throw UserNotFoundException("Account is not activated. Please verify your email first.")
+        }
+
         val token = jwtUtil.generateToken(user)
         val refreshToken = jwtUtil.generateRefreshToken(user)
 
@@ -186,7 +195,27 @@ class UserService(
             updatedAt = LocalDateTime.now()
         )
 
-        userRepository.save(updatedUser)
+        val savedUser = userRepository.save(updatedUser)
+        println("DEBUG: Account activated for email $email, new status: ${savedUser.status}")
+    }
+
+    fun activateAccountByOTP(email: String, otpCode: String): Boolean {
+        // First check if user exists
+        val user = userRepository.findByEmail(email).orElse(null)
+            ?: throw UserNotFoundException("User with email '$email' not found")
+
+        // Verify OTP first
+        val isValidOTP = otpService.verifyOTP(email, otpCode, OTPType.ACCOUNT_VERIFICATION)
+        if (!isValidOTP) {
+            return false
+        }
+
+        // Activate account
+        activateAccount(email)
+
+        // Verify the account was actually activated
+        val activatedUser = userRepository.findByEmail(email).orElse(null)
+        return activatedUser?.status == UserStatusEnum.ACTIVE
     }
 
     fun findByVerificationToken(token: String): User? {

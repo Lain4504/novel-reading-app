@@ -45,13 +45,10 @@ hilt {
     enableAggregatingTask = false
 }
 
-<<<<<<< HEAD
-=======
 kapt {
     correctErrorTypes = true
 }
 
->>>>>>> 199f9453c9e2d3aa69691174bb0c5aaaab53e2eb
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -80,11 +77,7 @@ dependencies {
     
     // Dependency Injection - Hilt
     implementation("com.google.dagger:hilt-android:2.48")
-<<<<<<< HEAD
-    kapt("com.google.dagger:hilt-compiler:2.48")
-=======
     kapt("com.google.dagger:hilt-android-compiler:2.48")
->>>>>>> 199f9453c9e2d3aa69691174bb0c5aaaab53e2eb
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
     
     // Room

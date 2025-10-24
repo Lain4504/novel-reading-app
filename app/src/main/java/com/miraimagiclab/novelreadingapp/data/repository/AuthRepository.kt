@@ -95,6 +95,21 @@ class AuthRepository @Inject constructor(
         }
     }
 
+    fun verifyAccountOtp(email: String, code: String): Flow<NetworkResult<Boolean>> = flow {
+        try {
+            println("DEBUG: AuthRepository.verifyAccountOtp called with email: $email, code: $code")
+            emit(Loading)
+            val request = mapOf("email" to email, "code" to code)
+            val response = authApiService.verifyAccountOtp(request)
+            val result = handleApiResponse(response)
+            println("DEBUG: AuthRepository.verifyAccountOtp result: $result")
+            emit(result)
+        } catch (e: Exception) {
+            println("DEBUG: AuthRepository.verifyAccountOtp exception: ${e.message}")
+            emit(NetworkResult.Error(e.message ?: "Unknown error occurred"))
+        }
+    }
+
     private fun <T> handleApiResponse(response: Response<ApiResponse<T>>): NetworkResult<T> {
         return if (response.isSuccessful) {
             response.body()?.let { apiResponse ->
@@ -105,7 +120,24 @@ class AuthRepository @Inject constructor(
                 }
             } ?: NetworkResult.Error("Response body is null")
         } else {
-            NetworkResult.Error("HTTP ${response.code()}: ${response.message()}")
+            // Handle specific HTTP error codes
+            when (response.code()) {
+                400, 403, 409 -> {
+                    // Try to parse error message from response body for auth and conflict errors
+                    response.errorBody()?.string()?.let { errorBody ->
+                        try {
+                            // Parse JSON error response
+                            val errorJson = com.google.gson.Gson().fromJson(errorBody, Map::class.java)
+                            val message = errorJson["message"] as? String ?: "Request error"
+                            NetworkResult.Error(message)
+                        } catch (e: Exception) {
+                            NetworkResult.Error("HTTP ${response.code()}: ${response.message()}")
+                        }
+                    } ?: NetworkResult.Error("HTTP ${response.code()}: ${response.message()}")
+                }
+                404 -> NetworkResult.Error("Unable to connect to server. Please check your internet connection.")
+                else -> NetworkResult.Error("HTTP ${response.code()}: ${response.message()}")
+            }
         }
     }
 }

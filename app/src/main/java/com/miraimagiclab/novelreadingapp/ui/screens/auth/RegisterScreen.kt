@@ -51,47 +51,6 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Social login buttons
-        SocialLoginButton(
-            text = "Continue with Google",
-            onClick = { /* TODO: Implement Google registration */ },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        SocialLoginButton(
-            text = "Continue with Facebook",
-            onClick = { /* TODO: Implement Facebook registration */ },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        SocialLoginButton(
-            text = "Continue with Apple",
-            onClick = { /* TODO: Implement Apple registration */ },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Divider
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            HorizontalDivider(modifier = Modifier.weight(1f))
-            Text(
-                text = "Or",
-                modifier = Modifier.padding(horizontal = 16.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            HorizontalDivider(modifier = Modifier.weight(1f))
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
         // Sign up with email button
         OutlinedButton(
             onClick = { navController.navigate(Screen.RegisterWithEmail.route) },
@@ -116,26 +75,6 @@ fun RegisterScreen(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 16.dp)
-        )
-    }
-}
-
-@Composable
-private fun SocialLoginButton(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    OutlinedButton(
-        onClick = onClick,
-        modifier = modifier.height(44.dp),
-        border = ButtonDefaults.outlinedButtonBorder.copy(
-            width = 1.dp
-        )
-    ) {
-        Text(
-            text = text,
-            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }

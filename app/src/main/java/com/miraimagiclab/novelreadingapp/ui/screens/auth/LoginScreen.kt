@@ -132,7 +132,7 @@ fun LoginScreen(
 
         // Sign in button
         Button(
-            onClick = { viewModel.login(email, password) },
+            onClick = { viewModel.login(email.trim(), password.trim()) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
@@ -155,47 +155,6 @@ fun LoginScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Divider
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            HorizontalDivider(modifier = Modifier.weight(1f))
-            Text(
-                text = "Or",
-                modifier = Modifier.padding(horizontal = 16.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            HorizontalDivider(modifier = Modifier.weight(1f))
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Social login buttons
-        SocialLoginButton(
-            text = "Continue with Google",
-            onClick = { /* TODO: Implement Google login */ },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        SocialLoginButton(
-            text = "Continue with Facebook",
-            onClick = { /* TODO: Implement Facebook login */ },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        SocialLoginButton(
-            text = "Continue with Apple",
-            onClick = { /* TODO: Implement Apple login */ },
-            modifier = Modifier.fillMaxWidth()
-        )
-
         Spacer(modifier = Modifier.height(32.dp))
 
         // Sign up link
@@ -215,23 +174,5 @@ fun LoginScreen(
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun SocialLoginButton(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    OutlinedButton(
-        onClick = onClick,
-        modifier = modifier.height(44.dp),
-        border = ButtonDefaults.outlinedButtonBorder
-    ) {
-        Text(
-            text = text,
-            color = MaterialTheme.colorScheme.onSurface
-        )
     }
 }

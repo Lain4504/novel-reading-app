@@ -43,27 +43,39 @@ import com.miraimagiclab.novelreadingapp.util.rememberHapticFeedback
 @Composable
 fun HomeScreen(
     onNovelClick: (String) -> Unit,
+    onLoginClick: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val scrollState = rememberScrollState()
     val uiState by viewModel.uiState.collectAsState()
     val hapticFeedback = rememberHapticFeedback()
+    val authState by viewModel.authState.collectAsState()
     
     Scaffold(
         contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
                 title = {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(Spacing.xs)
-                    ) {
+                    if (authState.isLoggedIn) {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(Spacing.xs)
+                        ) {
+                            Text(
+                                text = "Welcome back,",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            )
+                            Text(
+                                text = authState.username ?: "User",
+                                style = MaterialTheme.typography.headlineMedium.copy(
+                                    fontWeight = FontWeight.SemiBold
+                                ),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    } else {
                         Text(
-                            text = "Welcome back,",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                        )
-                        Text(
-                            text = "Cheyenne Curtis",
+                            text = "Novel Reading App",
                             style = MaterialTheme.typography.headlineMedium.copy(
                                 fontWeight = FontWeight.SemiBold
                             ),
@@ -72,22 +84,35 @@ fun HomeScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* Handle notification */ }) {
-                        Icon(
-                            imageVector = Icons.Default.Notifications,
-                            contentDescription = "Notifications",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                    if (authState.isLoggedIn) {
+                        IconButton(onClick = { /* Handle notification */ }) {
+                            Icon(
+                                imageVector = Icons.Default.Notifications,
+                                contentDescription = "Notifications",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = { /* Handle profile */ }) {
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = "Profile",
-                            modifier = Modifier.size(32.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                    if (authState.isLoggedIn) {
+                        IconButton(onClick = { /* Handle profile */ }) {
+                            Icon(
+                                imageVector = Icons.Default.AccountCircle,
+                                contentDescription = "Profile",
+                                modifier = Modifier.size(32.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    } else {
+                        IconButton(onClick = onLoginClick) {
+                            Icon(
+                                imageVector = Icons.Default.AccountCircle,
+                                contentDescription = "Login",
+                                modifier = Modifier.size(32.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                 },
                 windowInsets = WindowInsets(0),

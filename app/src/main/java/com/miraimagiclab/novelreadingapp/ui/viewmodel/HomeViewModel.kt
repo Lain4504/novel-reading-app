@@ -2,6 +2,8 @@ package com.miraimagiclab.novelreadingapp.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.miraimagiclab.novelreadingapp.data.auth.AuthState
+import com.miraimagiclab.novelreadingapp.data.auth.SessionManager
 import com.miraimagiclab.novelreadingapp.domain.model.Novel
 import com.miraimagiclab.novelreadingapp.domain.repository.NovelRepository
 import com.miraimagiclab.novelreadingapp.util.UiState
@@ -17,8 +19,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val novelRepository: NovelRepository
+    private val novelRepository: NovelRepository,
+    sessionManager: SessionManager
 ) : ViewModel() {
+    val authState: StateFlow<AuthState> = sessionManager.authState
 
     private val _uiState = MutableStateFlow<UiState<HomeUiState>>(UiState.Loading)
     val uiState: StateFlow<UiState<HomeUiState>> = _uiState.asStateFlow()
