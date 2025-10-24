@@ -48,7 +48,7 @@ class ReadingProgressRepositoryTest {
             success = true,
             message = "Success",
             data = dto,
-            timestamp = "2024-01-01T00:00:00Z"
+            timestamp = "2024-01-01T00:00:00"
         )
         
         coEvery { mockApiService.getUserNovelInteraction(userId, novelId) } returns apiResponse
@@ -74,7 +74,7 @@ class ReadingProgressRepositoryTest {
             success = false,
             message = "Not found",
             data = null,
-            timestamp = "2024-01-01T00:00:00Z"
+            timestamp = "2024-01-01T00:00:00"
         )
         
         coEvery { mockApiService.getUserNovelInteraction(userId, novelId) } returns apiResponse
@@ -128,7 +128,7 @@ class ReadingProgressRepositoryTest {
             success = true,
             message = "Updated successfully",
             data = dto,
-            timestamp = "2024-01-01T00:00:00Z"
+            timestamp = "2024-01-01T00:00:00"
         )
         
         coEvery { 
@@ -158,7 +158,7 @@ class ReadingProgressRepositoryTest {
             success = false,
             message = "Update failed",
             data = null,
-            timestamp = "2024-01-01T00:00:00Z"
+            timestamp = "2024-01-01T00:00:00"
         )
         
         coEvery { 
