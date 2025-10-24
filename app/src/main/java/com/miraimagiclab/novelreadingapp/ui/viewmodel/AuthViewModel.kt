@@ -28,6 +28,9 @@ class AuthViewModel @Inject constructor(
 
     private val _verifyOtpState = MutableStateFlow<UiState<Boolean>>(UiState.Idle)
     val verifyOtpState: StateFlow<UiState<Boolean>> = _verifyOtpState
+    
+    private val _verifyAccountState = MutableStateFlow<UiState<Boolean>>(UiState.Idle)
+    val verifyAccountState: StateFlow<UiState<Boolean>> = _verifyAccountState
 
     private val _resetPasswordState = MutableStateFlow<UiState<Unit>>(UiState.Idle)
     val resetPasswordState: StateFlow<UiState<Unit>> = _resetPasswordState
@@ -108,7 +111,31 @@ class AuthViewModel @Inject constructor(
         _verifyOtpState.value = UiState.Idle
     }
 
+     fun verifyAccountOtp(email: String, code: String) {
+        println("DEBUG: AuthViewModel.verifyAccountOtp called with email: $email, code: $code")
+        viewModelScope.launch {
+            authRepository.verifyAccountOtp(email, code).collect { result ->
+                println("DEBUG: AuthViewModel.verifyAccountOtp result: $result")
+                when (result) {
+                    is NetworkResult.Loading -> _verifyAccountState.value = UiState.Loading
+                    is NetworkResult.Success -> {
+                        println("DEBUG: AuthViewModel.verifyAccountOtp success: ${result.data}")
+                        _verifyAccountState.value = UiState.Success(result.data)
+                    }
+                    is NetworkResult.Error -> {
+                        println("DEBUG: AuthViewModel.verifyAccountOtp error: ${result.message}")
+                        _verifyAccountState.value = UiState.Error(result.message)
+                    }
+                }
+            }
+        }
+    }
+
     fun resetResetPasswordState() {
         _resetPasswordState.value = UiState.Idle
+    }
+
+    fun resetVerifyAccountState() {
+        _verifyAccountState.value = UiState.Idle
     }
 }

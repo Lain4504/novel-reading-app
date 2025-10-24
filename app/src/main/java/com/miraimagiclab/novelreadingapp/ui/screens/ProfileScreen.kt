@@ -157,6 +157,8 @@ fun ProfileScreen(
             ProfileMenuItem("Logout", Icons.Default.ExitToApp) {
                 onLogoutClick()
             }
+            
+            Divider()
         }
 
         // Edit Profile Dialog

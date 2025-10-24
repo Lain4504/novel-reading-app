@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -23,7 +25,6 @@ fun NovelReadingNavigation(
 ) {
     val authState by sessionManager.authState.collectAsState()
     
-    // No automatic navigation on logout - user stays on current screen or can manually navigate
     NavHost(
         navController = navController,
         startDestination = Screen.Home.route,
@@ -106,11 +107,6 @@ fun NovelReadingNavigation(
         composable(Screen.Login.route) {
             LoginScreen(
                 navController = navController,
-                onBackClick = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
-                    }
-                }
             )
         }
 
@@ -149,15 +145,17 @@ fun NovelReadingNavigation(
                 onSubmit = { code ->
                     if (type == "password-reset") {
                         navController.navigate(Screen.ResetPassword.createRoute(email, code))
-                    } else {
-                        // Handle account verification success
-                        navController.navigate(Screen.Home.route) {
-                            popUpTo(0) { inclusive = true }
-                        }
+                    } else if (type == "account-verification") {
+                        // Account verification is handled by the ViewModel, navigation will be triggered on success
                     }
                 },
                 onResendCode = {
                     // Implement resend logic
+                    },
+                onSuccess = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.OTPVerification.route) { inclusive = true }
+                    }
                 }
             )
         }

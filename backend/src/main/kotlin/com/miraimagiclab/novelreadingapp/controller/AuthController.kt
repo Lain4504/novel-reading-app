@@ -5,16 +5,18 @@ import com.miraimagiclab.novelreadingapp.dto.ForgotPasswordRequest
 import com.miraimagiclab.novelreadingapp.dto.ResetPasswordRequest
 import com.miraimagiclab.novelreadingapp.dto.VerifyOTPRequest
 import com.miraimagiclab.novelreadingapp.enumeration.UserStatusEnum
+import com.miraimagiclab.novelreadingapp.exception.UserNotFoundException
 import com.miraimagiclab.novelreadingapp.model.OTPType
 import com.miraimagiclab.novelreadingapp.service.EmailService
 import com.miraimagiclab.novelreadingapp.service.OTPService
 import com.miraimagiclab.novelreadingapp.service.UserService
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 @Tag(name = "Authentication", description = "APIs for user authentication and account management")
 class AuthController(
     private val otpService: OTPService,
@@ -53,12 +55,19 @@ class AuthController(
 
     @PostMapping("/verify-account")
     fun verifyAccount(@RequestBody request: VerifyOTPRequest): ResponseEntity<ApiResponse<Boolean>> {
-        val isValid = otpService.verifyOTP(request.email, request.code, OTPType.ACCOUNT_VERIFICATION)
-        if (isValid) {
-            userService.activateAccount(request.email)
-            return ResponseEntity.ok(ApiResponse.success(true, "Account verified successfully"))
+        println("DEBUG: Verifying account for email: ${request.email}, code: ${request.code}")
+        try {
+            val isActivated = userService.activateAccountByOTP(request.email, request.code)
+            println("DEBUG: Account activation result: $isActivated")
+            if (isActivated) {
+                return ResponseEntity.ok(ApiResponse.success(true, "Account verified successfully"))
+            }
+            return ResponseEntity.ok(ApiResponse.error("Invalid or expired OTP"))
+        } catch (e: UserNotFoundException) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error("User not found"))
+        } catch (e: Exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error("Verification failed: ${e.message}"))
         }
-        return ResponseEntity.ok(ApiResponse.error("Invalid or expired OTP"))
     }
 
     @GetMapping("/verify-email")
@@ -94,17 +103,19 @@ class AuthController(
             return ResponseEntity.ok(ApiResponse.error("Account is already verified"))
         }
 
-        // Generate new verification token
-        val newToken = java.util.UUID.randomUUID().toString()
-        val tokenExpiresAt = java.time.LocalDateTime.now().plusHours(24)
+        // Generate and send OTP for account verification
+        otpService.generateOTP(email, OTPType.ACCOUNT_VERIFICATION)
+        return ResponseEntity.ok(ApiResponse.success(message = "Verification OTP sent successfully"))
+    }
 
-        userService.updateVerificationToken(email, newToken, tokenExpiresAt)
-
-        try {
-            emailService.sendVerificationEmail(email, user.username, newToken)
-            return ResponseEntity.ok(ApiResponse.success(message = "Verification email sent successfully"))
-        } catch (e: Exception) {
-            return ResponseEntity.ok(ApiResponse.error("Failed to send verification email"))
+    @GetMapping("/test-otp")
+    fun testOTP(@RequestParam email: String): ResponseEntity<ApiResponse<String>> {
+        // This is for testing only - get the latest OTP for the email
+        val otp = otpService.getLatestOTP(email, OTPType.ACCOUNT_VERIFICATION)
+        return if (otp != null) {
+            ResponseEntity.ok(ApiResponse.success(otp.code, "OTP retrieved for testing"))
+        } else {
+            ResponseEntity.ok(ApiResponse.error("No OTP found"))
         }
     }
 }

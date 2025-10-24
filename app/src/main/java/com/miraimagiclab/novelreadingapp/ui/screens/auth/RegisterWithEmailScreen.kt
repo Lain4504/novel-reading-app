@@ -37,8 +37,9 @@ fun RegisterWithEmailScreen(
     LaunchedEffect(registerState) {
         when (registerState) {
             is UiState.Success -> {
-                // Registration successful, navigate to OTP verification
-                navController.navigate(Screen.OTPVerification.route) {
+                // Registration successful, navigate to OTP verification with email
+                val userDto = (registerState as UiState.Success).data
+                navController.navigate(Screen.OTPVerification.createRoute(userDto.email, "account-verification")) {
                     popUpTo(Screen.Register.route) { inclusive = true }
                 }
             }

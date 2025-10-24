@@ -78,17 +78,23 @@ class OTPService(
         val subject = "Account Verification"
         val body = """
             Hello,
-            
+
             Thank you for creating an account. Please use the following code to verify your account:
-            
+
             $code
-            
+
             This code will expire in $OTP_EXPIRATION_MINUTES minutes.
-            
+
             Best regards,
             Novel Reading App Team
         """.trimIndent()
-        
+
         emailService.sendEmail(email, subject, body)
+    }
+
+    fun getLatestOTP(email: String, type: OTPType): OTP? {
+        // This is for testing only - get the latest unused OTP
+        return otpRepository.findByEmailAndTypeOrderByCreatedAtDesc(email, type)
+            .firstOrNull { !it.isUsed && it.expiresAt.isAfter(LocalDateTime.now()) }
     }
 }
