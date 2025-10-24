@@ -23,15 +23,7 @@ fun NovelReadingNavigation(
 ) {
     val authState by sessionManager.authState.collectAsState()
     
-    // Handle automatic logout when session is cleared
-    LaunchedEffect(authState.isLoggedIn) {
-        if (!authState.isLoggedIn) {
-            // Navigate to login screen and clear back stack
-            navController.navigate(Screen.Login.route) {
-                popUpTo(0) { inclusive = true }
-            }
-        }
-    }
+    // No automatic navigation on logout - user stays on current screen or can manually navigate
     NavHost(
         navController = navController,
         startDestination = Screen.Home.route,
@@ -41,7 +33,11 @@ fun NovelReadingNavigation(
             HomeScreen(
                 onNovelClick = { novelId ->
                     navController.navigate(Screen.BookDetails.createRoute(novelId))
-                }
+                },
+                onLoginClick = {
+                    navController.navigate(Screen.Login.route)
+                },
+                sessionManager = sessionManager
             )
         }
         
@@ -66,7 +62,11 @@ fun NovelReadingNavigation(
                 },
                 onBackClick = {
                     navController.popBackStack()
-                }
+                },
+                onLoginClick = {
+                    navController.navigate(Screen.Login.route)
+                },
+                sessionManager = sessionManager
             )
         }
         
@@ -95,8 +95,8 @@ fun NovelReadingNavigation(
                 },
                 onLogoutClick = {
                     sessionManager.clearSession()
-                    navController.navigate(Screen.Login.route) {
-                        popUpTo(Screen.Profile.route) { inclusive = true }
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(0) { inclusive = true }
                     }
                 }
             )
@@ -104,7 +104,14 @@ fun NovelReadingNavigation(
 
         // Auth routes
         composable(Screen.Login.route) {
-            LoginScreen(navController = navController)
+            LoginScreen(
+                navController = navController,
+                onBackClick = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                }
+            )
         }
 
         composable(Screen.Register.route) {

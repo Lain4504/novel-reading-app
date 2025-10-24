@@ -37,4 +37,17 @@ class UserRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
+    suspend fun updateUser(userId: String, request: UserUpdateRequest): Result<UserDto> {
+        return try {
+            val response = userApiService.updateUser(userId, request)
+            if (response.isSuccessful && response.body()?.success == true) {
+                Result.success(response.body()!!.data!!)
+            } else {
+                Result.failure(Exception(response.message() ?: "Failed to update user"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
