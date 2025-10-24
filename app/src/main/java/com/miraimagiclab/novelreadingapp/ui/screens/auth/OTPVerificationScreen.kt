@@ -21,12 +21,17 @@ fun OTPVerificationScreen(
     type: String, // "password-reset" or "account-verification"
     onBackClick: () -> Unit,
     onSubmit: (code: String) -> Unit,
-    onResendCode: () -> Unit
+    onResendCode: () -> Unit,
+    onSuccess: () -> Unit = {},
+    viewModel: com.miraimagiclab.novelreadingapp.ui.viewmodel.AuthViewModel = androidx.hilt.navigation.compose.hiltViewModel()
 ) {
     var otpCode by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     var canResend by remember { mutableStateOf(false) }
     var timeLeft by remember { mutableStateOf(60) }
+    var showError by remember { mutableStateOf<String?>(null) }
+
+    val verifyAccountState by viewModel.verifyAccountState.collectAsState()
 
     // Timer for resend button
     LaunchedEffect(Unit) {
@@ -36,6 +41,36 @@ fun OTPVerificationScreen(
         }
         canResend = true
     }
+    
+    // Handle verification state changes
+    LaunchedEffect(verifyAccountState) {
+        when (verifyAccountState) {
+            is com.miraimagiclab.novelreadingapp.util.UiState.Success<*> -> {
+                isLoading = false
+                showError = "Account verified successfully!"
+                delay(2000)
+                showError = null
+                // Navigate to login after successful verification
+                onSuccess()
+            }
+            is com.miraimagiclab.novelreadingapp.util.UiState.Error -> {
+                isLoading = false
+                showError = (verifyAccountState as com.miraimagiclab.novelreadingapp.util.UiState.Error).message
+                delay(3000)
+                showError = null
+                viewModel.resetVerifyAccountState()
+            }
+            is com.miraimagiclab.novelreadingapp.util.UiState.Loading -> {
+                isLoading = true
+            }
+            else -> {}
+        }
+    }
+
+    // Debug: Show current state
+    println("DEBUG: OTPVerificationScreen - verifyAccountState: $verifyAccountState")
+    println("DEBUG: OTPVerificationScreen - showError: $showError")
+    println("DEBUG: OTPVerificationScreen - isLoading: $isLoading")
 
     Scaffold(
         topBar = {
@@ -67,6 +102,25 @@ fun OTPVerificationScreen(
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(bottom = Spacing.xl)
             )
+            // Error/Success message
+            showError?.let {
+                val isSuccess = it.contains("successfully")
+                androidx.compose.material3.Card(
+                    colors = androidx.compose.material3.CardDefaults.cardColors(
+                        containerColor = if (isSuccess) MaterialTheme.colorScheme.primaryContainer
+                                        else MaterialTheme.colorScheme.errorContainer
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = it,
+                        color = if (isSuccess) MaterialTheme.colorScheme.onPrimaryContainer
+                               else MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(Spacing.md))
+            }
 
             TextField(
                 value = otpCode,
@@ -80,8 +134,12 @@ fun OTPVerificationScreen(
 
             Button(
                 onClick = {
-                    isLoading = true
-                    onSubmit(otpCode)
+                    if (type == "account-verification") {
+                        viewModel.verifyAccountOtp(email, otpCode)
+                    } else {
+                        isLoading = true
+                        onSubmit(otpCode)
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = otpCode.length == 6 && !isLoading

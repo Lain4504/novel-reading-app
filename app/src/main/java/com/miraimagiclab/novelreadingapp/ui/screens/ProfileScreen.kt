@@ -114,6 +114,8 @@ fun ProfileScreen(
             ProfileMenuItem("Logout", Icons.Default.ExitToApp) {
                 onLogoutClick()
             }
+            
+            Divider()
         }
     } else {
         // Show beautiful login prompt centered on screen

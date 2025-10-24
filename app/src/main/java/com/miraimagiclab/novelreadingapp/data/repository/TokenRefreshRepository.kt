@@ -82,15 +82,16 @@ class TokenRefreshRepository @Inject constructor(
                     TokenRefreshResult.Error("Invalid response from server")
                 }
             } else {
-                // If refresh fails with 401/403, refresh token is expired
+               // If refresh fails, clear the session (token expired, user deleted, etc.)
+                sessionManager.clearSession()
                 if (response.code() == 401 || response.code() == 403) {
-                    sessionManager.clearSession()
                     TokenRefreshResult.RefreshTokenExpired
                 } else {
                     TokenRefreshResult.Error("Failed to refresh token: ${response.code()}")
                 }
             }
         } catch (e: Exception) {
+            sessionManager.clearSession()
             TokenRefreshResult.Error("Network error: ${e.message}")
         }
     }

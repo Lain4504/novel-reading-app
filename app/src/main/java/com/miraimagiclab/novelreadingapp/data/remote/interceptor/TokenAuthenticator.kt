@@ -48,10 +48,8 @@ class TokenAuthenticator(
                         loginResponse.token
                     } else null
                 } else {
-                    // If refresh fails with 401/403, refresh token is expired
-                    if (apiResponse.code() == 401 || apiResponse.code() == 403) {
-                        sessionManager.clearSession()
-                    }
+                    // If refresh fails, clear the session (token expired, user deleted, etc.)
+                    sessionManager.clearSession()
                     null
                 }
             } catch (_: Exception) {

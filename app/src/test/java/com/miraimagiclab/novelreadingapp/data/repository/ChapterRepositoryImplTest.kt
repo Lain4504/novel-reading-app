@@ -37,8 +37,8 @@ class ChapterRepositoryImplTest {
             content = "Test content",
             wordCount = 100,
             viewCount = 50,
-            createdAt = "2023-01-01",
-            updatedAt = "2023-01-01"
+            createdAt = "2023-01-01T00:00:00",
+            updatedAt = "2023-01-01T00:00:00"
         )
         val apiResponse = ApiResponse(success = true, data = chapterDto, message = "Success")
 
@@ -82,8 +82,8 @@ class ChapterRepositoryImplTest {
                 content = "Content 1",
                 wordCount = 100,
                 viewCount = 50,
-                createdAt = "2023-01-01",
-                updatedAt = "2023-01-01"
+                createdAt = "2023-01-01T00:00:00",
+                updatedAt = "2023-01-01T00:00:00"
             ),
             ChapterDto(
                 id = "chapter_2",
@@ -149,8 +149,8 @@ class ChapterRepositoryImplTest {
             content = "Test content",
             wordCount = 100,
             viewCount = 50,
-            createdAt = "2023-01-01",
-            updatedAt = "2023-01-01"
+            createdAt = "2023-01-01T00:00:00",
+            updatedAt = "2023-01-01T00:00:00"
         )
         val apiResponse = ApiResponse(success = true, data = chapterDto, message = "Success")
 
@@ -180,7 +180,7 @@ class ChapterRepositoryImplTest {
             content = "Updated content",
             wordCount = 150,
             viewCount = 75,
-            createdAt = "2023-01-01",
+            createdAt = "2023-01-01T00:00:00",
             updatedAt = "2023-01-02"
         )
         val apiResponse = ApiResponse(success = true, data = chapterDto, message = "Success")
