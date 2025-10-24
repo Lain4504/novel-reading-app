@@ -67,6 +67,7 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     val navBackStackEntry by navController.currentBackStackEntryAsState()
                     val currentRoute = navBackStackEntry?.destination?.route
+                    val authState by sessionManager.authState.collectAsState()
                     
                     Scaffold(
                         bottomBar = {
@@ -76,7 +77,7 @@ class MainActivity : ComponentActivity() {
                                 Screen.Explore.route,
                                 Screen.BookList.route,
                                 Screen.Profile.route
-                            ) && !(currentRoute?.startsWith("book_details/") == true) && !(currentRoute?.startsWith("reading/") == true)
+                            ) && !(currentRoute?.startsWith("novel_detail/") == true) && !(currentRoute?.startsWith("reading/") == true)
                             if (showBottomNav) {
                                 BottomNavigationBar(
                                     currentRoute = currentRoute,
@@ -91,7 +92,8 @@ class MainActivity : ComponentActivity() {
                                             // Restore state when reselecting a previously selected item
                                             restoreState = true
                                         }
-                                    }
+                                    },
+                                    isLoggedIn = authState.isLoggedIn
                                 )
                             }
                         }

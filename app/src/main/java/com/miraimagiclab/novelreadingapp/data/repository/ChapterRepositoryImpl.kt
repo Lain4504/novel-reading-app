@@ -143,4 +143,17 @@ class ChapterRepositoryImpl @Inject constructor(
             emptyList()
         }
     }
+
+    override suspend fun incrementViewCount(chapterId: String) {
+        try {
+            val response = chapterApiService.incrementChapterViewCount(chapterId)
+            if (response.success && response.data != null) {
+                val updatedChapter = ChapterMapper.mapDtoToDomain(response.data)
+                chapterCache[chapterId] = updatedChapter
+            }
+        } catch (e: Exception) {
+            // Fire-and-forget: don't block UI on failure
+            // Could log error for debugging
+        }
+    }
 }

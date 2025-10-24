@@ -16,6 +16,8 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.Size
+import jakarta.validation.constraints.Min
+import jakarta.validation.constraints.Max
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -151,7 +153,8 @@ class NovelController(
         categories: String? = null,
         
         @RequestParam("rating", required = false)
-        @Size(min = 0, max = 5, message = "Rating must be between 0 and 5")
+        @Min(value = 0, message = "Rating must be at least 0")
+        @Max(value = 5, message = "Rating must be at most 5")
         @Schema(description = "Novel rating (optional)")
         rating: Double? = null,
         
@@ -170,6 +173,10 @@ class NovelController(
         @RequestParam("isR18", required = false)
         @Schema(description = "Whether the novel is R18 content (optional)")
         isR18: Boolean? = null,
+        
+        @RequestParam("coverUrl", required = false)
+        @Schema(description = "Cover image URL (optional)")
+        coverUrl: String? = null,
         
         @RequestPart(name = "coverImage", required = false) 
         @Schema(description = "Cover image file (optional)", type = "string", format = "binary")
@@ -209,10 +216,16 @@ class NovelController(
             isR18 = isR18
         )
         
-        val finalRequest = if (coverImage != null && !coverImage.isEmpty) {
-            val url = cloudinaryStorageService.uploadAndGetUrl(coverImage, folder = "novels/covers")
-            request.copy(coverImage = url)
-        } else request
+        val finalRequest = when {
+            coverImage != null && !coverImage.isEmpty -> {
+                val url = cloudinaryStorageService.uploadAndGetUrl(coverImage, folder = "novels/covers")
+                request.copy(coverImage = url)
+            }
+            coverUrl != null && coverUrl.isNotBlank() -> {
+                request.copy(coverImage = coverUrl)
+            }
+            else -> request
+        }
         
         val novel = novelService.updateNovel(id, finalRequest)
         return ResponseEntity.ok(ApiResponse.success(novel, "Novel updated successfully"))
@@ -282,5 +295,20 @@ class NovelController(
     ): ResponseEntity<ApiResponse<NovelDto>> {
         val novel = novelService.addOrUpdateRating(id, userId, rating)
         return ResponseEntity.ok(ApiResponse.success(novel, "Rating updated successfully"))
+    }
+
+    @GetMapping("/test")
+    fun testEndpoint(): ResponseEntity<ApiResponse<String>> {
+        return ResponseEntity.ok(ApiResponse.success("Backend is working!", "Test successful"))
+    }
+
+    @PostMapping("/seed")
+    fun seedTestData(): ResponseEntity<ApiResponse<String>> {
+        try {
+            novelService.seedTestData()
+            return ResponseEntity.ok(ApiResponse.success("Test data seeded successfully!", "Seeding successful"))
+        } catch (e: Exception) {
+            return ResponseEntity.ok(ApiResponse.error("Failed to seed data: ${e.message}"))
+        }
     }
 }

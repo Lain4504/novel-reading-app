@@ -76,22 +76,55 @@ class ProfileViewModel @Inject constructor(
         avatarUrl: String?,
         backgroundUrl: String?,
         bio: String?,
-        displayName: String?
+        displayName: String?,
+        avatarFile: File?,
+        backgroundFile: File?
     ) {
         val userId = authState.value.userId ?: return
         viewModelScope.launch {
-            _updateUserState.value = UiState.Loading
-            val request = UserUpdateRequest(
-                avatarUrl = avatarUrl,
-                backgroundUrl = backgroundUrl,
-                bio = bio,
-                displayName = displayName
-            )
-            val result = userRepository.updateUser(userId, request)
-            _updateUserState.value = if (result.isSuccess) {
-                UiState.Success(result.getOrNull()!!)
-            } else {
-                UiState.Error(result.exceptionOrNull()?.message ?: "Failed to update user")
+            try {
+                _updateUserState.value = UiState.Loading
+                
+                var finalAvatarUrl = avatarUrl
+                var finalBackgroundUrl = backgroundUrl
+                
+                // Upload avatar image if provided
+                if (avatarFile != null) {
+                    val avatarResult = imageRepository.uploadImage(avatarFile, userId, "USER")
+                    if (avatarResult.isSuccess) {
+                        finalAvatarUrl = avatarResult.getOrNull()!!.url
+                    } else {
+                        _updateUserState.value = UiState.Error("Failed to upload avatar: ${avatarResult.exceptionOrNull()?.message}")
+                        return@launch
+                    }
+                }
+                
+                // Upload background image if provided
+                if (backgroundFile != null) {
+                    val backgroundResult = imageRepository.uploadImage(backgroundFile, userId, "USER")
+                    if (backgroundResult.isSuccess) {
+                        finalBackgroundUrl = backgroundResult.getOrNull()!!.url
+                    } else {
+                        _updateUserState.value = UiState.Error("Failed to upload background: ${backgroundResult.exceptionOrNull()?.message}")
+                        return@launch
+                    }
+                }
+                
+                // Update user profile with final URLs
+                val request = UserUpdateRequest(
+                    avatarUrl = finalAvatarUrl,
+                    backgroundUrl = finalBackgroundUrl,
+                    bio = bio,
+                    displayName = displayName
+                )
+                val result = userRepository.updateUser(userId, request)
+                _updateUserState.value = if (result.isSuccess) {
+                    UiState.Success(result.getOrNull()!!)
+                } else {
+                    UiState.Error(result.exceptionOrNull()?.message ?: "Failed to update user")
+                }
+            } catch (e: Exception) {
+                _updateUserState.value = UiState.Error("Failed to update profile: ${e.message}")
             }
         }
     }

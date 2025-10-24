@@ -103,16 +103,30 @@ class NovelService(
         )
         val pageable: Pageable = PageRequest.of(request.page, request.size, sort)
 
-        val novels = novelRepository.findByMultipleCriteria(
-            title = request.title,
-            authorName = request.authorName,
-            categories = request.categories,
-            status = request.status,
-            minRating = request.minRating,
-            maxRating = request.maxRating,
-            isR18 = request.isR18,
-            pageable = pageable
-        )
+        // Use title as keyword for search, or combine title and authorName if both provided
+        val keyword = when {
+            request.title != null && request.authorName != null -> "${request.title} ${request.authorName}"
+            request.title != null -> request.title
+            request.authorName != null -> request.authorName
+            else -> null
+        }
+
+        val novels = if (keyword == null && request.categories == null && request.status == null && 
+                        request.minRating == null && request.maxRating == null && request.isR18 == null) {
+            // If no search criteria, use simple findAll
+            novelRepository.findAll(pageable)
+        } else {
+            // Use complex search with criteria
+            novelRepository.findByMultipleCriteria(
+                keyword = keyword,
+                categories = request.categories,
+                status = request.status,
+                minRating = request.minRating,
+                maxRating = request.maxRating,
+                isR18 = request.isR18,
+                pageable = pageable
+            )
+        }
 
         val novelDtos = novels.content.map { NovelDto.fromEntity(it) }
         return PageResponse(
@@ -211,6 +225,55 @@ class NovelService(
 
         val savedNovel = novelRepository.save(updatedNovel)
         return NovelDto.fromEntity(savedNovel)
+    }
+
+    fun seedTestData() {
+        val testNovels = listOf(
+            com.miraimagiclab.novelreadingapp.model.Novel(
+                title = "Test Novel 1",
+                description = "This is a test novel for development",
+                authorName = "Test Author 1",
+                coverImage = "https://example.com/cover1.jpg",
+                categories = setOf(com.miraimagiclab.novelreadingapp.enumeration.CategoryEnum.FANTASY),
+                rating = 4.5,
+                wordCount = 50000,
+                chapterCount = 10,
+                viewCount = 100,
+                followCount = 20,
+                status = com.miraimagiclab.novelreadingapp.enumeration.NovelStatusEnum.ONGOING,
+                isR18 = false
+            ),
+            com.miraimagiclab.novelreadingapp.model.Novel(
+                title = "Test Novel 2",
+                description = "Another test novel for development",
+                authorName = "Test Author 2",
+                coverImage = "https://example.com/cover2.jpg",
+                categories = setOf(com.miraimagiclab.novelreadingapp.enumeration.CategoryEnum.ROMANCE),
+                rating = 4.2,
+                wordCount = 75000,
+                chapterCount = 15,
+                viewCount = 200,
+                followCount = 35,
+                status = com.miraimagiclab.novelreadingapp.enumeration.NovelStatusEnum.COMPLETED,
+                isR18 = false
+            ),
+            com.miraimagiclab.novelreadingapp.model.Novel(
+                title = "Test Novel 3",
+                description = "Third test novel for development",
+                authorName = "Test Author 3",
+                coverImage = "https://example.com/cover3.jpg",
+                categories = setOf(com.miraimagiclab.novelreadingapp.enumeration.CategoryEnum.ACTION),
+                rating = 4.8,
+                wordCount = 100000,
+                chapterCount = 20,
+                viewCount = 300,
+                followCount = 50,
+                status = com.miraimagiclab.novelreadingapp.enumeration.NovelStatusEnum.ONGOING,
+                isR18 = false
+            )
+        )
+        
+        novelRepository.saveAll(testNovels)
     }
 
     fun unfollow(id: String, userId: String): NovelDto {

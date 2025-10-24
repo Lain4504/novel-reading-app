@@ -33,19 +33,24 @@ interface NovelRepository : MongoRepository<Novel, String> {
     // Find by rating range
     fun findByRatingBetween(minRating: Double, maxRating: Double, pageable: Pageable): Page<Novel>
     
-    // Find by multiple criteria
+    // Find by multiple criteria with keyword search
     @Query("{ \$and: [" +
-            "{ \$or: [{ 'title': { \$regex: ?0, \$options: 'i' } }, { \$expr: { \$eq: [?0, null] } }] }," +
-            "{ \$or: [{ 'authorName': { \$regex: ?1, \$options: 'i' } }, { \$expr: { \$eq: [?1, null] } }] }," +
-            "{ \$or: [{ 'categories': { \$in: ?2 } }, { \$expr: { \$eq: [?2, null] } }] }," +
-            "{ \$or: [{ 'status': ?3 }, { \$expr: { \$eq: [?3, null] } }] }," +
-            "{ \$or: [{ 'rating': { \$gte: ?4 } }, { \$expr: { \$eq: [?4, null] } }] }," +
-            "{ \$or: [{ 'rating': { \$lte: ?5 } }, { \$expr: { \$eq: [?5, null] } }] }," +
-            "{ \$or: [{ 'isR18': ?6 }, { \$expr: { \$eq: [?6, null] } }] }" +
+            "{ \$or: [" +
+                "{ \$expr: { \$eq: [?0, null] } }," +
+                "{ \$or: [" +
+                    "{ 'title': { \$regex: ?0, \$options: 'i' } }," +
+                    "{ 'authorName': { \$regex: ?0, \$options: 'i' } }," +
+                    "{ 'description': { \$regex: ?0, \$options: 'i' } }" +
+                "] }" +
+            "] }," +
+            "{ \$or: [{ 'categories': { \$in: ?1 } }, { \$expr: { \$eq: [?1, null] } }] }," +
+            "{ \$or: [{ 'status': ?2 }, { \$expr: { \$eq: [?2, null] } }] }," +
+            "{ \$or: [{ 'rating': { \$gte: ?3 } }, { \$expr: { \$eq: [?3, null] } }] }," +
+            "{ \$or: [{ 'rating': { \$lte: ?4 } }, { \$expr: { \$eq: [?4, null] } }] }," +
+            "{ \$or: [{ 'isR18': ?5 }, { \$expr: { \$eq: [?5, null] } }] }" +
             "] }")
     fun findByMultipleCriteria(
-        title: String?,
-        authorName: String?,
+        keyword: String?,
         categories: Set<CategoryEnum>?,
         status: NovelStatusEnum?,
         minRating: Double?,
@@ -53,6 +58,9 @@ interface NovelRepository : MongoRepository<Novel, String> {
         isR18: Boolean?,
         pageable: Pageable
     ): Page<Novel>
+    
+    // Simple method to get all novels with pagination and sorting
+    override fun findAll(pageable: Pageable): Page<Novel>
     
     // Find top novels by view count
     fun findTop10ByOrderByViewCountDesc(): List<Novel>

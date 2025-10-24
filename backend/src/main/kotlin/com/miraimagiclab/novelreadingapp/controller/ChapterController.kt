@@ -79,4 +79,10 @@ class ChapterController(
         return ResponseEntity.ok(ApiResponse.success("Chapters reordered successfully"))
     }
 
+    @PostMapping("/{chapterId}/increment-view")
+    fun incrementChapterViewCount(@PathVariable("chapterId") chapterId: String): ResponseEntity<ApiResponse<ChapterResponseDto>> {
+        val chapter = chapterService.incrementViewCount(chapterId)
+        return ResponseEntity.ok(ApiResponse.success(chapter, "Chapter view count incremented successfully"))
+    }
+
 }

@@ -21,34 +21,60 @@ data class BottomNavItem(
 fun BottomNavigationBar(
     currentRoute: String?,
     onNavigate: (String) -> Unit,
+    isLoggedIn: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    val bottomNavItems = listOf(
-        BottomNavItem(
-            route = Screen.Home.route,
-            title = "Home",
-            icon = Icons.Default.Home,
-            selectedIcon = Icons.Default.Home
-        ),
-        BottomNavItem(
-            route = Screen.Explore.route,
-            title = "Explore",
-            icon = Icons.Default.Star,
-            selectedIcon = Icons.Default.Star
-        ),
-        BottomNavItem(
-            route = Screen.BookList.route,
-            title = "Library",
-            icon = Icons.Default.Star,
-            selectedIcon = Icons.Default.Star
-        ),
-        BottomNavItem(
-            route = Screen.Profile.route,
-            title = "Profile",
-            icon = Icons.Default.Person,
-            selectedIcon = Icons.Default.Person
+    val bottomNavItems = if (isLoggedIn) {
+        // When logged in: Explore, Home, Library, Profile
+        listOf(
+            BottomNavItem(
+                route = Screen.Explore.route,
+                title = "Explore",
+                icon = Icons.Default.Lock,
+                selectedIcon = Icons.Default.Lock
+            ),
+            BottomNavItem(
+                route = Screen.Home.route,
+                title = "Home",
+                icon = Icons.Default.Home,
+                selectedIcon = Icons.Default.Home
+            ),
+            BottomNavItem(
+                route = Screen.BookList.route,
+                title = "Library",
+                icon = Icons.Default.Menu,
+                selectedIcon = Icons.Default.Menu
+            ),
+            BottomNavItem(
+                route = Screen.Profile.route,
+                title = "Profile",
+                icon = Icons.Default.Person,
+                selectedIcon = Icons.Default.Person
+            )
         )
-    )
+    } else {
+        // When not logged in: Explore, Home, Profile
+        listOf(
+            BottomNavItem(
+                route = Screen.Explore.route,
+                title = "Explore",
+                icon = Icons.Default.Menu,
+                selectedIcon = Icons.Default.Menu
+            ),
+            BottomNavItem(
+                route = Screen.Home.route,
+                title = "Home",
+                icon = Icons.Default.Home,
+                selectedIcon = Icons.Default.Home
+            ),
+            BottomNavItem(
+                route = Screen.Profile.route,
+                title = "Profile",
+                icon = Icons.Default.Person,
+                selectedIcon = Icons.Default.Person
+            )
+        )
+    }
 
     NavigationBar(
         modifier = modifier,

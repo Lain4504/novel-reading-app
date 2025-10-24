@@ -39,6 +39,8 @@ fun ProfileScreen(
     onBecomeAuthorClick: () -> Unit = {},
     onMyNovelsClick: () -> Unit = {},
     onLogoutClick: () -> Unit = {},
+    onPersonalDataClick: () -> Unit = {},
+    onMyBooklistClick: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel(),
     settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
@@ -111,12 +113,13 @@ fun ProfileScreen(
 
             // Account settings
             SectionTitle("Account settings")
-            ProfileMenuItem("Personal data", Icons.Default.Person) { }
+            ProfileMenuItem("Personal data", Icons.Default.Person) { 
+                onPersonalDataClick()
+            }
             ProfileMenuItem("Account security", Icons.Default.AccountBox) { }
-            ProfileMenuItem("Notification", Icons.Default.Notifications) { }
-            ProfileMenuItem("Subscription", Icons.Default.ShoppingCart) { }
-            ProfileMenuItem("My Booklist", Icons.Default.Check) { }
-            ProfileMenuItem("Reading progression", Icons.Default.DateRange) { }
+            ProfileMenuItem("My Booklist", Icons.Default.Check) { 
+                onMyBooklistClick()
+            }
             
             // Author features
             if (!authState.roles.contains("AUTHOR")) {
@@ -128,10 +131,6 @@ fun ProfileScreen(
                     onMyNovelsClick()
                 }
             }
-            
-            ProfileMenuItem("Language options", Icons.Default.Place) { }
-            ProfileMenuItem("Image quality", Icons.Default.FavoriteBorder) { }
-            ProfileMenuItem("Clear cache", Icons.Default.Delete) { }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
@@ -143,13 +142,6 @@ fun ProfileScreen(
                 onToggle = { settingsViewModel.toggleDarkMode() }
             )
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-            // About katalis
-            SectionTitle("About katalis")
-            ProfileMenuItem("Get to know katalis", Icons.Default.Add) { }
-            ProfileMenuItem("Copyright", Icons.Default.Close) { }
-            
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
             
             // Logout section
@@ -168,11 +160,8 @@ fun ProfileScreen(
                 isLoading = updateUserState is UiState.Loading,
                 uploadImageState = viewModel.uploadImageState.collectAsState().value,
                 onDismiss = { showEditDialog = false },
-                onSave = { avatarUrl, backgroundUrl, bio, displayName ->
-                    viewModel.updateUserProfile(avatarUrl, backgroundUrl, bio, displayName)
-                },
-                onUploadImage = { imageFile ->
-                    viewModel.uploadImage(imageFile)
+                onSave = { avatarUrl, backgroundUrl, bio, displayName, avatarFile, backgroundFile ->
+                    viewModel.updateUserProfile(avatarUrl, backgroundUrl, bio, displayName, avatarFile, backgroundFile)
                 },
                 onResetUploadState = {
                     viewModel.resetUploadImageState()
@@ -352,8 +341,7 @@ fun EditProfileDialog(
     isLoading: Boolean,
     uploadImageState: UiState<String>,
     onDismiss: () -> Unit,
-    onSave: (String?, String?, String?, String?) -> Unit,
-    onUploadImage: (File) -> Unit,
+    onSave: (String?, String?, String?, String?, File?, File?) -> Unit,
     onResetUploadState: () -> Unit
 ) {
     val context = LocalContext.current
@@ -364,25 +352,8 @@ fun EditProfileDialog(
     
     var selectedAvatarUri by remember { mutableStateOf<Uri?>(null) }
     var selectedBackgroundUri by remember { mutableStateOf<Uri?>(null) }
-    var uploadingImageType by remember { mutableStateOf<String?>(null) } // "avatar" or "background"
-    
-    // Handle upload image success
-    LaunchedEffect(uploadImageState) {
-        if (uploadImageState is UiState.Success) {
-            when (uploadingImageType) {
-                "avatar" -> {
-                    avatarUrl = uploadImageState.data
-                    selectedAvatarUri = null
-                }
-                "background" -> {
-                    backgroundUrl = uploadImageState.data
-                    selectedBackgroundUri = null
-                }
-            }
-            uploadingImageType = null
-            onResetUploadState()
-        }
-    }
+    var avatarFile by remember { mutableStateOf<File?>(null) }
+    var backgroundFile by remember { mutableStateOf<File?>(null) }
     
     // Avatar image picker
     val avatarLauncher = rememberLauncherForActivityResult(
@@ -390,11 +361,8 @@ fun EditProfileDialog(
     ) { uri: Uri? ->
         uri?.let {
             selectedAvatarUri = it
-            uploadingImageType = "avatar"
             val file = uriToFile(context, it)
-            if (file != null) {
-                onUploadImage(file)
-            }
+            avatarFile = file
         }
     }
     
@@ -404,11 +372,8 @@ fun EditProfileDialog(
     ) { uri: Uri? ->
         uri?.let {
             selectedBackgroundUri = it
-            uploadingImageType = "background"
             val file = uriToFile(context, it)
-            if (file != null) {
-                onUploadImage(file)
-            }
+            backgroundFile = file
         }
     }
 
@@ -545,11 +510,37 @@ fun EditProfileDialog(
                                     .background(Color(0xFFF5F5F5)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                if (selectedAvatarUri != null || avatarUrl.isNotEmpty()) {
+                                if (selectedAvatarUri != null) {
                                     AsyncImage(
-                                        model = selectedAvatarUri ?: avatarUrl,
+                                        model = selectedAvatarUri,
                                         contentDescription = "Avatar",
-                                        modifier = Modifier.fillMaxSize()
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                                    )
+                                    // Remove button
+                                    IconButton(
+                                        onClick = {
+                                            selectedAvatarUri = null
+                                            avatarFile = null
+                                        },
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .size(20.dp)
+                                            .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = "Remove",
+                                            tint = Color.White,
+                                            modifier = Modifier.size(12.dp)
+                                        )
+                                    }
+                                } else if (avatarUrl.isNotEmpty()) {
+                                    AsyncImage(
+                                        model = avatarUrl,
+                                        contentDescription = "Avatar",
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = androidx.compose.ui.layout.ContentScale.Crop
                                     )
                                 } else {
                                     Icon(
@@ -585,28 +576,6 @@ fun EditProfileDialog(
                                 Text("Choose Image", fontWeight = FontWeight.Medium)
                             }
                         }
-                        
-                        OutlinedTextField(
-                            value = avatarUrl,
-                            onValueChange = { 
-                                avatarUrl = it
-                                selectedAvatarUri = null
-                            },
-                            placeholder = { Text("Or paste image URL", color = Color(0xFF999999)) },
-                            modifier = Modifier.fillMaxWidth(),
-                            enabled = !isLoading,
-                            singleLine = true,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = com.miraimagiclab.novelreadingapp.ui.theme.GreenPrimary,
-                                unfocusedBorderColor = Color(0xFFDDDDDD),
-                                focusedContainerColor = Color.White,
-                                unfocusedContainerColor = Color.White,
-                                disabledContainerColor = Color(0xFFF5F5F5),
-                                focusedTextColor = Color(0xFF1A1A1A),
-                                unfocusedTextColor = Color(0xFF1A1A1A)
-                            ),
-                            shape = RoundedCornerShape(12.dp)
-                        )
                     }
 
                     // Background Section
@@ -632,11 +601,37 @@ fun EditProfileDialog(
                                     .background(Color(0xFFF5F5F5)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                if (selectedBackgroundUri != null || backgroundUrl.isNotEmpty()) {
+                                if (selectedBackgroundUri != null) {
                                     AsyncImage(
-                                        model = selectedBackgroundUri ?: backgroundUrl,
+                                        model = selectedBackgroundUri,
                                         contentDescription = "Background",
-                                        modifier = Modifier.fillMaxSize()
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                                    )
+                                    // Remove button
+                                    IconButton(
+                                        onClick = {
+                                            selectedBackgroundUri = null
+                                            backgroundFile = null
+                                        },
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .size(20.dp)
+                                            .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = "Remove",
+                                            tint = Color.White,
+                                            modifier = Modifier.size(12.dp)
+                                        )
+                                    }
+                                } else if (backgroundUrl.isNotEmpty()) {
+                                    AsyncImage(
+                                        model = backgroundUrl,
+                                        contentDescription = "Background",
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = androidx.compose.ui.layout.ContentScale.Crop
                                     )
                                 } else {
                                     Icon(
@@ -672,28 +667,6 @@ fun EditProfileDialog(
                                 Text("Choose Image", fontWeight = FontWeight.Medium)
                             }
                         }
-                        
-                        OutlinedTextField(
-                            value = backgroundUrl,
-                            onValueChange = { 
-                                backgroundUrl = it
-                                selectedBackgroundUri = null
-                            },
-                            placeholder = { Text("Or paste image URL", color = Color(0xFF999999)) },
-                            modifier = Modifier.fillMaxWidth(),
-                            enabled = !isLoading,
-                            singleLine = true,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = com.miraimagiclab.novelreadingapp.ui.theme.GreenPrimary,
-                                unfocusedBorderColor = Color(0xFFDDDDDD),
-                                focusedContainerColor = Color.White,
-                                unfocusedContainerColor = Color.White,
-                                disabledContainerColor = Color(0xFFF5F5F5),
-                                focusedTextColor = Color(0xFF1A1A1A),
-                                unfocusedTextColor = Color(0xFF1A1A1A)
-                            ),
-                            shape = RoundedCornerShape(12.dp)
-                        )
                     }
 
                     // Account Info (Read Only)
@@ -806,7 +779,9 @@ fun EditProfileDialog(
                                     avatarUrl.ifBlank { null },
                                     backgroundUrl.ifBlank { null },
                                     bio.ifBlank { null },
-                                    displayName.ifBlank { null }
+                                    displayName.ifBlank { null },
+                                    avatarFile,
+                                    backgroundFile
                                 )
                             },
                             enabled = !isLoading && uploadImageState !is UiState.Loading,

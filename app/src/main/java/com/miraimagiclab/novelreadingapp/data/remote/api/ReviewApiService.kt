@@ -3,9 +3,8 @@ package com.miraimagiclab.novelreadingapp.data.remote.api
 import com.miraimagiclab.novelreadingapp.data.remote.dto.ApiResponse
 import com.miraimagiclab.novelreadingapp.data.remote.dto.PageResponse
 import com.miraimagiclab.novelreadingapp.data.remote.dto.ReviewDto
-import retrofit2.http.GET
-import retrofit2.http.Path
-import retrofit2.http.Query
+import com.miraimagiclab.novelreadingapp.data.remote.dto.request.ReviewCreateRequestDto
+import retrofit2.http.*
 
 interface ReviewApiService {
 
@@ -30,6 +29,9 @@ interface ReviewApiService {
 
     @GET("reviews/novels/{novelId}/count")
     suspend fun getReviewCountByNovel(@Path("novelId") novelId: String): ApiResponse<Long>
+
+    @POST("reviews")
+    suspend fun createReview(@Body request: ReviewCreateRequestDto): ApiResponse<ReviewDto>
 }
 
 

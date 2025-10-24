@@ -31,33 +31,55 @@ class UserNovelInteractionRepositoryImpl @Inject constructor(
     override suspend fun getUserFollowingNovels(userId: String): List<Novel> {
         return try {
             val response = interactionApiService.getUserFollowingList(userId)
+            println("DEBUG: getUserFollowingList response: success=${response.success}, data size=${response.data?.size}")
             if (response.success && response.data != null) {
                 val novelIds = response.data.map { it.novelId }
+                println("DEBUG: Novel IDs from following list: $novelIds")
                 // Get novel details from novel repository
-                novelRepository.getNovelsByIds(novelIds)
+                val novels = novelRepository.getNovelsByIds(novelIds)
+                println("DEBUG: Retrieved ${novels.size} novels from repository")
+                novels
             } else {
+                println("DEBUG: No data in response or not successful")
                 emptyList()
             }
         } catch (e: Exception) {
+            println("DEBUG: Exception in getUserFollowingNovels: ${e.message}")
+            e.printStackTrace()
             emptyList()
         }
     }
 
     override suspend fun getUserInProgressNovels(userId: String): List<Novel> {
         return try {
+            println("DEBUG: Getting user interactions for userId: $userId")
             val response = interactionApiService.getUserInteractions(userId)
+            println("DEBUG: API response success: ${response.success}, data size: ${response.data?.size}")
+            
             if (response.success && response.data != null) {
                 // Filter interactions that have reading progress
                 val inProgressInteractions = response.data.filter { 
                     it.lastReadAt != null || it.currentChapterId != null 
                 }
+                println("DEBUG: Found ${inProgressInteractions.size} in-progress interactions")
+                inProgressInteractions.forEach { interaction ->
+                    println("DEBUG: Interaction - novelId: ${interaction.novelId}, lastReadAt: ${interaction.lastReadAt}, currentChapterId: ${interaction.currentChapterId}")
+                }
+                
                 val novelIds = inProgressInteractions.map { it.novelId }
+                println("DEBUG: Novel IDs to fetch: $novelIds")
+                
                 // Get novel details from novel repository
-                novelRepository.getNovelsByIds(novelIds)
+                val novels = novelRepository.getNovelsByIds(novelIds)
+                println("DEBUG: Retrieved ${novels.size} novels")
+                novels
             } else {
+                println("DEBUG: API response failed or no data")
                 emptyList()
             }
         } catch (e: Exception) {
+            println("DEBUG: Exception in getUserInProgressNovels: ${e.message}")
+            e.printStackTrace()
             emptyList()
         }
     }

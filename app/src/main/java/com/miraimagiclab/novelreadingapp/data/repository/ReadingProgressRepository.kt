@@ -33,18 +33,24 @@ class ReadingProgressRepository @Inject constructor(
     
     suspend fun updateReadingProgress(userId: String, novelId: String, chapterId: String, chapterNumber: Int): ReadingProgress? {
         return try {
+            println("DEBUG: Updating reading progress - userId: $userId, novelId: $novelId, chapterId: $chapterId, chapterNumber: $chapterNumber")
             val response = userNovelInteractionApiService.updateReadingProgress(
                 userId = userId,
                 novelId = novelId,
                 chapterNumber = chapterNumber,
                 chapterId = chapterId
             )
+            println("DEBUG: Update reading progress response - success: ${response.success}")
             if (response.success && response.data != null) {
+                println("DEBUG: Reading progress updated successfully")
                 ReadingProgressMapper.mapDtoToDomain(response.data)
             } else {
+                println("DEBUG: Update reading progress failed - response not successful")
                 null
             }
         } catch (e: Exception) {
+            println("DEBUG: Exception in updateReadingProgress: ${e.message}")
+            e.printStackTrace()
             null
         }
     }

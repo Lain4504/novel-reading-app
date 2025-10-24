@@ -33,7 +33,7 @@ fun NovelReadingNavigation(
         composable(Screen.Home.route) {
             HomeScreen(
                 onNovelClick = { novelId ->
-                    navController.navigate(Screen.BookDetails.createRoute(novelId))
+                    navController.navigate(Screen.NovelDetail.createRoute(novelId))
                 },
                 onLoginClick = {
                     navController.navigate(Screen.Login.route)
@@ -45,7 +45,7 @@ fun NovelReadingNavigation(
         composable(Screen.Explore.route) {
             ExploreScreen(
                 onBookClick = { novelId ->
-                    navController.navigate(Screen.BookDetails.createRoute(novelId))
+                    navController.navigate(Screen.NovelDetail.createRoute(novelId))
                 },
                 onBackClick = {
                     navController.popBackStack()
@@ -56,10 +56,7 @@ fun NovelReadingNavigation(
         composable(Screen.BookList.route) {
             BookListScreen(
                 onBookClick = { novelId ->
-                    navController.navigate(Screen.BookDetails.createRoute(novelId))
-                },
-                onNavigateInProgress = {
-                    navController.navigate(Screen.InProgress.route)
+                    navController.navigate(Screen.NovelDetail.createRoute(novelId))
                 },
                 onBackClick = {
                     navController.popBackStack()
@@ -68,15 +65,6 @@ fun NovelReadingNavigation(
                     navController.navigate(Screen.Login.route)
                 },
                 sessionManager = sessionManager
-            )
-        }
-        
-        composable(Screen.InProgress.route) {
-            InProgressScreen(
-                navController = navController,
-                onBookClick = { novelId ->
-                    navController.navigate(Screen.BookDetails.createRoute(novelId))
-                }
             )
         }
         
@@ -98,6 +86,13 @@ fun NovelReadingNavigation(
                     sessionManager.clearSession()
                     navController.navigate(Screen.Home.route) {
                         popUpTo(0) { inclusive = true }
+                    }
+                },
+                onPersonalDataClick = {
+                    // Navigate to account detail with current user's ID
+                    val currentUserId = authState.userId
+                    if (currentUserId != null) {
+                        navController.navigate(Screen.AccountDetail.createRoute(currentUserId))
                     }
                 }
             )
@@ -183,17 +178,23 @@ fun NovelReadingNavigation(
         }
         
         composable(
-            route = Screen.BookDetails.route,
-            arguments = Screen.BookDetails.arguments
+            route = Screen.NovelDetail.route,
+            arguments = Screen.NovelDetail.arguments
         ) { backStackEntry ->
             val bookId = backStackEntry.arguments?.getString("bookId") ?: ""
-            BookDetailsScreen(
+            NovelDetailScreen(
                 bookId = bookId,
                 onBackClick = {
                     navController.popBackStack()
                 },
                 onChapterClick = { chapter ->
                     navController.navigate(Screen.Reading.createRoute(bookId, chapter.id))
+                },
+                onNavigateToComments = { novelId ->
+                    navController.navigate(Screen.Comments.createRoute(novelId))
+                },
+                onNavigateToCreateReview = { novelId ->
+                    navController.navigate(Screen.CreateReview.createRoute(novelId))
                 }
             )
         }
@@ -205,10 +206,48 @@ fun NovelReadingNavigation(
             val bookId = backStackEntry.arguments?.getString("bookId") ?: ""
             val chapterId = backStackEntry.arguments?.getString("chapterId") ?: ""
             
-            ReadingScreen(
-                novelId = bookId,
-                chapterId = chapterId,
+                         ReadingScreen(
+                 novelId = bookId,
+                 chapterId = chapterId,
+                 onBackClick = {
+                     navController.popBackStack()
+                 },
+                 onNavigateToNovelDetail = { novelId ->
+                     // Replace Reading screen with NovelDetail in back stack
+                     navController.navigate(Screen.NovelDetail.createRoute(novelId)) {
+                         // Replace the current Reading screen
+                         launchSingleTop = true
+                         popUpTo(Screen.Reading.route) { inclusive = true }
+                     }
+                 },
+                 sessionManager = sessionManager
+             )
+        }
+
+        composable(
+            route = Screen.Comments.route,
+            arguments = Screen.Comments.arguments
+        ) { backStackEntry ->
+            val novelId = backStackEntry.arguments?.getString("novelId") ?: ""
+            CommentsScreen(
+                novelId = novelId,
                 onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(
+            route = Screen.CreateReview.route,
+            arguments = Screen.CreateReview.arguments
+        ) { backStackEntry ->
+            val novelId = backStackEntry.arguments?.getString("novelId") ?: ""
+            CreateReviewScreen(
+                novelId = novelId,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onReviewSubmitted = {
                     navController.popBackStack()
                 }
             )
@@ -325,6 +364,23 @@ fun NovelReadingNavigation(
                 },
                 onSuccess = {
                     navController.popBackStack()
+                }
+            )
+        }
+
+        composable(
+            route = Screen.AccountDetail.route,
+            arguments = Screen.AccountDetail.arguments
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+            
+            AccountDetailScreen(
+                userId = userId,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onNovelClick = { novelId ->
+                    navController.navigate(Screen.NovelDetail.createRoute(novelId))
                 }
             )
         }

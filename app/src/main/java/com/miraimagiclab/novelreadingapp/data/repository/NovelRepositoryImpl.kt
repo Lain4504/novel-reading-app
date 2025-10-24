@@ -1,232 +1,259 @@
 package com.miraimagiclab.novelreadingapp.data.repository
 
-import com.miraimagiclab.novelreadingapp.data.local.dao.NovelDao
 import com.miraimagiclab.novelreadingapp.data.mapper.NovelMapper
 import com.miraimagiclab.novelreadingapp.data.remote.api.NovelApiService
+import com.miraimagiclab.novelreadingapp.data.remote.dto.NovelSearchRequest
+import com.miraimagiclab.novelreadingapp.data.remote.dto.PageResponse
 import com.miraimagiclab.novelreadingapp.domain.model.Novel
 import com.miraimagiclab.novelreadingapp.domain.repository.NovelRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class NovelRepositoryImpl @Inject constructor(
-    private val novelApiService: NovelApiService,
-    private val novelDao: NovelDao
+    private val novelApiService: NovelApiService
 ) : NovelRepository {
 
-    // Home screen specific implementations
+    // Home screen specific implementations - now calling API directly
     override fun getBannerNovels(): Flow<List<Novel>> {
-        return novelDao.getTopNovelsByViewCount().map { entities ->
-            entities.map { NovelMapper.mapEntityToDomain(it) }
+        return flow {
+            try {
+                val response = novelApiService.getBannerNovels()
+                if (response.success && response.data != null) {
+                    val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
+                    emit(novels)
+                } else {
+                    emit(emptyList())
+                }
+            } catch (e: Exception) {
+                emit(emptyList())
+            }
         }
     }
 
     override fun getRecommendedNovels(): Flow<List<Novel>> {
-        return novelDao.getTopNovelsByFollowCount().map { entities ->
-            entities.map { NovelMapper.mapEntityToDomain(it) }
+        return flow {
+            try {
+                val response = novelApiService.getRecommendedNovels()
+                if (response.success && response.data != null) {
+                    val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
+                    emit(novels)
+                } else {
+                    emit(emptyList())
+                }
+            } catch (e: Exception) {
+                emit(emptyList())
+            }
         }
     }
 
     override fun getRankingNovels(): Flow<List<Novel>> {
-        return novelDao.getTopNovelsByRating().map { entities ->
-            entities.map { NovelMapper.mapEntityToDomain(it) }
+        return flow {
+            try {
+                val response = novelApiService.getRankingNovels()
+                if (response.success && response.data != null) {
+                    val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
+                    emit(novels)
+                } else {
+                    emit(emptyList())
+                }
+            } catch (e: Exception) {
+                emit(emptyList())
+            }
         }
     }
 
     override fun getNewNovels(): Flow<List<Novel>> {
-        return novelDao.getRecentlyUpdatedNovels().map { entities ->
-            entities.map { NovelMapper.mapEntityToDomain(it) }
+        return flow {
+            try {
+                val response = novelApiService.getNewNovels()
+                if (response.success && response.data != null) {
+                    val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
+                    emit(novels)
+                } else {
+                    emit(emptyList())
+                }
+            } catch (e: Exception) {
+                emit(emptyList())
+            }
         }
     }
 
     override fun getCompletedNovels(): Flow<List<Novel>> {
-        return novelDao.getCompletedNovels().map { entities ->
-            entities.map { NovelMapper.mapEntityToDomain(it) }
-        }
-    }
-
-    // Home screen specific refresh methods
-    override suspend fun refreshBannerNovels() {
-        try {
-            val response = novelApiService.getBannerNovels()
-            if (response.success && response.data != null) {
-                val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
-                val entities = novels.map { NovelMapper.mapDomainToEntity(it) }
-                novelDao.insertNovels(entities)
+        return flow {
+            try {
+                val response = novelApiService.getCompletedNovels()
+                if (response.success && response.data != null) {
+                    val novels = response.data.content.map { NovelMapper.mapDtoToDomain(it) }
+                    emit(novels)
+                } else {
+                    emit(emptyList())
+                }
+            } catch (e: Exception) {
+                emit(emptyList())
             }
-        } catch (e: Exception) {
-            // Handle error - data will come from cache
         }
     }
 
-    override suspend fun refreshRecommendedNovels() {
-        try {
-            val response = novelApiService.getRecommendedNovels()
-            if (response.success && response.data != null) {
-                val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
-                val entities = novels.map { NovelMapper.mapDomainToEntity(it) }
-                novelDao.insertNovels(entities)
-            }
-        } catch (e: Exception) {
-            // Handle error - data will come from cache
-        }
-    }
+    // Refresh methods are no longer needed since we call API directly
 
-    override suspend fun refreshRankingNovels() {
-        try {
-            val response = novelApiService.getRankingNovels()
-            if (response.success && response.data != null) {
-                val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
-                val entities = novels.map { NovelMapper.mapDomainToEntity(it) }
-                novelDao.insertNovels(entities)
-            }
-        } catch (e: Exception) {
-            // Handle error - data will come from cache
-        }
-    }
-
-    override suspend fun refreshNewNovels() {
-        try {
-            val response = novelApiService.getNewNovels()
-            if (response.success && response.data != null) {
-                val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
-                val entities = novels.map { NovelMapper.mapDomainToEntity(it) }
-                novelDao.insertNovels(entities)
-            }
-        } catch (e: Exception) {
-            // Handle error - data will come from cache
-        }
-    }
-
-    override suspend fun refreshCompletedNovels() {
-        try {
-            val response = novelApiService.getCompletedNovels()
-            if (response.success && response.data != null) {
-                val novels = response.data.content.map { NovelMapper.mapDtoToDomain(it) }
-                val entities = novels.map { NovelMapper.mapDomainToEntity(it) }
-                novelDao.insertNovels(entities)
-            }
-        } catch (e: Exception) {
-            // Handle error - data will come from cache
-        }
-    }
-
-    // Legacy implementations (kept for backward compatibility)
+    // Legacy implementations - now calling API directly
     override fun getTopNovelsByRating(): Flow<List<Novel>> {
-        return novelDao.getTopNovelsByRating().map { entities ->
-            entities.map { NovelMapper.mapEntityToDomain(it) }
+        return flow {
+            try {
+                val response = novelApiService.getTopNovelsByRating()
+                if (response.success && response.data != null) {
+                    val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
+                    emit(novels)
+                } else {
+                    emit(emptyList())
+                }
+            } catch (e: Exception) {
+                emit(emptyList())
+            }
         }
     }
 
     override fun getTopNovelsByFollowCount(): Flow<List<Novel>> {
-        return novelDao.getTopNovelsByFollowCount().map { entities ->
-            entities.map { NovelMapper.mapEntityToDomain(it) }
+        return flow {
+            try {
+                val response = novelApiService.getTopNovelsByFollowCount()
+                if (response.success && response.data != null) {
+                    val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
+                    emit(novels)
+                } else {
+                    emit(emptyList())
+                }
+            } catch (e: Exception) {
+                emit(emptyList())
+            }
         }
     }
 
     override fun getTopNovelsByViewCount(): Flow<List<Novel>> {
-        return novelDao.getTopNovelsByViewCount().map { entities ->
-            entities.map { NovelMapper.mapEntityToDomain(it) }
+        return flow {
+            try {
+                val response = novelApiService.getTopNovelsByViewCount()
+                if (response.success && response.data != null) {
+                    val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
+                    emit(novels)
+                } else {
+                    emit(emptyList())
+                }
+            } catch (e: Exception) {
+                emit(emptyList())
+            }
         }
     }
 
     override fun getRecentlyUpdatedNovels(): Flow<List<Novel>> {
-        return novelDao.getRecentlyUpdatedNovels().map { entities ->
-            entities.map { NovelMapper.mapEntityToDomain(it) }
+        return flow {
+            try {
+                val response = novelApiService.getRecentlyUpdatedNovels()
+                if (response.success && response.data != null) {
+                    val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
+                    emit(novels)
+                } else {
+                    emit(emptyList())
+                }
+            } catch (e: Exception) {
+                emit(emptyList())
+            }
         }
     }
 
-    override suspend fun refreshTopNovelsByRating() {
-        try {
-            val response = novelApiService.getTopNovelsByRating()
-            if (response.success && response.data != null) {
-                val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
-                val entities = novels.map { NovelMapper.mapDomainToEntity(it) }
-                novelDao.insertNovels(entities)
-            }
-        } catch (e: Exception) {
-            // Handle error - data will come from cache
-        }
-    }
-
-    override suspend fun refreshTopNovelsByFollowCount() {
-        try {
-            val response = novelApiService.getTopNovelsByFollowCount()
-            if (response.success && response.data != null) {
-                val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
-                val entities = novels.map { NovelMapper.mapDomainToEntity(it) }
-                novelDao.insertNovels(entities)
-            }
-        } catch (e: Exception) {
-            // Handle error - data will come from cache
-        }
-    }
-
-    override suspend fun refreshTopNovelsByViewCount() {
-        try {
-            val response = novelApiService.getTopNovelsByViewCount()
-            if (response.success && response.data != null) {
-                val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
-                val entities = novels.map { NovelMapper.mapDomainToEntity(it) }
-                novelDao.insertNovels(entities)
-            }
-        } catch (e: Exception) {
-            // Handle error - data will come from cache
-        }
-    }
-
-    override suspend fun refreshRecentlyUpdatedNovels() {
-        try {
-            val response = novelApiService.getRecentlyUpdatedNovels()
-            if (response.success && response.data != null) {
-                val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
-                val entities = novels.map { NovelMapper.mapDomainToEntity(it) }
-                novelDao.insertNovels(entities)
-            }
-        } catch (e: Exception) {
-            // Handle error - data will come from cache
-        }
-    }
+    // All refresh methods removed - no longer needed with direct API calls
 
     override suspend fun getNovelById(id: String): Novel? {
-        return novelDao.getNovelById(id)?.let { NovelMapper.mapEntityToDomain(it) }
+        return try {
+            val response = novelApiService.getNovelById(id)
+            if (response.success && response.data != null) {
+                NovelMapper.mapDtoToDomain(response.data)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
+        }
     }
 
     override suspend fun getNovelsByIds(ids: List<String>): List<Novel> {
-        // First try to get from local cache
-        val cachedNovels = novelDao.getNovelsByIds(ids).map { NovelMapper.mapEntityToDomain(it) }
+        println("DEBUG: getNovelsByIds called with IDs: $ids")
+        val fetchedNovels = mutableListOf<Novel>()
         
-        // Find missing novels
-        val cachedIds = cachedNovels.map { it.id }.toSet()
-        val missingIds = ids.filter { it !in cachedIds }
-        
-        // Fetch missing novels from API
-        if (missingIds.isNotEmpty()) {
+        // Fetch all novels from API directly
+        ids.forEach { novelId ->
             try {
-                val fetchedNovels = mutableListOf<Novel>()
-                missingIds.forEach { novelId ->
-                    try {
-                        val response = novelApiService.getNovelById(novelId)
-                        if (response.success && response.data != null) {
-                            val novel = NovelMapper.mapDtoToDomain(response.data)
-                            fetchedNovels.add(novel)
-                            // Cache the novel
-                            novelDao.insertNovel(NovelMapper.mapDomainToEntity(novel))
-                        }
-                    } catch (e: Exception) {
-                        // Skip this novel if fetch fails
-                    }
+                println("DEBUG: Fetching novel with ID: $novelId")
+                val response = novelApiService.getNovelById(novelId)
+                if (response.success && response.data != null) {
+                    val novel = NovelMapper.mapDtoToDomain(response.data)
+                    fetchedNovels.add(novel)
+                    println("DEBUG: Successfully fetched novel: ${novel.title}")
+                } else {
+                    println("DEBUG: Failed to fetch novel $novelId: ${response.message}")
                 }
-                return cachedNovels + fetchedNovels
             } catch (e: Exception) {
-                // Return only cached novels if API call fails
-                return cachedNovels
+                println("DEBUG: Exception fetching novel $novelId: ${e.message}")
+                e.printStackTrace()
             }
         }
         
-        return cachedNovels
+        println("DEBUG: Total novels returned: ${fetchedNovels.size}")
+        return fetchedNovels
+    }
+
+    override suspend fun searchNovels(query: String, page: Int, size: Int, sortBy: String, sortDirection: String): PageResponse<Novel> {
+        return try {
+            // Always use search API to support sort options
+            val searchRequest = NovelSearchRequest(
+                title = if (query.isBlank()) null else query,
+                page = page,
+                size = size,
+                sortBy = sortBy,
+                sortDirection = sortDirection
+            )
+            val response = novelApiService.searchNovels(searchRequest)
+            if (response.success && response.data != null) {
+                val novels = response.data.content.map { NovelMapper.mapDtoToDomain(it) }
+                PageResponse(
+                    content = novels,
+                    page = response.data.page,
+                    size = response.data.size,
+                    totalElements = response.data.totalElements,
+                    totalPages = response.data.totalPages,
+                    first = response.data.first,
+                    last = response.data.last,
+                    numberOfElements = response.data.numberOfElements
+                )
+            } else {
+                PageResponse(
+                    content = emptyList(),
+                    page = 0,
+                    size = size,
+                    totalElements = 0,
+                    totalPages = 0,
+                    first = true,
+                    last = true,
+                    numberOfElements = 0
+                )
+            }
+        } catch (e: Exception) {
+            // Log error for debugging
+            println("Error in searchNovels: ${e.message}")
+            e.printStackTrace()
+            PageResponse(
+                content = emptyList(),
+                page = 0,
+                size = size,
+                totalElements = 0,
+                totalPages = 0,
+                first = true,
+                last = true,
+                numberOfElements = 0
+            )
+        }
     }
 }

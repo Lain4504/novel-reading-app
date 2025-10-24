@@ -74,6 +74,18 @@ fun CreateNovelScreen(
             coverImageUrl = currentState.data
             selectedCoverUri = null
             viewModel.resetUploadImageState()
+            
+            // After successful upload, create the novel with the cover URL
+            viewModel.createNovel(
+                title = title,
+                description = description,
+                authorName = authorName,
+                authorId = authState.userId,
+                categories = selectedCategories,
+                status = status,
+                isR18 = isR18,
+                coverImageUrl = coverImageUrl
+            )
         }
     }
     
@@ -83,11 +95,7 @@ fun CreateNovelScreen(
     ) { uri: Uri? ->
         uri?.let {
             selectedCoverUri = it
-            val file = uriToFile(context, it)
-            if (file != null && authState.userId != null) {
-                // Upload with ownerType = "USER" since novel doesn't exist yet
-                viewModel.uploadImage(file, authState.userId!!, "USER")
-            }
+            // Don't upload immediately, just store the URI
         }
     }
 
@@ -110,7 +118,8 @@ fun CreateNovelScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
+                windowInsets = WindowInsets(0)
             )
         }
     ) { innerPadding ->
@@ -299,16 +308,25 @@ fun CreateNovelScreen(
             Button(
                 onClick = {
                     if (title.isNotBlank() && description.isNotBlank() && authorName.isNotBlank() && selectedCategories.isNotEmpty()) {
-                        viewModel.createNovel(
-                            title = title,
-                            description = description,
-                            authorName = authorName,
-                            authorId = authState.userId,
-                            categories = selectedCategories,
-                            status = status,
-                            isR18 = isR18,
-                            coverImageUrl = coverImageUrl
-                        )
+                        // If image is selected, upload it first
+                        if (selectedCoverUri != null && authState.userId != null) {
+                            val file = uriToFile(context, selectedCoverUri!!)
+                            if (file != null) {
+                                viewModel.uploadImage(file, authState.userId!!, "USER")
+                            }
+                        } else {
+                            // No image selected, create novel without cover
+                            viewModel.createNovel(
+                                title = title,
+                                description = description,
+                                authorName = authorName,
+                                authorId = authState.userId,
+                                categories = selectedCategories,
+                                status = status,
+                                isR18 = isR18,
+                                coverImageUrl = null
+                            )
+                        }
                     }
                 },
                 enabled = !uiState.isLoading && uploadImageState !is com.miraimagiclab.novelreadingapp.util.UiState.Loading && title.isNotBlank() && description.isNotBlank() && authorName.isNotBlank() && selectedCategories.isNotEmpty(),

@@ -57,6 +57,8 @@ fun ReadingScreen(
     novelId: String,
     chapterId: String,
     onBackClick: () -> Unit,
+    onNavigateToNovelDetail: (String) -> Unit,
+    sessionManager: com.miraimagiclab.novelreadingapp.data.auth.SessionManager,
     modifier: Modifier = Modifier,
     viewModel: ReadingSettingsViewModel = hiltViewModel(),
     progressViewModel: ReadingProgressViewModel = hiltViewModel(),
@@ -68,6 +70,10 @@ fun ReadingScreen(
 
     // Haptic feedback
     val hapticFeedback = rememberHapticFeedback()
+    
+    // Collect auth state to get real user ID
+    val authState by sessionManager.authState.collectAsState()
+    val userId = authState.userId ?: ""
 
     // Collect reading settings
     val fontFamily by viewModel.fontFamily.collectAsState()
@@ -86,9 +92,6 @@ fun ReadingScreen(
     val isLoading by readingViewModel.isLoading.collectAsState()
     val error by readingViewModel.error.collectAsState()
     
-    // Mock user ID - in real app, this would come from authentication
-    val userId = "user_123"
-    
     // Load chapter data when screen is first displayed
     LaunchedEffect(novelId, chapterId) {
         readingViewModel.loadChapter(novelId, chapterId)
@@ -102,16 +105,18 @@ fun ReadingScreen(
         progressViewModel.getReadingProgress(userId, novelId)
     }
     
-    // Update reading progress when navigating to a new chapter
-    LaunchedEffect(chapterId) {
-        val state = currentChapterState
-        when (state) {
+    // Update reading progress when chapter data is successfully loaded
+    LaunchedEffect(currentChapterState) {
+        when (val state = currentChapterState) {
             is UiState.Success -> {
                 // Extract chapter number from chapter data or use a default
                 val chapterNumber = state.data.chapterNumber ?: 1
+                println("DEBUG: ReadingScreen updating progress - userId: $userId, novelId: $novelId, chapterId: $chapterId, chapterNumber: $chapterNumber")
                 progressViewModel.updateReadingProgress(userId, novelId, chapterId, chapterNumber)
             }
-            else -> { /* Do nothing for loading/error states */ }
+            else -> { 
+                println("DEBUG: ReadingScreen not updating progress - state is not Success: $state")
+            }
         }
     }
 
@@ -408,7 +413,20 @@ fun ReadingScreen(
                              horizontalArrangement = Arrangement.spacedBy(12.dp),
                              verticalAlignment = Alignment.CenterVertically
                          ) {
-                             // Bookmark functionality removed - using simplified progress tracking
+                             // Novel Detail Icon
+                             IconButton(
+                                 onClick = { 
+                                     hapticFeedback.light()
+                                     onNavigateToNovelDetail(novelId)
+                                 }
+                             ) {
+                                 Icon(
+                                     imageVector = Icons.Default.Star,
+                                     contentDescription = "Novel Details",
+                                     tint = MaterialTheme.colorScheme.onSurface,
+                                     modifier = Modifier.size(24.dp)
+                                 )
+                             }
                              
                              // Chapter List Icon
                              IconButton(
