@@ -27,9 +27,17 @@ fun NovelReadingNavigation(
     
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route,
+        startDestination = Screen.Splash.route,
         modifier = modifier
     ) {
+        composable(Screen.Splash.route) {
+            SplashScreen(navController = navController)
+        }
+
+        composable(Screen.Onboarding.route) {
+            OnboardingScreen(navController = navController)
+        }
+
         composable(Screen.Home.route) {
             HomeScreen(
                 onNovelClick = { novelId ->
