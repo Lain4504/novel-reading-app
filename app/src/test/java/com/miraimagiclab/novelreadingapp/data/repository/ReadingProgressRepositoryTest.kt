@@ -44,7 +44,7 @@ class ReadingProgressRepositoryTest {
             createdAt = LocalDateTime.now(),
             updatedAt = LocalDateTime.now()
         )
-        val apiResponse = ApiResponse(
+        val apiResponse = ApiResponse<UserNovelInteractionDto?>(
             success = true,
             message = "Success",
             data = dto,

@@ -40,7 +40,7 @@ class ChapterRepositoryImplTest {
             createdAt = "2023-01-01T00:00:00",
             updatedAt = "2023-01-01T00:00:00"
         )
-        val apiResponse = ApiResponse(success = true, data = chapterDto, message = "Success")
+        val apiResponse = ApiResponse(success = true, data = chapterDto, message = "Success", timestamp = "2023-01-01T00:00:00")
 
         coEvery { chapterApiService.getChapterById(chapterId) } returns apiResponse
 
@@ -58,7 +58,7 @@ class ChapterRepositoryImplTest {
     fun `getChapterById should return null when API fails`() = runTest {
         // Given
         val chapterId = "chapter_123"
-        val apiResponse = ApiResponse<ChapterDto>(success = false, data = null, message = "Not found")
+        val apiResponse = ApiResponse<ChapterDto>(success = false, data = null, message = "Not found", timestamp = "2023-01-01T00:00:00")
 
         coEvery { chapterApiService.getChapterById(chapterId) } returns apiResponse
 
@@ -102,12 +102,12 @@ class ChapterRepositoryImplTest {
             totalElements = 2,
             totalPages = 1,
             size = 20,
-            number = 0,
+            page = 0,
             first = true,
             last = true,
             numberOfElements = 2
         )
-        val apiResponse = ApiResponse(success = true, data = pageResponse, message = "Success")
+        val apiResponse = ApiResponse(success = true, data = pageResponse, message = "Success", timestamp = "2023-01-01T00:00:00")
 
         coEvery { chapterApiService.getChaptersByNovelId(novelId) } returns apiResponse
 
@@ -126,7 +126,7 @@ class ChapterRepositoryImplTest {
     fun `getChaptersByNovelId should return empty list when API fails`() = runTest {
         // Given
         val novelId = "novel_456"
-        val apiResponse = ApiResponse<PageResponse<ChapterDto>>(success = false, data = null, message = "Not found")
+        val apiResponse = ApiResponse<PageResponse<ChapterDto>>(success = false, data = null, message = "Not found", timestamp = "2023-01-01T00:00:00")
 
         coEvery { chapterApiService.getChaptersByNovelId(novelId) } returns apiResponse
 
@@ -152,7 +152,7 @@ class ChapterRepositoryImplTest {
             createdAt = "2023-01-01T00:00:00",
             updatedAt = "2023-01-01T00:00:00"
         )
-        val apiResponse = ApiResponse(success = true, data = chapterDto, message = "Success")
+        val apiResponse = ApiResponse(success = true, data = chapterDto, message = "Success", timestamp = "2023-01-01T00:00:00")
 
         coEvery { chapterApiService.getChapterById(chapterId) } returns apiResponse
 
@@ -183,7 +183,7 @@ class ChapterRepositoryImplTest {
             createdAt = "2023-01-01T00:00:00",
             updatedAt = "2023-01-02"
         )
-        val apiResponse = ApiResponse(success = true, data = chapterDto, message = "Success")
+        val apiResponse = ApiResponse(success = true, data = chapterDto, message = "Success", timestamp = "2023-01-01T00:00:00")
 
         coEvery { chapterApiService.getChapterById(chapterId) } returns apiResponse
 

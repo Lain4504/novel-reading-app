@@ -1,4 +1,5 @@
 package com.miraimagiclab.novelreadingapp.ui.screens
+package com.miraimagiclab.novelreadingapp.ui.screens
 
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -24,18 +25,14 @@ class ReadingScreenTest {
         // When
         composeTestRule.setContent {
             ReadingScreen(
-                chapterTitle = chapterTitle,
-                chapterContent = chapterContent,
-                onBackClick = { backClicked = true },
-                onPreviousChapter = { previousClicked = true },
-                onNextChapter = { nextClicked = true },
-                hasPreviousChapter = true,
-                hasNextChapter = true
+                novelId = "novel123",
+                chapterId = "chapter456",
+                onBackClick = { backClicked = true }
             )
         }
 
         // Then
-        composeTestRule.onNodeWithText(chapterContent).assertIsDisplayed()
+        composeTestRule.onNodeWithText("Loading chapter...").assertIsDisplayed()
     }
 
     @Test
@@ -50,18 +47,14 @@ class ReadingScreenTest {
         // When
         composeTestRule.setContent {
             ReadingScreen(
-                chapterTitle = chapterTitle,
-                chapterContent = chapterContent,
-                onBackClick = { backClicked = true },
-                onPreviousChapter = { previousClicked = true },
-                onNextChapter = { nextClicked = true },
-                hasPreviousChapter = true,
-                hasNextChapter = true
+                novelId = "novel123",
+                chapterId = "chapter456",
+                onBackClick = { backClicked = true }
             )
         }
 
         // Tap to show UI
-        composeTestRule.onNodeWithText(chapterContent).performClick()
+        composeTestRule.onRoot().performClick()
 
         // Then
         composeTestRule.onNodeWithText("Previous").assertIsDisplayed()
@@ -80,18 +73,14 @@ class ReadingScreenTest {
         // When
         composeTestRule.setContent {
             ReadingScreen(
-                chapterTitle = chapterTitle,
-                chapterContent = chapterContent,
-                onBackClick = { backClicked = true },
-                onPreviousChapter = { previousClicked = true },
-                onNextChapter = { nextClicked = true },
-                hasPreviousChapter = true,
-                hasNextChapter = true
+                novelId = "novel123",
+                chapterId = "chapter456",
+                onBackClick = { backClicked = true }
             )
         }
 
         // Tap to show UI
-        composeTestRule.onNodeWithText(chapterContent).performClick()
+        composeTestRule.onRoot().performClick()
 
         // Click settings icon
         composeTestRule.onNodeWithContentDescription("Reading Settings").performClick()
@@ -112,18 +101,14 @@ class ReadingScreenTest {
         // When
         composeTestRule.setContent {
             ReadingScreen(
-                chapterTitle = chapterTitle,
-                chapterContent = chapterContent,
-                onBackClick = { backClicked = true },
-                onPreviousChapter = { previousClicked = true },
-                onNextChapter = { nextClicked = true },
-                hasPreviousChapter = true,
-                hasNextChapter = true
+                novelId = "novel123",
+                chapterId = "chapter456",
+                onBackClick = { backClicked = true }
             )
         }
 
         // Tap to show UI
-        composeTestRule.onNodeWithText(chapterContent).performClick()
+        composeTestRule.onRoot().performClick()
 
         // Click chapter list icon
         composeTestRule.onNodeWithContentDescription("Chapter List").performClick()
@@ -144,18 +129,14 @@ class ReadingScreenTest {
         // When
         composeTestRule.setContent {
             ReadingScreen(
-                chapterTitle = chapterTitle,
-                chapterContent = chapterContent,
-                onBackClick = { backClicked = true },
-                onPreviousChapter = { previousClicked = true },
-                onNextChapter = { nextClicked = true },
-                hasPreviousChapter = false,
-                hasNextChapter = true
+                novelId = "novel123",
+                chapterId = "chapter456",
+                onBackClick = { backClicked = true }
             )
         }
 
         // Tap to show UI
-        composeTestRule.onNodeWithText(chapterContent).performClick()
+        composeTestRule.onRoot().performClick()
 
         // Then
         composeTestRule.onNodeWithText("Previous").assertIsNotEnabled()
@@ -173,18 +154,14 @@ class ReadingScreenTest {
         // When
         composeTestRule.setContent {
             ReadingScreen(
-                chapterTitle = chapterTitle,
-                chapterContent = chapterContent,
-                onBackClick = { backClicked = true },
-                onPreviousChapter = { previousClicked = true },
-                onNextChapter = { nextClicked = true },
-                hasPreviousChapter = true,
-                hasNextChapter = false
+                novelId = "novel123",
+                chapterId = "chapter456",
+                onBackClick = { backClicked = true }
             )
         }
 
         // Tap to show UI
-        composeTestRule.onNodeWithText(chapterContent).performClick()
+        composeTestRule.onRoot().performClick()
 
         // Then
         composeTestRule.onNodeWithText("Next").assertIsNotEnabled()
