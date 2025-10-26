@@ -96,4 +96,37 @@ object JwtTokenHelper {
         
         return jsonObject.getString("username")
     }
+    
+    /**
+     * Extracts the roles from a JWT token
+     * @param token JWT token string
+     * @return Set of role strings
+     * @throws Exception if token cannot be parsed
+     */
+    fun getRoles(token: String): Set<String> {
+        return try {
+            val parts = token.split(".")
+            if (parts.size != 3) {
+                return emptySet()
+            }
+            
+            val payload = parts[1]
+            val decodedBytes = Base64.decode(payload, Base64.URL_SAFE)
+            val payloadJson = String(decodedBytes)
+            val jsonObject = JSONObject(payloadJson)
+            
+            // Extract roles array from JWT
+            if (jsonObject.has("roles")) {
+                val rolesArray = jsonObject.getJSONArray("roles")
+                val roles = mutableSetOf<String>()
+                for (i in 0 until rolesArray.length()) {
+                    roles.add(rolesArray.getString(i))
+                }
+                return roles
+            }
+            emptySet()
+        } catch (e: Exception) {
+            emptySet()
+        }
+    }
 }

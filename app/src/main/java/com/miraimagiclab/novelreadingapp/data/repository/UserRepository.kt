@@ -24,10 +24,9 @@ class UserRepository @Inject constructor(
         }
     }
 
-    suspend fun requestAuthorRole(userId: String): Result<UserDto> {
+    suspend fun requestAuthorRole(userId: String): Result<com.miraimagiclab.novelreadingapp.data.remote.dto.LoginResponse> {
         return try {
-            val request = UserUpdateRequest(roles = setOf("AUTHOR"))
-            val response = userApiService.updateUser(userId, request)
+            val response = userApiService.upgradeToAuthor(userId)
             if (response.isSuccessful && response.body()?.success == true) {
                 Result.success(response.body()!!.data!!)
             } else {

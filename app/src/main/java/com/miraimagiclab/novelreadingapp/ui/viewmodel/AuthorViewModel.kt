@@ -5,11 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.miraimagiclab.novelreadingapp.data.auth.AuthState
 import com.miraimagiclab.novelreadingapp.data.auth.SessionManager
 import com.miraimagiclab.novelreadingapp.data.repository.AuthorRepository
+import com.miraimagiclab.novelreadingapp.data.repository.ImageRepository
 import com.miraimagiclab.novelreadingapp.data.repository.UserRepository
 import com.miraimagiclab.novelreadingapp.data.remote.dto.ChapterDto
 import com.miraimagiclab.novelreadingapp.data.remote.dto.NovelDto
 import com.miraimagiclab.novelreadingapp.data.remote.dto.PageResponse
 import com.miraimagiclab.novelreadingapp.data.remote.dto.UserDto
+import com.miraimagiclab.novelreadingapp.util.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +24,7 @@ import javax.inject.Inject
 class AuthorViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val authorRepository: AuthorRepository,
+    private val imageRepository: ImageRepository,
     private val sessionManager: SessionManager
 ) : ViewModel() {
 
@@ -36,26 +39,43 @@ class AuthorViewModel @Inject constructor(
     private val _novelChapters = MutableStateFlow<List<ChapterDto>>(emptyList())
     val novelChapters: StateFlow<List<ChapterDto>> = _novelChapters.asStateFlow()
 
+    private val _uploadImageState = MutableStateFlow<com.miraimagiclab.novelreadingapp.util.UiState<String>>(com.miraimagiclab.novelreadingapp.util.UiState.Idle)
+    val uploadImageState: StateFlow<com.miraimagiclab.novelreadingapp.util.UiState<String>> = _uploadImageState
+
     fun requestAuthorRole(userId: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             userRepository.requestAuthorRole(userId)
-                .onSuccess { user ->
-                    // Update session with new roles
+                .onSuccess { loginResponse ->
+                    // Extract roles from new JWT token
+                    val roles = try {
+                        com.miraimagiclab.novelreadingapp.util.JwtTokenHelper.getRoles(loginResponse.token)
+                    } catch (e: Exception) {
+                        loginResponse.user.roles.toSet()
+                    }
+                    
+                    // Calculate expiration time for the token
+                    val expirationTime = try {
+                        com.miraimagiclab.novelreadingapp.util.JwtTokenHelper.getExpirationTime(loginResponse.token).time
+                    } catch (e: Exception) {
+                        null
+                    }
+                    
+                    // Update session with new JWT tokens and roles
                     sessionManager.saveSession(
-                        accessToken = sessionManager.authState.value.accessToken!!,
-                        refreshToken = sessionManager.authState.value.refreshToken!!,
-                        userId = user.id,
-                        username = user.username,
-                        email = user.email,
-                        roles = user.roles.toSet(),
-                        expirationTime = sessionManager.authState.value.tokenExpiration
+                        accessToken = loginResponse.token,
+                        refreshToken = loginResponse.refreshToken,
+                        userId = loginResponse.user.id,
+                        username = loginResponse.user.username,
+                        email = loginResponse.user.email,
+                        roles = roles,
+                        expirationTime = expirationTime
                     )
                     
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         isAuthor = true,
-                        currentUser = user
+                        currentUser = loginResponse.user
                     )
                 }
                 .onFailure { error ->
@@ -65,6 +85,22 @@ class AuthorViewModel @Inject constructor(
                     )
                 }
         }
+    }
+
+    fun uploadImage(imageFile: File, ownerId: String, ownerType: String = "NOVEL") {
+        viewModelScope.launch {
+            _uploadImageState.value = UiState.Loading
+            val result = imageRepository.uploadImage(imageFile, ownerId, ownerType)
+            _uploadImageState.value = if (result.isSuccess) {
+                UiState.Success(result.getOrNull()!!.url)
+            } else {
+                UiState.Error(result.exceptionOrNull()?.message ?: "Failed to upload image")
+            }
+        }
+    }
+
+    fun resetUploadImageState() {
+        _uploadImageState.value = UiState.Idle
     }
 
     fun loadAuthorNovels(authorId: String) {
@@ -92,7 +128,7 @@ class AuthorViewModel @Inject constructor(
         categories: Set<String>,
         status: String = "DRAFT",
         isR18: Boolean = false,
-        coverImageFile: File? = null
+        coverImageUrl: String? = null
     ) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
@@ -104,7 +140,7 @@ class AuthorViewModel @Inject constructor(
                 categories = categories,
                 status = status,
                 isR18 = isR18,
-                coverImageFile = coverImageFile
+                coverImageUrl = coverImageUrl
             )
                 .onSuccess { novel ->
                     _authorNovels.value = _authorNovels.value + novel
@@ -134,7 +170,7 @@ class AuthorViewModel @Inject constructor(
         chapterCount: Int? = null,
         status: String? = null,
         isR18: Boolean? = null,
-        coverImageFile: File? = null
+        coverImageUrl: String? = null
     ) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
@@ -150,7 +186,7 @@ class AuthorViewModel @Inject constructor(
                 chapterCount = chapterCount,
                 status = status,
                 isR18 = isR18,
-                coverImageFile = coverImageFile
+                coverImageUrl = coverImageUrl
             )
                 .onSuccess { updatedNovel ->
                     _authorNovels.value = _authorNovels.value.map { novel ->

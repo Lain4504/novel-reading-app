@@ -63,7 +63,8 @@ interface NovelApiService {
         @Part("categories") categories: RequestBody,
         @Part("status") status: RequestBody,
         @Part("isR18") isR18: RequestBody,
-        @Part coverImage: MultipartBody.Part?
+        @Part coverImage: MultipartBody.Part?,
+        @Part("coverUrl") coverUrl: RequestBody?
     ): Response<ApiResponse<NovelDto>>
 
     @Multipart
@@ -80,7 +81,8 @@ interface NovelApiService {
         @Part("chapterCount") chapterCount: RequestBody?,
         @Part("status") status: RequestBody?,
         @Part("isR18") isR18: RequestBody?,
-        @Part coverImage: MultipartBody.Part?
+        @Part coverImage: MultipartBody.Part?,
+        @Part("coverUrl") coverUrl: RequestBody?
     ): Response<ApiResponse<NovelDto>>
 
     @DELETE("novels/{id}")

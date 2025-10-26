@@ -249,4 +249,27 @@ class UserService(
         userRepository.save(updatedUser)
     }
 
+    fun upgradeToAuthor(userId: String): AuthResult {
+        val user = userRepository.findById(userId)
+            .orElseThrow { UserNotFoundException("User with ID '$userId' not found") }
+
+        // Add AUTHOR role to existing roles
+        val updatedRoles = user.roles.toMutableSet().apply {
+            add(UserRoleEnum.AUTHOR)
+        }
+
+        val updatedUser = user.copy(
+            roles = updatedRoles,
+            updatedAt = LocalDateTime.now()
+        )
+
+        val savedUser = userRepository.save(updatedUser)
+
+        // Generate new JWT tokens with updated roles
+        val token = jwtUtil.generateToken(savedUser)
+        val refreshToken = jwtUtil.generateRefreshToken(savedUser)
+
+        return AuthResult(savedUser, token, refreshToken)
+    }
+
 }
