@@ -88,4 +88,12 @@ class UserController(
         return ResponseEntity.ok(ApiResponse.success("User deleted successfully"))
     }
 
+    @PostMapping("/{id}/upgrade-to-author")
+    fun upgradeToAuthor(@PathVariable id: String): ResponseEntity<ApiResponse<LoginResponse>> {
+        val result = userService.upgradeToAuthor(id)
+        val userDto = UserDto.fromEntity(result.user)
+        val loginResponse = LoginResponse(result.token, result.refreshToken, userDto)
+        return ResponseEntity.ok(ApiResponse.success(loginResponse, "Upgraded to author successfully"))
+    }
+
 }
