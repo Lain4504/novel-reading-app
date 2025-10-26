@@ -6,7 +6,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -14,8 +16,10 @@ import com.miraimagiclab.novelreadingapp.ui.screens.*
 import com.miraimagiclab.novelreadingapp.ui.screens.auth.*
 import com.miraimagiclab.novelreadingapp.ui.screens.author.*
 import com.miraimagiclab.novelreadingapp.data.auth.SessionManager
+import com.miraimagiclab.novelreadingapp.ui.viewmodel.SettingsViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import android.util.Log
 
 @Composable
 fun NovelReadingNavigation(
@@ -24,15 +28,23 @@ fun NovelReadingNavigation(
     modifier: Modifier = Modifier
 ) {
     val authState by sessionManager.authState.collectAsState()
-    
-    NavHost(
-        navController = navController,
-        startDestination = Screen.Splash.route,
-        modifier = modifier
-    ) {
-        composable(Screen.Splash.route) {
-            SplashScreen(navController = navController)
-        }
+    val settingsViewModel: SettingsViewModel = hiltViewModel()
+    val hasSeenOnboarding by settingsViewModel.hasSeenOnboarding.collectAsState()
+
+    var startDestination by remember { mutableStateOf<String?>(null) }
+
+    // Determine start destination after collecting the onboarding state
+    LaunchedEffect(hasSeenOnboarding) {
+        startDestination = if (hasSeenOnboarding) Screen.Home.route else Screen.Onboarding.route
+    }
+
+    // Only render NavHost when startDestination is determined
+    startDestination?.let { destination ->
+        NavHost(
+            navController = navController,
+            startDestination = destination,
+            modifier = modifier
+        ) {
 
         composable(Screen.Onboarding.route) {
             OnboardingScreen(navController = navController)
@@ -335,6 +347,7 @@ fun NovelReadingNavigation(
                     navController.popBackStack()
                 }
             )
+        }
         }
     }
 }

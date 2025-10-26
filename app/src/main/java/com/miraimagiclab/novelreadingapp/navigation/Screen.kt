@@ -8,7 +8,6 @@ sealed class Screen(
     val route: String,
     val arguments: List<NamedNavArgument> = emptyList()
 ) {
-    object Splash : Screen("splash")
     object Onboarding : Screen("onboarding")
     object Home : Screen("home")
     object Explore : Screen("explore")
