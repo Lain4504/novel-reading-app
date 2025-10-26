@@ -1,5 +1,6 @@
 package com.miraimagiclab.novelreadingapp.ui.screens.author
 
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
 import com.miraimagiclab.novelreadingapp.data.remote.dto.ChapterDto
 import com.miraimagiclab.novelreadingapp.ui.viewmodel.AuthorViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -30,12 +32,19 @@ fun NovelManageScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val novelChapters by viewModel.novelChapters.collectAsState()
+    
+    // Delete chapter dialog state
+    var showDeleteChapterDialog by remember { mutableStateOf(false) }
+    var chapterToDelete by remember { mutableStateOf<ChapterDto?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(novelId) {
         viewModel.loadNovelChapters(novelId)
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Manage Novel") },
@@ -48,7 +57,8 @@ fun NovelManageScreen(
                     IconButton(onClick = onEditNovelClick) {
                         Icon(Icons.Default.Edit, contentDescription = "Edit Novel")
                     }
-                }
+                },
+                windowInsets = WindowInsets(0)
             )
         },
         floatingActionButton = {
@@ -97,7 +107,11 @@ fun NovelManageScreen(
                     items(novelChapters) { chapter ->
                         ChapterItem(
                             chapter = chapter,
-                            onClick = { onEditChapterClick(chapter.id) }
+                            onClick = { onEditChapterClick(chapter.id) },
+                            onLongClick = {
+                                chapterToDelete = chapter
+                                showDeleteChapterDialog = true
+                            }
                         )
                     }
                 }
@@ -108,6 +122,27 @@ fun NovelManageScreen(
         uiState.error?.let { error ->
             LaunchedEffect(error) {
                 // Show snackbar or error dialog
+            }
+        }
+        
+        // Delete chapter confirmation dialog
+        chapterToDelete?.let { chapter ->
+            if (showDeleteChapterDialog) {
+                DeleteChapterDialog(
+                    chapterTitle = chapter.chapterTitle,
+                    onConfirm = {
+                        viewModel.deleteChapter(chapter.id)
+                        showDeleteChapterDialog = false
+                        chapterToDelete = null
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Chapter deleted successfully")
+                        }
+                    },
+                    onDismiss = {
+                        showDeleteChapterDialog = false
+                        chapterToDelete = null
+                    }
+                )
             }
         }
     }
@@ -221,11 +256,16 @@ private fun NovelInfoCard(
 @Composable
 private fun ChapterItem(
     chapter: ChapterDto,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onClick
+        modifier = Modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -274,4 +314,30 @@ private fun ChapterItem(
             }
         }
     }
+}
+
+@Composable
+private fun DeleteChapterDialog(
+    chapterTitle: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Delete Chapter?") },
+        text = { Text("Are you sure you want to delete \"$chapterTitle\"? This action cannot be undone.") },
+        confirmButton = {
+            TextButton(
+                onClick = onConfirm, 
+                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+            ) {
+                Text("Delete")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }

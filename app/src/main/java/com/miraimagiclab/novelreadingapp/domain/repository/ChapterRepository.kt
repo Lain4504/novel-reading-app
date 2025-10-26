@@ -44,4 +44,10 @@ interface ChapterRepository {
      * @return List of chapters
      */
     suspend fun getChaptersByNovelIdSync(novelId: String): List<Chapter>
+    
+    /**
+     * Increment view count for a chapter
+     * @param chapterId The ID of the chapter
+     */
+    suspend fun incrementViewCount(chapterId: String)
 }

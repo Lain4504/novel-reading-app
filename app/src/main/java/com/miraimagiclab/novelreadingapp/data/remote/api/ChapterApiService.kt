@@ -37,6 +37,9 @@ interface ChapterApiService {
 
     @DELETE("chapters/{chapterId}")
     suspend fun deleteChapter(@Path("chapterId") chapterId: String): Response<ApiResponse<Nothing>>
+
+    @POST("chapters/{chapterId}/increment-view")
+    suspend fun incrementChapterViewCount(@Path("chapterId") chapterId: String): ApiResponse<ChapterDto>
 }
 
 

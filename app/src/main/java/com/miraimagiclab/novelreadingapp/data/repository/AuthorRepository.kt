@@ -25,7 +25,7 @@ class AuthorRepository @Inject constructor(
         categories: Set<String>,
         status: String = "DRAFT",
         isR18: Boolean = false,
-        coverImageFile: File? = null
+        coverImageUrl: String? = null
     ): Result<NovelDto> {
         return try {
             val titleBody = title.toRequestBody("text/plain".toMediaTypeOrNull())
@@ -35,11 +35,7 @@ class AuthorRepository @Inject constructor(
             val categoriesBody = categories.joinToString(",").toRequestBody("text/plain".toMediaTypeOrNull())
             val statusBody = status.toRequestBody("text/plain".toMediaTypeOrNull())
             val isR18Body = isR18.toString().toRequestBody("text/plain".toMediaTypeOrNull())
-
-            val coverImagePart = coverImageFile?.let { file ->
-                val requestBody = file.asRequestBody("image/*".toMediaTypeOrNull())
-                MultipartBody.Part.createFormData("coverImage", file.name, requestBody)
-            }
+            val coverUrlBody = coverImageUrl?.toRequestBody("text/plain".toMediaTypeOrNull())
 
             val response = novelApiService.createNovel(
                 title = titleBody,
@@ -49,7 +45,8 @@ class AuthorRepository @Inject constructor(
                 categories = categoriesBody,
                 status = statusBody,
                 isR18 = isR18Body,
-                coverImage = coverImagePart
+                coverImage = null,  // Don't send file
+                coverUrl = coverUrlBody  // Send URL instead
             )
 
             if (response.isSuccessful && response.body()?.success == true) {
@@ -74,7 +71,7 @@ class AuthorRepository @Inject constructor(
         chapterCount: Int? = null,
         status: String? = null,
         isR18: Boolean? = null,
-        coverImageFile: File? = null
+        coverImageUrl: String? = null
     ): Result<NovelDto> {
         return try {
             val titleBody = title?.toRequestBody("text/plain".toMediaTypeOrNull())
@@ -87,11 +84,7 @@ class AuthorRepository @Inject constructor(
             val chapterCountBody = chapterCount?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull())
             val statusBody = status?.toRequestBody("text/plain".toMediaTypeOrNull())
             val isR18Body = isR18?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull())
-
-            val coverImagePart = coverImageFile?.let { file ->
-                val requestBody = file.asRequestBody("image/*".toMediaTypeOrNull())
-                MultipartBody.Part.createFormData("coverImage", file.name, requestBody)
-            }
+            val coverUrlBody = coverImageUrl?.toRequestBody("text/plain".toMediaTypeOrNull())
 
             val response = novelApiService.updateNovel(
                 id = novelId,
@@ -105,7 +98,8 @@ class AuthorRepository @Inject constructor(
                 chapterCount = chapterCountBody,
                 status = statusBody,
                 isR18 = isR18Body,
-                coverImage = coverImagePart
+                coverImage = null,  // Don't send file
+                coverUrl = coverUrlBody  // Send URL instead
             )
 
             if (response.isSuccessful && response.body()?.success == true) {
@@ -212,6 +206,19 @@ class AuthorRepository @Inject constructor(
                 Result.success(response.data!!)
             } else {
                 Result.failure(Exception("Failed to get chapters"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getNovelById(novelId: String): Result<NovelDto> {
+        return try {
+            val response = novelApiService.getNovelById(novelId)
+            if (response.success && response.data != null) {
+                Result.success(response.data!!)
+            } else {
+                Result.failure(Exception(response.message ?: "Failed to get novel"))
             }
         } catch (e: Exception) {
             Result.failure(e)

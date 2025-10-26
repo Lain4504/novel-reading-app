@@ -12,7 +12,6 @@ sealed class Screen(
     object Home : Screen("home")
     object Explore : Screen("explore")
     object BookList : Screen("book_list")
-    object InProgress : Screen("in_progress")
     object Profile : Screen("profile")
 
     // Auth Screens
@@ -39,15 +38,15 @@ sealed class Screen(
         fun createRoute(email: String, code: String) = "reset_password/$email/$code"
     }
 
-    object BookDetails : Screen(
-        route = "book_details/{bookId}",
+    object NovelDetail : Screen(
+        route = "novel_detail/{bookId}",
         arguments = listOf(
             navArgument("bookId") {
                 type = NavType.StringType
             }
         )
     ) {
-        fun createRoute(bookId: String) = "book_details/$bookId"
+        fun createRoute(bookId: String) = "novel_detail/$bookId"
     }
 
     object Reading : Screen(
@@ -62,6 +61,28 @@ sealed class Screen(
         )
     ) {
         fun createRoute(bookId: String, chapterId: String) = "reading/$bookId/$chapterId"
+    }
+
+    object Comments : Screen(
+        route = "comments/{novelId}",
+        arguments = listOf(
+            navArgument("novelId") {
+                type = NavType.StringType
+            }
+        )
+    ) {
+        fun createRoute(novelId: String) = "comments/$novelId"
+    }
+
+    object CreateReview : Screen(
+        route = "create_review/{novelId}",
+        arguments = listOf(
+            navArgument("novelId") {
+                type = NavType.StringType
+            }
+        )
+    ) {
+        fun createRoute(novelId: String) = "create_review/$novelId"
     }
 
     // Author screens
@@ -100,5 +121,14 @@ sealed class Screen(
         )
     ) {
         fun createRoute(novelId: String, chapterId: String) = "edit_chapter/$novelId/$chapterId"
+    }
+
+    object AccountDetail : Screen(
+        route = "account_detail/{userId}",
+        arguments = listOf(
+            navArgument("userId") { type = NavType.StringType }
+        )
+    ) {
+        fun createRoute(userId: String) = "account_detail/$userId"
     }
 }

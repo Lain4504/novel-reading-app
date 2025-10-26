@@ -3,9 +3,9 @@ package com.miraimagiclab.novelreadingapp.data.remote.api
 import com.miraimagiclab.novelreadingapp.data.remote.dto.ApiResponse
 import com.miraimagiclab.novelreadingapp.data.remote.dto.CommentDto
 import com.miraimagiclab.novelreadingapp.data.remote.dto.PageResponse
-import retrofit2.http.GET
-import retrofit2.http.Path
-import retrofit2.http.Query
+import com.miraimagiclab.novelreadingapp.data.remote.dto.request.CommentCreateRequestDto
+import com.miraimagiclab.novelreadingapp.data.remote.dto.request.CommentReplyCreateRequestDto
+import retrofit2.http.*
 
 interface CommentApiService {
 
@@ -25,6 +25,15 @@ interface CommentApiService {
         @Query("page") page: Int = 0,
         @Query("size") size: Int = 10
     ): ApiResponse<PageResponse<CommentDto>>
+
+    @POST("comments")
+    suspend fun createComment(@Body request: CommentCreateRequestDto): ApiResponse<CommentDto>
+
+    @POST("comments/{commentId}/reply")
+    suspend fun createReply(
+        @Path("commentId") commentId: String,
+        @Body request: CommentReplyCreateRequestDto
+    ): ApiResponse<CommentDto>
 }
 
 

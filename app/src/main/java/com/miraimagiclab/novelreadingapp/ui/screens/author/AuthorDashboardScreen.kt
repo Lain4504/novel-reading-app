@@ -1,19 +1,26 @@
 package com.miraimagiclab.novelreadingapp.ui.screens.author
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
 import com.miraimagiclab.novelreadingapp.data.remote.dto.NovelDto
 import com.miraimagiclab.novelreadingapp.ui.viewmodel.AuthorViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -31,6 +38,12 @@ fun AuthorDashboardScreen(
     val uiState by viewModel.uiState.collectAsState()
     val authorNovels by viewModel.authorNovels.collectAsState()
     val authState by viewModel.authState.collectAsState()
+    
+    // Delete dialog state
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var novelToDelete by remember { mutableStateOf<NovelDto?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         authState.userId?.let { userId ->
@@ -39,6 +52,7 @@ fun AuthorDashboardScreen(
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("My Novels") },
@@ -46,7 +60,8 @@ fun AuthorDashboardScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
+                windowInsets = WindowInsets(0)
             )
         },
         floatingActionButton = {
@@ -83,10 +98,15 @@ fun AuthorDashboardScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    // Novel cards
                     items(authorNovels) { novel ->
-                        NovelItem(
+                        NovelCard(
                             novel = novel,
-                            onClick = { onNovelClick(novel.id) }
+                            onClick = { onNovelClick(novel.id) },
+                            onLongClick = {
+                                novelToDelete = novel
+                                showDeleteDialog = true
+                            }
                         )
                     }
                 }
@@ -97,6 +117,27 @@ fun AuthorDashboardScreen(
         uiState.error?.let { error ->
             LaunchedEffect(error) {
                 // Show snackbar or error dialog
+            }
+        }
+        
+        // Delete confirmation dialog
+        novelToDelete?.let { novel ->
+            if (showDeleteDialog) {
+                DeleteConfirmDialog(
+                    novelTitle = novel.title,
+                    onConfirm = {
+                        viewModel.deleteNovel(novel.id)
+                        showDeleteDialog = false
+                        novelToDelete = null
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Novel deleted successfully")
+                        }
+                    },
+                    onDismiss = {
+                        showDeleteDialog = false
+                        novelToDelete = null
+                    }
+                )
             }
         }
     }
@@ -146,60 +187,127 @@ private fun EmptyNovelsState(
 }
 
 @Composable
-private fun NovelItem(
+private fun NovelCard(
     novel: NovelDto,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onClick
+        modifier = Modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Cover image
             AsyncImage(
                 model = novel.coverImage ?: "https://via.placeholder.com/80x120",
                 contentDescription = "Novel cover",
-                modifier = Modifier.size(80.dp, 120.dp)
+                modifier = Modifier
+                    .size(80.dp, 120.dp)
+                    .clip(MaterialTheme.shapes.medium),
+                contentScale = ContentScale.Crop
             )
             
-            Spacer(modifier = Modifier.width(16.dp))
-            
+            // Novel info
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                // Title
                 Text(
                     text = novel.title,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
                 
-                Spacer(modifier = Modifier.height(4.dp))
+                // Status with colored badge
+                StatusChip(status = novel.status)
                 
-                Text(
-                    text = novel.description.take(100) + if (novel.description.length > 100) "..." else "",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
+                // Additional info
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
-                        text = "Chapters: ${novel.chapterCount}",
+                        text = "${novel.chapterCount} chapters",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    
                     Text(
-                        text = "Status: ${novel.status}",
+                        text = "${novel.viewCount} views",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
+            
+            // Arrow indicator
+            Icon(
+                imageVector = Icons.Default.ArrowForward,
+                contentDescription = "View details",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
+}
+
+@Composable
+private fun StatusChip(status: String) {
+    val statusColor = when (status.uppercase()) {
+        "PUBLISHED" -> MaterialTheme.colorScheme.primary
+        "ONGOING" -> MaterialTheme.colorScheme.tertiary
+        "COMPLETED" -> MaterialTheme.colorScheme.secondary
+        "DRAFT" -> MaterialTheme.colorScheme.outline
+        else -> MaterialTheme.colorScheme.outline
+    }
+    
+    Surface(
+        shape = MaterialTheme.shapes.small,
+        color = statusColor.copy(alpha = 0.1f)
+    ) {
+        Text(
+            text = status,
+            style = MaterialTheme.typography.labelSmall,
+            color = statusColor,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+        )
+    }
+}
+
+@Composable
+private fun DeleteConfirmDialog(
+    novelTitle: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Delete Novel?") },
+        text = { Text("Are you sure you want to delete \"$novelTitle\"? This action cannot be undone.") },
+        confirmButton = {
+            TextButton(
+                onClick = onConfirm, 
+                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+            ) {
+                Text("Delete")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }

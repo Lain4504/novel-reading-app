@@ -2,6 +2,8 @@ package com.miraimagiclab.novelreadingapp.data.mapper
 
 import com.miraimagiclab.novelreadingapp.data.remote.dto.UserNovelInteractionDto
 import com.miraimagiclab.novelreadingapp.domain.model.UserNovelInteraction
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 object UserNovelInteractionMapper {
 
@@ -15,11 +17,20 @@ object UserNovelInteractionMapper {
             notify = dto.notify,
             currentChapterNumber = dto.currentChapterNumber,
             currentChapterId = dto.currentChapterId,
-            lastReadAt = dto.lastReadAt,
+            lastReadAt = dto.lastReadAt?.let { parseDateTime(it) },
             totalChapterReads = dto.totalChapterReads,
-            createdAt = dto.createdAt,
-            updatedAt = dto.updatedAt
+            createdAt = parseDateTime(dto.createdAt),
+            updatedAt = parseDateTime(dto.updatedAt)
         )
+    }
+    
+    private fun parseDateTime(dateString: String): LocalDateTime {
+        return try {
+            LocalDateTime.parse(dateString, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+        } catch (e: Exception) {
+            // Return current time if parsing fails
+            LocalDateTime.now()
+        }
     }
 }
 

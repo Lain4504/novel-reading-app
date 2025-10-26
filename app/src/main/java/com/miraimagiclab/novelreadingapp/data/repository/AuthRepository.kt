@@ -31,6 +31,12 @@ class AuthRepository @Inject constructor(
                 } catch (e: Exception) {
                     null
                 }
+                // Extract roles from JWT token
+                val roles = try {
+                    JwtTokenHelper.getRoles(login.token)
+                } catch (e: Exception) {
+                    emptySet()
+                }
                 // Persist session
                 sessionManager.saveSession(
                     login.token,
@@ -38,7 +44,7 @@ class AuthRepository @Inject constructor(
                     login.user.id,
                     login.user.username,
                     login.user.email,
-                    null, // roles - will be updated later
+                    roles,
                     expirationTime
                 )
             }
