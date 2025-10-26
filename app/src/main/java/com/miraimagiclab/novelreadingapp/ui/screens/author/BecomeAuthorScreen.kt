@@ -42,7 +42,8 @@ fun BecomeAuthorScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
+                windowInsets = WindowInsets(0)
             )
         }
     ) { innerPadding ->

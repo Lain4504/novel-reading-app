@@ -55,6 +55,7 @@ fun EditNovelScreen(
     val uiState by viewModel.uiState.collectAsState()
     val authState by viewModel.authState.collectAsState()
     val uploadImageState by viewModel.uploadImageState.collectAsState()
+    val selectedNovel by viewModel.selectedNovel.collectAsState()
     
     // Handle upload image success
     LaunchedEffect(uploadImageState) {
@@ -63,6 +64,19 @@ fun EditNovelScreen(
             coverImageUrl = currentState.data
             selectedCoverUri = null
             viewModel.resetUploadImageState()
+            
+            // After successful upload, update the novel with the new cover URL
+            viewModel.updateNovel(
+                novelId = novelId,
+                title = title,
+                description = description,
+                authorName = authorName,
+                authorId = authState.userId,
+                categories = selectedCategories,
+                status = status,
+                isR18 = isR18,
+                coverImageUrl = coverImageUrl
+            )
         }
     }
     
@@ -72,18 +86,26 @@ fun EditNovelScreen(
     ) { uri: Uri? ->
         uri?.let {
             selectedCoverUri = it
-            val file = uriToFile(context, it)
-            if (file != null) {
-                // Upload with ownerType = "NOVEL" since novel already exists
-                viewModel.uploadImage(file, novelId, "NOVEL")
-            }
+            // Don't upload immediately, just store the URI
         }
     }
 
     // Load novel data
     LaunchedEffect(novelId) {
-        // TODO: Load novel details and populate form
-        // For now, we'll use placeholder values
+        viewModel.loadNovelById(novelId)
+    }
+
+    // Populate form when novel data is loaded
+    LaunchedEffect(selectedNovel) {
+        selectedNovel?.let { novel ->
+            title = novel.title
+            description = novel.description
+            authorName = novel.authorName
+            selectedCategories = novel.categories.toSet()
+            isR18 = novel.isR18
+            status = novel.status
+            existingCoverUrl = novel.coverImage
+        }
     }
 
     LaunchedEffect(uiState.updatedNovel) {
@@ -112,7 +134,8 @@ fun EditNovelScreen(
                     ) {
                         Icon(Icons.Default.Delete, contentDescription = "Delete")
                     }
-                }
+                },
+                windowInsets = WindowInsets(0)
             )
         }
     ) { innerPadding ->
@@ -324,17 +347,26 @@ fun EditNovelScreen(
             Button(
                 onClick = {
                     if (title.isNotBlank() && description.isNotBlank() && authorName.isNotBlank() && selectedCategories.isNotEmpty()) {
-                        viewModel.updateNovel(
-                            novelId = novelId,
-                            title = title,
-                            description = description,
-                            authorName = authorName,
-                            authorId = authState.userId,
-                            categories = selectedCategories,
-                            status = status,
-                            isR18 = isR18,
-                            coverImageUrl = coverImageUrl
-                        )
+                        // If new image is selected, upload it first
+                        if (selectedCoverUri != null) {
+                            val file = uriToFile(context, selectedCoverUri!!)
+                            if (file != null) {
+                                viewModel.uploadImage(file, novelId, "NOVEL")
+                            }
+                        } else {
+                            // No new image, update with existing cover URL
+                            viewModel.updateNovel(
+                                novelId = novelId,
+                                title = title,
+                                description = description,
+                                authorName = authorName,
+                                authorId = authState.userId,
+                                categories = selectedCategories,
+                                status = status,
+                                isR18 = isR18,
+                                coverImageUrl = existingCoverUrl
+                            )
+                        }
                     }
                 },
                 enabled = !uiState.isLoading && uploadImageState !is com.miraimagiclab.novelreadingapp.util.UiState.Loading && title.isNotBlank() && description.isNotBlank() && authorName.isNotBlank() && selectedCategories.isNotEmpty(),

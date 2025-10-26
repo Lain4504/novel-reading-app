@@ -18,7 +18,8 @@ data class NovelUpdateRequest(
     
     val categories: Set<CategoryEnum>? = null,
     
-    @field:Size(min = 0, max = 5, message = "Rating must be between 0 and 5")
+    @field:Min(value = 0, message = "Rating must be at least 0")
+    @field:Max(value = 5, message = "Rating must be at most 5")
     val rating: Double? = null,
     
     val wordCount: Int? = null,

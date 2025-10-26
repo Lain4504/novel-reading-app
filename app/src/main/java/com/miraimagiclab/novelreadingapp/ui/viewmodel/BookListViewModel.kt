@@ -31,13 +31,13 @@ class BookListViewModel @Inject constructor(
                     _uiState.value = UiState.Idle
                 } else if (_uiState.value is UiState.Idle || _uiState.value is UiState.Loading) {
                     // Load data when user is logged in and state is idle/loading
-                    loadFollowingNovels()
+                    loadAllData()
                 }
             }
         }
     }
 
-    private fun loadFollowingNovels() {
+    private fun loadAllData() {
         viewModelScope.launch {
             try {
                 _uiState.value = UiState.Loading
@@ -48,11 +48,25 @@ class BookListViewModel @Inject constructor(
                     return@launch
                 }
                 
+                println("DEBUG: BookListViewModel loading data for userId: $userId")
+                
+                // Get reading history (novels user has read - has reading progress)
+                val readingHistoryNovels = userNovelInteractionRepository.getUserInProgressNovels(userId)
+                println("DEBUG: BookListViewModel got ${readingHistoryNovels.size} reading history novels")
+                
                 // Get all novels that user is following
                 val followingNovels = userNovelInteractionRepository.getUserFollowingNovels(userId)
+                println("DEBUG: BookListViewModel got ${followingNovels.size} following novels")
                 
-                _uiState.value = UiState.Success(BookListUiState(novels = followingNovels))
+                _uiState.value = UiState.Success(
+                    BookListUiState(
+                        novels = followingNovels,
+                        readingHistoryNovels = readingHistoryNovels
+                    )
+                )
             } catch (e: Exception) {
+                println("DEBUG: BookListViewModel error: ${e.message}")
+                e.printStackTrace()
                 val errorMessage = when {
                     e.message?.contains("Unable to resolve host") == true -> 
                         "Unable to connect to the server. Please check your internet connection."
@@ -70,7 +84,7 @@ class BookListViewModel @Inject constructor(
     }
 
     fun refreshData() {
-        loadFollowingNovels()
+        loadAllData()
     }
 
     fun deleteNovel(novelId: String) {
@@ -84,7 +98,7 @@ class BookListViewModel @Inject constructor(
                 userNovelInteractionRepository.deleteUserNovelInteraction(userId, novelId)
                 
                 // Refresh the list after deletion
-                loadFollowingNovels()
+                loadAllData()
             } catch (e: Exception) {
                 // Handle error silently or show error message
                 e.printStackTrace()
@@ -94,7 +108,8 @@ class BookListViewModel @Inject constructor(
 }
 
 data class BookListUiState(
-    val novels: List<Novel> = emptyList()
+    val novels: List<Novel> = emptyList(),
+    val readingHistoryNovels: List<Novel> = emptyList()
 )
 
 

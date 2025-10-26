@@ -8,8 +8,6 @@ import com.miraimagiclab.novelreadingapp.domain.model.Novel
 import com.miraimagiclab.novelreadingapp.domain.repository.NovelRepository
 import com.miraimagiclab.novelreadingapp.util.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,20 +34,7 @@ class HomeViewModel @Inject constructor(
             try {
                 _uiState.value = UiState.Loading
                 
-                // Refresh data from API using new home screen specific methods
-                // Use parallel execution for better performance
-                val refreshJobs = listOf(
-                    async { novelRepository.refreshBannerNovels() },
-                    async { novelRepository.refreshRecommendedNovels() },
-                    async { novelRepository.refreshRankingNovels() },
-                    async { novelRepository.refreshNewNovels() },
-                    async { novelRepository.refreshCompletedNovels() }
-                )
-                
-                // Wait for all refresh operations to complete
-                refreshJobs.awaitAll()
-
-                // Combine all data streams using new home screen specific methods
+                // Combine all data streams - now calling API directly
                 combine(
                     novelRepository.getBannerNovels(),
                     novelRepository.getRecommendedNovels(),

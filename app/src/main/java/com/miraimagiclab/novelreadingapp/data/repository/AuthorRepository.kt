@@ -211,4 +211,17 @@ class AuthorRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
+    suspend fun getNovelById(novelId: String): Result<NovelDto> {
+        return try {
+            val response = novelApiService.getNovelById(novelId)
+            if (response.success && response.data != null) {
+                Result.success(response.data!!)
+            } else {
+                Result.failure(Exception(response.message ?: "Failed to get novel"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

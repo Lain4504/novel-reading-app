@@ -153,4 +153,27 @@ class ChapterService (
             )
         }
     }
+
+    fun incrementViewCount(chapterId: String): ChapterResponseDto {
+        val chapter = chapterRepository.findById(chapterId)
+            .orElseThrow { Exception("Chapter with ID '$chapterId' not found") }
+
+        val updatedChapter = chapter.copy(
+            viewCount = chapter.viewCount + 1,
+            updatedAt = java.time.LocalDateTime.now()
+        )
+
+        val savedChapter = chapterRepository.save(updatedChapter)
+        return ChapterResponseDto(
+            id = savedChapter.id!!,
+            novelId = savedChapter.novelId,
+            chapterTitle = savedChapter.chapterTitle,
+            chapterNumber = savedChapter.chapterNumber,
+            content = savedChapter.content,
+            wordCount = savedChapter.wordCount,
+            viewCount = savedChapter.viewCount,
+            createdAt = savedChapter.createdAt.toString(),
+            updatedAt = savedChapter.updatedAt.toString()
+        )
+    }
 }

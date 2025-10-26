@@ -46,6 +46,8 @@ class ReadingScreenViewModel @Inject constructor(
                 chapterRepository.getChapterById(chapterId).collect { chapter ->
                     if (chapter != null) {
                         _currentChapter.value = UiState.Success(chapter)
+                        // Track chapter view count (fire-and-forget)
+                        chapterRepository.incrementViewCount(chapterId)
                     } else {
                         _currentChapter.value = UiState.Error("Chapter not found")
                     }

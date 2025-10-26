@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
@@ -36,8 +38,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.miraimagiclab.novelreadingapp.data.auth.SessionManager
 import com.miraimagiclab.novelreadingapp.domain.model.Novel
 import com.miraimagiclab.novelreadingapp.domain.model.NovelStatus
-import com.miraimagiclab.novelreadingapp.ui.components.BookCard
 import com.miraimagiclab.novelreadingapp.ui.components.ErrorState
+import com.miraimagiclab.novelreadingapp.ui.components.NovelCard
 import com.miraimagiclab.novelreadingapp.ui.components.StatsCard
 import com.miraimagiclab.novelreadingapp.ui.theme.GreenPrimary
 import com.miraimagiclab.novelreadingapp.ui.viewmodel.BookListViewModel
@@ -46,7 +48,6 @@ import com.miraimagiclab.novelreadingapp.util.UiState
 @Composable
 fun BookListScreen(
     onBookClick: (String) -> Unit = {},
-    onNavigateInProgress: () -> Unit = {},
     onBackClick: () -> Unit = {},
     onLoginClick: () -> Unit = {},
     viewModel: BookListViewModel = hiltViewModel(),
@@ -54,6 +55,13 @@ fun BookListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val authState by sessionManager.authState.collectAsState()
+    
+    // Refresh data every time the screen is composed (when user navigates back)
+    LaunchedEffect(Unit) {
+        if (authState.isLoggedIn) {
+            viewModel.refreshData()
+        }
+    }
     
     // Show login prompt if not logged in
     if (!authState.isLoggedIn) {
@@ -152,9 +160,9 @@ fun BookListScreen(
         }
         is UiState.Success -> {
             BookListContent(
-                novels = currentState.data.novels,
+                followingNovels = currentState.data.novels,
+                readingHistoryNovels = currentState.data.readingHistoryNovels,
                 onBookClick = onBookClick,
-                onNavigateInProgress = onNavigateInProgress,
                 onBackClick = onBackClick,
                 onDeleteNovel = { novelId -> viewModel.deleteNovel(novelId) }
             )
@@ -165,16 +173,16 @@ fun BookListScreen(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun BookListContent(
-    novels: List<Novel>,
+    followingNovels: List<Novel>,
+    readingHistoryNovels: List<Novel>,
     onBookClick: (String) -> Unit,
-    onNavigateInProgress: () -> Unit,
     onBackClick: () -> Unit,
     onDeleteNovel: (String) -> Unit
 ) {
 
-    var query by remember { mutableStateOf("") }
-    var showFilterMenu by remember { mutableStateOf(false) }
-    var selectedFilter by remember { mutableStateOf("All") }
+    // Tab state
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    val tabs = listOf("Reading History", "Following")
     
     // Drag and Drop state
     var draggedNovelId by remember { mutableStateOf<String?>(null) }
@@ -184,28 +192,13 @@ private fun BookListContent(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var novelToDelete by remember { mutableStateOf<String?>(null) }
 
-    // Filter logic (giữ giống Explore)
-    fun matchesFilter(book: Novel): Boolean {
-        val filterOk = when (selectedFilter) {
-            "All" -> true
-            "Novel" -> book.status.name == "NOVEL"
-            "Light Novel" -> book.status.name == "LIGHT_NOVEL"
-            "Manga" -> book.status.name == "MANGA"
-            else -> true
-        }
-        val queryOk = query.isBlank() ||
-                book.title.contains(query, ignoreCase = true) ||
-                book.authorName.contains(query, ignoreCase = true)
-        return filterOk && queryOk
-    }
-
-    val filteredBooks = remember(novels, query, selectedFilter) {
-        novels.filter { matchesFilter(it) }
+    // Get novels for currently selected tab
+    val currentNovels = when (selectedTabIndex) {
+        0 -> readingHistoryNovels
+        1 -> followingNovels
+        else -> emptyList()
     }
     
-    val inProgressCount = remember(novels) {
-        novels.count { it.status != NovelStatus.COMPLETED }
-    }
 
     // Delete confirmation dialog
     if (showDeleteDialog && novelToDelete != null) {
@@ -263,7 +256,7 @@ private fun BookListContent(
                 }
 
                 Text(
-                    text = "Book List",
+                    text = "My Library",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold
@@ -296,109 +289,19 @@ private fun BookListContent(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Search + Filter row (same UI as Explore)
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(45.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+
+        // Tab Row
+        TabRow(
+            selectedTabIndex = selectedTabIndex,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            // Search box (custom BasicTextField)
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(45.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                    .border(
-                        1.dp,
-                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
-                        RoundedCornerShape(10.dp)
-                    )
-                    .padding(horizontal = 12.dp),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Search icon",
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    BasicTextField(
-                        value = query,
-                        onValueChange = { query = it },
-                        singleLine = true,
-                        textStyle = LocalTextStyle.current.copy(
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurface
-                        ),
-                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                        decorationBox = { innerTextField ->
-                            if (query.isEmpty()) {
-                                Text(
-                                    "Search...",
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                                )
-                            }
-                            innerTextField()
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
+            tabs.forEachIndexed { index, title ->
+                Tab(
+                    selected = selectedTabIndex == index,
+                    onClick = { selectedTabIndex = index },
+                    text = { Text(title) }
+                )
             }
-
-            // Filter icon & menu
-            Box {
-                IconButton(onClick = { showFilterMenu = true }) {
-                    Icon(
-                        imageVector = Icons.Default.Create,
-                        contentDescription = "Filter",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                DropdownMenu(
-                    expanded = showFilterMenu,
-                    onDismissRequest = { showFilterMenu = false }
-                ) {
-                    listOf("All", "Novel", "Light Novel", "Manga").forEach { option ->
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    option,
-                                    fontWeight = if (selectedFilter == option) FontWeight.Bold else FontWeight.Normal
-                                )
-                            },
-                            onClick = {
-                                selectedFilter = option
-                                showFilterMenu = false
-                            }
-                        )
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Stats row (1 sector) — keep clickable via Modifier outside StatsCard
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // In Progress Books
-            StatsCard(
-                icon = Icons.Default.Favorite,
-                title = "In Progress",
-                value = "$inProgressCount Books",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onNavigateInProgress)
-            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -411,7 +314,7 @@ private fun BookListContent(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(bottom = 80.dp)
         ) {
-            items(filteredBooks, key = { it.id }) { book ->
+            items(currentNovels, key = { it.id }) { book ->
                 Box(
                     modifier = Modifier
                         .pointerInput(book.id) {
@@ -446,8 +349,8 @@ private fun BookListContent(
                             )
                         }
                 ) {
-                    BookCard(
-                        book = book,
+                    NovelCard(
+                        novel = book,
                         onClick = { 
                             if (draggedNovelId == null) {
                                 onBookClick(book.id) 

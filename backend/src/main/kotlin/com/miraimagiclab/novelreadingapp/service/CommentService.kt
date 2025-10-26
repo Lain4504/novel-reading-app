@@ -57,6 +57,14 @@ class CommentService(
         )
 
         val saved = commentRepository.save(reply)
+        
+        // Update parent comment's reply count
+        val updatedParent = parent.copy(
+            replyCount = (parent.replyCount ?: 0) + 1,
+            updatedAt = LocalDateTime.now()
+        )
+        commentRepository.save(updatedParent)
+        
         return CommentResponseDto.fromEntity(saved)
     }
 

@@ -43,6 +43,7 @@ class ReadingProgressViewModel @Inject constructor(
     
     fun updateReadingProgress(userId: String, novelId: String, chapterId: String, chapterNumber: Int) {
         viewModelScope.launch {
+            println("DEBUG: ReadingProgressViewModel.updateReadingProgress called - userId: $userId, novelId: $novelId, chapterId: $chapterId, chapterNumber: $chapterNumber")
             _isLoading.value = true
             _error.value = null
             
@@ -53,8 +54,11 @@ class ReadingProgressViewModel @Inject constructor(
                     chapterId = chapterId,
                     chapterNumber = chapterNumber
                 )
+                println("DEBUG: ReadingProgressViewModel.updateReadingProgress result: $updatedProgress")
                 _currentProgress.value = updatedProgress
             } catch (e: Exception) {
+                println("DEBUG: ReadingProgressViewModel.updateReadingProgress error: ${e.message}")
+                e.printStackTrace()
                 _error.value = e.message ?: "Failed to update reading progress"
             } finally {
                 _isLoading.value = false

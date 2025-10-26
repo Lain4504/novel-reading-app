@@ -57,7 +57,8 @@ fun EditChapterScreen(
                     ) {
                         Icon(Icons.Default.Delete, contentDescription = "Delete")
                     }
-                }
+                },
+                windowInsets = WindowInsets(0)
             )
         }
     ) { innerPadding ->

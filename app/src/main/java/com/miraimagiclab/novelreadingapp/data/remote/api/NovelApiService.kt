@@ -2,6 +2,7 @@ package com.miraimagiclab.novelreadingapp.data.remote.api
 
 import com.miraimagiclab.novelreadingapp.data.remote.dto.ApiResponse
 import com.miraimagiclab.novelreadingapp.data.remote.dto.NovelDto
+import com.miraimagiclab.novelreadingapp.data.remote.dto.NovelSearchRequest
 import com.miraimagiclab.novelreadingapp.data.remote.dto.PageResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -94,4 +95,13 @@ interface NovelApiService {
         @Query("page") page: Int = 0,
         @Query("size") size: Int = 20
     ): Response<ApiResponse<PageResponse<NovelDto>>>
+
+    @GET("novels/{novelId}/recommendations")
+    suspend fun getRecommendationsByNovel(
+        @Path("novelId") novelId: String,
+        @Query("limit") limit: Int = 5
+    ): ApiResponse<List<NovelDto>>
+
+    @POST("novels/search")
+    suspend fun searchNovels(@Body request: NovelSearchRequest): ApiResponse<PageResponse<NovelDto>>
 }

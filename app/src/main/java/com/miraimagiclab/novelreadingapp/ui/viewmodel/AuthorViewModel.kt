@@ -42,6 +42,9 @@ class AuthorViewModel @Inject constructor(
     private val _uploadImageState = MutableStateFlow<com.miraimagiclab.novelreadingapp.util.UiState<String>>(com.miraimagiclab.novelreadingapp.util.UiState.Idle)
     val uploadImageState: StateFlow<com.miraimagiclab.novelreadingapp.util.UiState<String>> = _uploadImageState
 
+    private val _selectedNovel = MutableStateFlow<NovelDto?>(null)
+    val selectedNovel: StateFlow<NovelDto?> = _selectedNovel.asStateFlow()
+
     fun requestAuthorRole(userId: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
@@ -339,6 +342,27 @@ class AuthorViewModel @Inject constructor(
 
     fun clearUpdatedChapter() {
         _uiState.value = _uiState.value.copy(updatedChapter = null)
+    }
+
+    fun loadNovelById(novelId: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            authorRepository.getNovelById(novelId)
+                .onSuccess { novel ->
+                    _selectedNovel.value = novel
+                    _uiState.value = _uiState.value.copy(isLoading = false)
+                }
+                .onFailure { error ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = error.message
+                    )
+                }
+        }
+    }
+
+    fun clearSelectedNovel() {
+        _selectedNovel.value = null
     }
 }
 
