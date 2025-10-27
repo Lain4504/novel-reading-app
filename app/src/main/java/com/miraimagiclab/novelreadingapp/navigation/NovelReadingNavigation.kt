@@ -152,7 +152,9 @@ fun NovelReadingNavigation(
         ) { backStackEntry ->
             val email = backStackEntry.arguments?.getString("email") ?: ""
             val type = backStackEntry.arguments?.getString("type") ?: ""
-            
+
+            val viewModel: com.miraimagiclab.novelreadingapp.ui.viewmodel.AuthViewModel = hiltViewModel()
+
             OTPVerificationScreen(
                 email = email,
                 type = type,
@@ -167,8 +169,8 @@ fun NovelReadingNavigation(
                     }
                 },
                 onResendCode = {
-                    // Implement resend logic
-                    },
+                    viewModel.resendVerification(email)
+                },
                 onSuccess = {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.OTPVerification.route) { inclusive = true }

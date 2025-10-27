@@ -118,6 +118,16 @@ class AuthRepository @Inject constructor(
        }
    }
 
+   fun resendVerification(email: String): Flow<NetworkResult<Unit>> = flow {
+       try {
+           emit(Loading)
+           val response = authApiService.resendVerification(email)
+           emit(handleApiResponseForUnit(response))
+       } catch (e: Exception) {
+           emit(NetworkResult.Error(e.message ?: "Unknown error occurred"))
+       }
+   }
+
    fun changePassword(userId: String, currentPassword: String, newPassword: String, confirmPassword: String): Flow<NetworkResult<Unit>> = flow {
        try {
            emit(Loading)
