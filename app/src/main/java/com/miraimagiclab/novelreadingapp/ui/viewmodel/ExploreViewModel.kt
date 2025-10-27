@@ -62,15 +62,22 @@ class ExploreViewModel @Inject constructor(
             try {
                 _uiState.value = UiState.Loading
                 
-                // Load all novels by default (empty search query)
-                println("Loading all novels with sort: ${_sortBy.value}, direction: ${_sortDirection.value}")
-                val response = novelRepository.searchNovels("", 0, 20, _sortBy.value, _sortDirection.value)
-                println("Response received: ${response.content.size} novels")
-                _searchResults.value = response.content
-                _currentPage.value = 0
-                _hasMorePages.value = !response.last
-                
-                _uiState.value = UiState.Success(ExploreUiState())
+                // Sync all novels from server and remove deleted ones
+                // This method fetches all novels and only deletes old ones if ALL fetches succeed
+                novelRepository.syncAllNovels()
+
+                // Combine all data streams
+                combine(
+                    novelRepository.getRecommendedNovels(),
+                    novelRepository.getNewNovels()
+                ) { recommendedNovels, newNovels ->
+                    ExploreUiState(
+                        recommendedNovels = recommendedNovels,
+                        ourPicksNovels = newNovels
+                    )
+                }.collect { exploreUiState ->
+                    _uiState.value = UiState.Success(exploreUiState)
+                }
             } catch (e: Exception) {
                 val errorMessage = when {
                     e.message?.contains("Unable to resolve host") == true -> 

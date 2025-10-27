@@ -55,6 +55,25 @@ class UserController(
         return ResponseEntity.ok(ApiResponse.success(loginResponse, "Token refreshed successfully"))
     }
 
+    @GetMapping
+    fun getAllUsers(
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "20") size: Int
+    ): ResponseEntity<ApiResponse<com.miraimagiclab.novelreadingapp.dto.response.PageResponse<UserDto>>> {
+        val usersPage = userService.getAllUsers(page, size)
+        val pageResponse = com.miraimagiclab.novelreadingapp.dto.response.PageResponse(
+            content = usersPage.content,
+            page = usersPage.number,
+            size = usersPage.size,
+            totalElements = usersPage.totalElements,
+            totalPages = usersPage.totalPages,
+            first = usersPage.isFirst,
+            last = usersPage.isLast,
+            numberOfElements = usersPage.numberOfElements
+        )
+        return ResponseEntity.ok(ApiResponse.success(pageResponse, "Users retrieved successfully"))
+    }
+
     @GetMapping("/{id}")
     fun getUserById(@PathVariable id: String): ResponseEntity<ApiResponse<UserDto>> {
         val user = userService.getUserById(id)

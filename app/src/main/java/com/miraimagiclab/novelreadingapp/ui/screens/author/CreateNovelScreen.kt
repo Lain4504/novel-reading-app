@@ -34,13 +34,26 @@ import java.io.File
 // Helper function to convert URI to File
 fun uriToFile(context: Context, uri: Uri): File? {
     return try {
-        val inputStream = context.contentResolver.openInputStream(uri) ?: return null
-        val tempFile = File.createTempFile("cover_", ".jpg", context.cacheDir)
-        tempFile.outputStream().use { outputStream ->
-            inputStream.copyTo(outputStream)
+        android.util.Log.d("CreateNovelScreen", "Converting URI to file: $uri")
+        val inputStream = context.contentResolver.openInputStream(uri)
+        if (inputStream == null) {
+            android.util.Log.e("CreateNovelScreen", "Failed to open input stream for URI: $uri")
+            return null
         }
+        
+        val tempFile = File.createTempFile("cover_", ".jpg", context.cacheDir)
+        android.util.Log.d("CreateNovelScreen", "Created temp file: ${tempFile.absolutePath}")
+        
+        tempFile.outputStream().use { outputStream ->
+            val bytesCopied = inputStream.copyTo(outputStream)
+            android.util.Log.d("CreateNovelScreen", "Copied $bytesCopied bytes to temp file")
+        }
+        inputStream.close()
+        
+        android.util.Log.d("CreateNovelScreen", "Successfully converted URI to file. File size: ${tempFile.length()} bytes")
         tempFile
     } catch (e: Exception) {
+        android.util.Log.e("CreateNovelScreen", "Error converting URI to file", e)
         e.printStackTrace()
         null
     }
@@ -62,30 +75,28 @@ fun CreateNovelScreen(
     var status by remember { mutableStateOf("DRAFT") }
     var selectedCoverUri by remember { mutableStateOf<Uri?>(null) }
     var coverImageUrl by remember { mutableStateOf<String?>(null) }
+    var uploadError by remember { mutableStateOf<String?>(null) }
     
     val uiState by viewModel.uiState.collectAsState()
     val authState by viewModel.authState.collectAsState()
     val uploadImageState by viewModel.uploadImageState.collectAsState()
     
-    // Handle upload image success
+    // Handle upload image state
     LaunchedEffect(uploadImageState) {
-        val currentState = uploadImageState
-        if (currentState is com.miraimagiclab.novelreadingapp.util.UiState.Success) {
-            coverImageUrl = currentState.data
-            selectedCoverUri = null
-            viewModel.resetUploadImageState()
-            
-            // After successful upload, create the novel with the cover URL
-            viewModel.createNovel(
-                title = title,
-                description = description,
-                authorName = authorName,
-                authorId = authState.userId,
-                categories = selectedCategories,
-                status = status,
-                isR18 = isR18,
-                coverImageUrl = coverImageUrl
-            )
+        when (val currentState = uploadImageState) {
+            is com.miraimagiclab.novelreadingapp.util.UiState.Success -> {
+                coverImageUrl = currentState.data
+                uploadError = null
+                // Keep selectedCoverUri for preview
+                viewModel.resetUploadImageState()
+            }
+            is com.miraimagiclab.novelreadingapp.util.UiState.Error -> {
+                uploadError = currentState.message
+                viewModel.resetUploadImageState()
+            }
+            else -> {
+                uploadError = null
+            }
         }
     }
     
@@ -93,9 +104,29 @@ fun CreateNovelScreen(
     val coverImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
+        android.util.Log.d("CreateNovelScreen", "Image picker returned URI: $uri")
         uri?.let {
             selectedCoverUri = it
-            // Don't upload immediately, just store the URI
+            coverImageUrl = null
+            uploadError = null
+            android.util.Log.d("CreateNovelScreen", "AuthState userId: ${authState.userId}")
+            
+            val file = uriToFile(context, it)
+            if (file != null && authState.userId != null) {
+                android.util.Log.d("CreateNovelScreen", "Starting image upload for user: ${authState.userId}")
+                // Upload with ownerType = "USER" since novel doesn't exist yet
+                viewModel.uploadImage(file, authState.userId!!, "USER")
+            } else {
+                val errorMsg = if (file == null) {
+                    "Failed to read image file"
+                } else {
+                    "User not authenticated"
+                }
+                android.util.Log.e("CreateNovelScreen", "Upload failed: $errorMsg")
+                uploadError = errorMsg
+            }
+        } ?: run {
+            android.util.Log.d("CreateNovelScreen", "No image selected")
         }
     }
 
@@ -192,6 +223,7 @@ fun CreateNovelScreen(
                             onClick = {
                                 selectedCoverUri = null
                                 coverImageUrl = null
+                                uploadError = null
                             },
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
@@ -234,6 +266,33 @@ fun CreateNovelScreen(
                     Spacer(modifier = Modifier.width(6.dp))
                     Text("Choose Cover Image", fontWeight = FontWeight.Medium)
                 }
+            }
+            
+            // Upload status/error
+            if (uploadImageState is com.miraimagiclab.novelreadingapp.util.UiState.Loading) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Uploading image...",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+            
+            uploadError?.let { error ->
+                Text(
+                    text = error,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
             }
 
             // Categories

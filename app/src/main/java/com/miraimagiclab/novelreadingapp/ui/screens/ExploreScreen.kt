@@ -28,6 +28,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.miraimagiclab.novelreadingapp.domain.model.Novel
 import com.miraimagiclab.novelreadingapp.domain.model.NovelStatus
 import com.miraimagiclab.novelreadingapp.ui.components.ErrorState
@@ -45,14 +47,14 @@ fun ExploreScreen(
 ) {
     val scrollState = rememberScrollState()
     val uiState by viewModel.uiState.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
-    val searchResults by viewModel.searchResults.collectAsState()
-    val isSearching by viewModel.isSearching.collectAsState()
-    val isLoadingMore by viewModel.isLoadingMore.collectAsState()
-    val hasMorePages by viewModel.hasMorePages.collectAsState()
-    val sortBy by viewModel.sortBy.collectAsState()
-    val sortDirection by viewModel.sortDirection.collectAsState()
     
+    // Refresh data when screen resumes (user comes back from other screens)
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LifecycleResumeEffect(key1 = lifecycleOwner) {
+        // Refresh data when screen is resumed
+        viewModel.refreshData()
+        onPauseOrDispose { }
+    }
     when (val currentState = uiState) {
         is UiState.Idle, is UiState.Loading -> {
             // Show loading state
