@@ -32,6 +32,7 @@ fun OTPVerificationScreen(
     var showError by remember { mutableStateOf<String?>(null) }
 
     val verifyAccountState by viewModel.verifyAccountState.collectAsState()
+    val resendVerificationState by viewModel.resendVerificationState.collectAsState()
 
     // Timer for resend button
     LaunchedEffect(Unit) {
@@ -62,6 +63,25 @@ fun OTPVerificationScreen(
             }
             is com.miraimagiclab.novelreadingapp.util.UiState.Loading -> {
                 isLoading = true
+            }
+            else -> {}
+        }
+    }
+
+    // Handle resend verification state changes
+    LaunchedEffect(resendVerificationState) {
+        when (resendVerificationState) {
+            is com.miraimagiclab.novelreadingapp.util.UiState.Success<*> -> {
+                showError = "Verification code sent successfully!"
+                delay(2000)
+                showError = null
+                viewModel.resetResendVerificationState()
+            }
+            is com.miraimagiclab.novelreadingapp.util.UiState.Error -> {
+                showError = (resendVerificationState as com.miraimagiclab.novelreadingapp.util.UiState.Error).message
+                delay(3000)
+                showError = null
+                viewModel.resetResendVerificationState()
             }
             else -> {}
         }

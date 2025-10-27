@@ -11,11 +11,17 @@ class SettingsRepository @Inject constructor(
 ) {
     fun getDarkModeFlow(): Flow<Boolean> = settingsDataStore.isDarkMode
 
-    suspend fun setDarkMode(isDark: Boolean) {
+    fun getHasSeenOnboardingFlow(): Flow<Boolean> = settingsDataStore.hasSeenOnboarding
+
+    fun setDarkMode(isDark: Boolean) {
         settingsDataStore.setDarkMode(isDark)
     }
 
-    suspend fun clearSettings() {
+    fun setHasSeenOnboarding(hasSeen: Boolean) {
+        settingsDataStore.setHasSeenOnboarding(hasSeen)
+    }
+
+    fun clearSettings() {
         settingsDataStore.clear()
     }
 }

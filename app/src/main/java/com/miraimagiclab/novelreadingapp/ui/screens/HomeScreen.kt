@@ -65,8 +65,8 @@ fun HomeScreen(
     )
 
     Scaffold(
-        contentWindowInsets = WindowInsets(0),
-        topBar = {
+            contentWindowInsets = WindowInsets(0),
+            topBar = {
             TopAppBar(
                 title = {
                     if (authState.isLoggedIn) {
