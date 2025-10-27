@@ -30,6 +30,9 @@ interface AuthApiService {
     @POST("users/refresh")
     suspend fun refreshToken(@Query("refreshToken") refreshToken: String): Response<ApiResponse<LoginResponse>>
     
-    @POST("auth/verify-account") 
+    @POST("auth/verify-account")
     suspend fun verifyAccountOtp(@Body request: Map<String, String>): Response<ApiResponse<Boolean>>
+
+    @POST("auth/resend-verification")
+    suspend fun resendVerification(@Query("email") email: String): Response<ApiResponse<Unit>>
 }

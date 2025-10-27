@@ -272,4 +272,44 @@ class UserService(
         return AuthResult(savedUser, token, refreshToken)
     }
 
+    fun changePassword(userId: String, currentPassword: String, newPassword: String, confirmPassword: String) {
+        // Validate that new password and confirm password match
+        if (newPassword != confirmPassword) {
+            throw IllegalArgumentException("New password and confirm password do not match")
+        }
+
+        val user = userRepository.findById(userId)
+            .orElseThrow { UserNotFoundException("User with ID '$userId' not found") }
+
+        // Verify current password
+        if (!passwordEncoder.matches(currentPassword, user.password)) {
+            throw IllegalArgumentException("Current password is incorrect")
+        }
+
+        // Check if new password is the same as current password
+        if (passwordEncoder.matches(newPassword, user.password)) {
+            throw IllegalArgumentException("New password cannot be the same as your current password")
+        }
+
+        // Validate new password strength (basic validation)
+        if (newPassword.length < 8) {
+            throw IllegalArgumentException("New password must be at least 8 characters long")
+        }
+        if (!newPassword.matches(Regex(".*[a-z].*"))) {
+            throw IllegalArgumentException("New password must contain at least one lowercase letter")
+        }
+        if (!newPassword.matches(Regex(".*[A-Z].*"))) {
+            throw IllegalArgumentException("New password must contain at least one uppercase letter")
+        }
+        if (!newPassword.matches(Regex(".*\\d.*"))) {
+            throw IllegalArgumentException("New password must contain at least one number")
+        }
+
+        val updatedUser = user.copy(
+            password = passwordEncoder.encode(newPassword),
+            updatedAt = LocalDateTime.now()
+        )
+
+        userRepository.save(updatedUser)
+    }
 }

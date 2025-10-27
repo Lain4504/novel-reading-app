@@ -24,4 +24,10 @@ interface UserApiService {
 
     @POST("users/{id}/upgrade-to-author")
     suspend fun upgradeToAuthor(@Path("id") id: String): Response<ApiResponse<LoginResponse>>
+
+    @PUT("users/{id}/change-password")
+    suspend fun changePassword(
+        @Path("id") id: String,
+        @Body request: Map<String, String>
+    ): Response<ApiResponse<Unit>>
 }

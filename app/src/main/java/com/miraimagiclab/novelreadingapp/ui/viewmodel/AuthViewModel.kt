@@ -35,6 +35,9 @@ class AuthViewModel @Inject constructor(
     private val _resetPasswordState = MutableStateFlow<UiState<Unit>>(UiState.Idle)
     val resetPasswordState: StateFlow<UiState<Unit>> = _resetPasswordState
 
+    private val _resendVerificationState = MutableStateFlow<UiState<Unit>>(UiState.Idle)
+    val resendVerificationState: StateFlow<UiState<Unit>> = _resendVerificationState
+
     fun login(usernameOrEmail: String, password: String) {
         viewModelScope.launch {
             authRepository.login(LoginRequest(usernameOrEmail, password)).collect { result ->
@@ -137,5 +140,21 @@ class AuthViewModel @Inject constructor(
 
     fun resetVerifyAccountState() {
         _verifyAccountState.value = UiState.Idle
+    }
+
+    fun resendVerification(email: String) {
+        viewModelScope.launch {
+            authRepository.resendVerification(email).collect { result ->
+                when (result) {
+                    is NetworkResult.Loading -> _resendVerificationState.value = UiState.Loading
+                    is NetworkResult.Success -> _resendVerificationState.value = UiState.Success(result.data)
+                    is NetworkResult.Error -> _resendVerificationState.value = UiState.Error(result.message)
+                }
+            }
+        }
+    }
+
+    fun resetResendVerificationState() {
+        _resendVerificationState.value = UiState.Idle
     }
 }

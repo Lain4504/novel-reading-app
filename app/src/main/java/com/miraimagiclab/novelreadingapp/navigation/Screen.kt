@@ -8,6 +8,7 @@ sealed class Screen(
     val route: String,
     val arguments: List<NamedNavArgument> = emptyList()
 ) {
+    object Onboarding : Screen("onboarding")
     object Home : Screen("home")
     object Explore : Screen("explore")
     object BookList : Screen("book_list")
@@ -130,4 +131,6 @@ sealed class Screen(
     ) {
         fun createRoute(userId: String) = "account_detail/$userId"
     }
+
+    object ChangePassword : Screen("change_password")
 }
