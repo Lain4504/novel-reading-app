@@ -3,10 +3,12 @@ package com.miraimagiclab.novelreadingapp.controller
 import com.miraimagiclab.novelreadingapp.config.JwtUtil
 import com.miraimagiclab.novelreadingapp.dto.ApiResponse
 import com.miraimagiclab.novelreadingapp.dto.request.LoginRequest
+import com.miraimagiclab.novelreadingapp.dto.request.ChangePasswordRequest
 import com.miraimagiclab.novelreadingapp.dto.request.UserCreateRequest
 import com.miraimagiclab.novelreadingapp.dto.request.UserUpdateRequest
 import com.miraimagiclab.novelreadingapp.dto.response.LoginResponse
 import com.miraimagiclab.novelreadingapp.dto.response.UserDto
+import com.miraimagiclab.novelreadingapp.exception.UserNotFoundException
 import com.miraimagiclab.novelreadingapp.service.UserService
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
@@ -32,10 +34,18 @@ class UserController(
 
     @PostMapping("/login")
     fun login(@Valid @RequestBody request: LoginRequest): ResponseEntity<ApiResponse<LoginResponse>> {
-        val authResult = userService.authenticate(request.usernameOrEmail, request.password)
-        val userDto = UserDto.fromEntity(authResult.user)
-        val loginResponse = LoginResponse(authResult.token, authResult.refreshToken, userDto)
-        return ResponseEntity.ok(ApiResponse.success(loginResponse, "Login successful"))
+        try {
+            val authResult = userService.authenticate(request.usernameOrEmail, request.password)
+            val userDto = UserDto.fromEntity(authResult.user)
+            val loginResponse = LoginResponse(authResult.token, authResult.refreshToken, userDto)
+            return ResponseEntity.ok(ApiResponse.success(loginResponse, "Login successful"))
+        } catch (e: UserNotFoundException) {
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.message ?: "Invalid username/email or password"))
+        } catch (e: Exception) {
+            return ResponseEntity.internalServerError()
+                .body(ApiResponse.error("Login failed: ${e.message}"))
+        }
     }
 
     @PostMapping("/refresh")
@@ -94,6 +104,23 @@ class UserController(
         val userDto = UserDto.fromEntity(result.user)
         val loginResponse = LoginResponse(result.token, result.refreshToken, userDto)
         return ResponseEntity.ok(ApiResponse.success(loginResponse, "Upgraded to author successfully"))
+    }
+
+    @PutMapping("/{id}/change-password")
+    fun changePassword(
+        @PathVariable id: String,
+        @Valid @RequestBody request: ChangePasswordRequest
+    ): ResponseEntity<ApiResponse<Nothing>> {
+        try {
+            userService.changePassword(id, request.currentPassword, request.newPassword, request.confirmPassword)
+            return ResponseEntity.ok(ApiResponse.success("Password changed successfully"))
+        } catch (e: IllegalArgumentException) {
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.message ?: "Invalid password change request"))
+        } catch (e: Exception) {
+            return ResponseEntity.internalServerError()
+                .body(ApiResponse.error("Failed to change password: ${e.message}"))
+        }
     }
 
 }
