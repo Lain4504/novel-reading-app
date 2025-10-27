@@ -179,10 +179,6 @@ class NovelController(
         @Schema(description = "Whether the novel is R18 content (optional)")
         isR18: Boolean? = null,
         
-        @RequestParam("coverUrl", required = false)
-        @Schema(description = "Cover image URL (optional)")
-        coverUrl: String? = null,
-        
         @RequestPart(name = "coverImage", required = false) 
         @Schema(description = "Cover image file (optional)", type = "string", format = "binary")
         coverImage: MultipartFile?,

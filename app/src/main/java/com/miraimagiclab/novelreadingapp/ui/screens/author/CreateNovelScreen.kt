@@ -89,6 +89,20 @@ fun CreateNovelScreen(
                 uploadError = null
                 // Keep selectedCoverUri for preview
                 viewModel.resetUploadImageState()
+                
+                // Auto-create novel after image upload completes
+                if (title.isNotBlank() && description.isNotBlank() && authorName.isNotBlank() && selectedCategories.isNotEmpty()) {
+                    viewModel.createNovel(
+                        title = title,
+                        description = description,
+                        authorName = authorName,
+                        authorId = authState.userId,
+                        categories = selectedCategories,
+                        status = status,
+                        isR18 = isR18,
+                        coverImageUrl = currentState.data
+                    )
+                }
             }
             is com.miraimagiclab.novelreadingapp.util.UiState.Error -> {
                 uploadError = currentState.message
@@ -367,14 +381,14 @@ fun CreateNovelScreen(
             Button(
                 onClick = {
                     if (title.isNotBlank() && description.isNotBlank() && authorName.isNotBlank() && selectedCategories.isNotEmpty()) {
-                        // If image is selected, upload it first
-                        if (selectedCoverUri != null && authState.userId != null) {
+                        // If image is selected but not uploaded yet, upload it first (will auto-create after upload)
+                        if (selectedCoverUri != null && coverImageUrl == null && authState.userId != null) {
                             val file = uriToFile(context, selectedCoverUri!!)
                             if (file != null) {
                                 viewModel.uploadImage(file, authState.userId!!, "USER")
                             }
                         } else {
-                            // No image selected, create novel without cover
+                            // Image already uploaded or no image selected, create novel directly
                             viewModel.createNovel(
                                 title = title,
                                 description = description,
@@ -383,7 +397,7 @@ fun CreateNovelScreen(
                                 categories = selectedCategories,
                                 status = status,
                                 isR18 = isR18,
-                                coverImageUrl = null
+                                coverImageUrl = coverImageUrl
                             )
                         }
                     }
