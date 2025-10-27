@@ -6,6 +6,8 @@ import com.miraimagiclab.novelreadingapp.data.auth.SessionManager
 import com.miraimagiclab.novelreadingapp.domain.model.Novel
 import com.miraimagiclab.novelreadingapp.domain.repository.UserNovelInteractionRepository
 import com.miraimagiclab.novelreadingapp.util.UiState
+import com.miraimagiclab.novelreadingapp.util.RefreshManager
+import com.miraimagiclab.novelreadingapp.util.RefreshType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,11 +18,15 @@ import javax.inject.Inject
 @HiltViewModel
 class BookListViewModel @Inject constructor(
     private val userNovelInteractionRepository: UserNovelInteractionRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val refreshManager: RefreshManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState<BookListUiState>>(UiState.Loading)
     val uiState: StateFlow<UiState<BookListUiState>> = _uiState.asStateFlow()
+
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
     init {
         // Observe auth state and reset data when logged out
@@ -32,6 +38,15 @@ class BookListViewModel @Inject constructor(
                 } else if (_uiState.value is UiState.Idle || _uiState.value is UiState.Loading) {
                     // Load data when user is logged in and state is idle/loading
                     loadAllData()
+                }
+            }
+        }
+        
+        // Observe refresh events
+        viewModelScope.launch {
+            refreshManager.refreshEvent.collect { refreshType ->
+                if (refreshType == RefreshType.BOOKLIST || refreshType == RefreshType.ALL) {
+                    refreshData()
                 }
             }
         }
@@ -84,7 +99,32 @@ class BookListViewModel @Inject constructor(
     }
 
     fun refreshData() {
-        loadAllData()
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            try {
+                val userId = sessionManager.authState.value.userId
+                if (userId.isNullOrBlank()) {
+                    _isRefreshing.value = false
+                    return@launch
+                }
+                
+                // Re-fetch fresh data from server
+                val readingHistoryNovels = userNovelInteractionRepository.getUserInProgressNovels(userId)
+                val followingNovels = userNovelInteractionRepository.getUserFollowingNovels(userId)
+                
+                _uiState.value = UiState.Success(
+                    BookListUiState(
+                        novels = followingNovels,
+                        readingHistoryNovels = readingHistoryNovels
+                    )
+                )
+            } catch (e: Exception) {
+                // Handle error silently or update error state
+                println("Error refreshing data: ${e.message}")
+            } finally {
+                _isRefreshing.value = false
+            }
+        }
     }
 
     fun deleteNovel(novelId: String) {

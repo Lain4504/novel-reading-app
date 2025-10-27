@@ -76,6 +76,7 @@ fun CreateNovelScreen(
     var selectedCoverUri by remember { mutableStateOf<Uri?>(null) }
     var coverImageUrl by remember { mutableStateOf<String?>(null) }
     var uploadError by remember { mutableStateOf<String?>(null) }
+    var shouldCreateAfterUpload by remember { mutableStateOf(false) }
     
     val uiState by viewModel.uiState.collectAsState()
     val authState by viewModel.authState.collectAsState()
@@ -87,11 +88,13 @@ fun CreateNovelScreen(
             is com.miraimagiclab.novelreadingapp.util.UiState.Success -> {
                 coverImageUrl = currentState.data
                 uploadError = null
-                // Keep selectedCoverUri for preview
                 viewModel.resetUploadImageState()
+                android.util.Log.d("CreateNovelScreen", "Image uploaded successfully: ${currentState.data}")
                 
-                // Auto-create novel after image upload completes
-                if (title.isNotBlank() && description.isNotBlank() && authorName.isNotBlank() && selectedCategories.isNotEmpty()) {
+                // If user clicked Create button and waiting for upload, create novel now
+                if (shouldCreateAfterUpload) {
+                    shouldCreateAfterUpload = false
+                    android.util.Log.d("CreateNovelScreen", "Creating novel after image upload")
                     viewModel.createNovel(
                         title = title,
                         description = description,
@@ -107,6 +110,7 @@ fun CreateNovelScreen(
             is com.miraimagiclab.novelreadingapp.util.UiState.Error -> {
                 uploadError = currentState.message
                 viewModel.resetUploadImageState()
+                shouldCreateAfterUpload = false // Reset flag on error
             }
             else -> {
                 uploadError = null
@@ -381,14 +385,20 @@ fun CreateNovelScreen(
             Button(
                 onClick = {
                     if (title.isNotBlank() && description.isNotBlank() && authorName.isNotBlank() && selectedCategories.isNotEmpty()) {
-                        // If image is selected but not uploaded yet, upload it first (will auto-create after upload)
+                        // If image is selected but not uploaded yet, upload it first
                         if (selectedCoverUri != null && coverImageUrl == null && authState.userId != null) {
+                            android.util.Log.d("CreateNovelScreen", "Upload image first, then create novel")
+                            shouldCreateAfterUpload = true
                             val file = uriToFile(context, selectedCoverUri!!)
                             if (file != null) {
                                 viewModel.uploadImage(file, authState.userId!!, "USER")
+                            } else {
+                                uploadError = "Failed to read image file"
+                                shouldCreateAfterUpload = false
                             }
                         } else {
                             // Image already uploaded or no image selected, create novel directly
+                            android.util.Log.d("CreateNovelScreen", "Creating novel directly")
                             viewModel.createNovel(
                                 title = title,
                                 description = description,

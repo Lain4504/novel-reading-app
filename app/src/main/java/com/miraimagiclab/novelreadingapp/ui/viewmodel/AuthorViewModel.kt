@@ -12,6 +12,8 @@ import com.miraimagiclab.novelreadingapp.data.remote.dto.NovelDto
 import com.miraimagiclab.novelreadingapp.data.remote.dto.PageResponse
 import com.miraimagiclab.novelreadingapp.data.remote.dto.UserDto
 import com.miraimagiclab.novelreadingapp.util.UiState
+import com.miraimagiclab.novelreadingapp.util.RefreshManager
+import com.miraimagiclab.novelreadingapp.util.RefreshType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,7 +27,8 @@ class AuthorViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val authorRepository: AuthorRepository,
     private val imageRepository: ImageRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val refreshManager: RefreshManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthorUiState())
@@ -151,6 +154,11 @@ class AuthorViewModel @Inject constructor(
                         isLoading = false,
                         createdNovel = novel
                     )
+                    // Trigger refresh for all screens
+                    viewModelScope.launch {
+                        android.util.Log.d("AuthorViewModel", "Novel created, triggering refresh for all screens")
+                        refreshManager.triggerRefresh(RefreshType.ALL)
+                    }
                 }
                 .onFailure { error ->
                     _uiState.value = _uiState.value.copy(
@@ -199,6 +207,11 @@ class AuthorViewModel @Inject constructor(
                         isLoading = false,
                         updatedNovel = updatedNovel
                     )
+                    // Trigger refresh for all screens
+                    viewModelScope.launch {
+                        android.util.Log.d("AuthorViewModel", "Novel updated, triggering refresh for all screens")
+                        refreshManager.triggerRefresh(RefreshType.ALL)
+                    }
                 }
                 .onFailure { error ->
                     _uiState.value = _uiState.value.copy(

@@ -12,6 +12,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.List
@@ -37,6 +41,7 @@ import com.miraimagiclab.novelreadingapp.ui.viewmodel.ExploreViewModel
 import com.miraimagiclab.novelreadingapp.util.UiState
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ExploreScreen(
     onBookClick: (String) -> Unit = {},
@@ -45,8 +50,19 @@ fun ExploreScreen(
 ) {
     val scrollState = rememberScrollState()
     val uiState by viewModel.uiState.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
     
-    when (val currentState = uiState) {
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = isRefreshing,
+        onRefresh = { viewModel.refreshData() }
+    )
+    
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .pullRefresh(pullRefreshState)
+    ) {
+        when (val currentState = uiState) {
             is UiState.Idle, is UiState.Loading -> {
                 // Show loading state
                 Box(
@@ -64,13 +80,20 @@ fun ExploreScreen(
                 )
             }
             is UiState.Success -> {
-            ExploreContentSimple(
-                exploreData = currentState.data,
-                onBookClick = onBookClick,
-                onBackClick = onBackClick,
-                scrollState = scrollState
-            )
+                ExploreContentSimple(
+                    exploreData = currentState.data,
+                    onBookClick = onBookClick,
+                    onBackClick = onBackClick,
+                    scrollState = scrollState
+                )
+            }
         }
+        
+        PullRefreshIndicator(
+            refreshing = isRefreshing,
+            state = pullRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
     }
 }
 
