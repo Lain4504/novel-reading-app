@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="121b5837-42c5-45ba-b0b7-b9d3b9328e5f" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/deviceManager.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.kotlin/errors/errors-1759623594563.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.kotlin/errors/errors-1760719335389.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.kotlin/errors/errors-1761441792688.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.kotlin/errors/errors-1761527746129.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ADMIN_PANEL_INFO.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin-web/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin-web/SETUP_GUIDE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin-web/test-api.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/.idea/AndroidProjectSystem.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/.idea/caches/deviceStreaming.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/.idea/gradle.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/.idea/migrations.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/.idea/runConfigurations.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build.gradle.kts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/proguard-rules.pro" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/androidTest/java/com/miraimagiclab/novelreadingapp/ExampleInstrumentedTest.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/MainActivity.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/NovelReadingApplication.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/auth/SessionManager.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/local/prefs/AuthDataStore.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/local/prefs/ReadingSettingsDataStore.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/local/prefs/SettingsDataStore.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/mapper/ChapterMapper.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/mapper/NovelDetailMapper.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/mapper/NovelMapper.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/mapper/ReadingProgressMapper.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/mapper/UserNovelInteractionMapper.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/api/AuthApiService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/api/ChapterApiService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/api/CommentApiService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/api/ImageApiService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/api/NovelApiService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/api/ReviewApiService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/api/UserApiService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/api/UserNovelInteractionApiService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/dto/ApiResponse.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/dto/ChapterCreateRequest.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/dto/ChapterDto.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/dto/ChapterUpdateRequest.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/dto/CommentDto.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/dto/ImageResponse.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/dto/LoginRequest.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/dto/LoginResponse.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/dto/NovelCreateRequest.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/dto/NovelDto.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/dto/NovelSearchRequest.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/dto/NovelUpdateRequest.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/dto/PageResponse.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/dto/RegisterRequest.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/dto/ReviewDto.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/dto/UserDto.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/dto/UserNovelInteractionDto.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/dto/UserUpdateRequest.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/dto/request/CommentCreateRequestDto.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/dto/request/CommentReplyCreateRequestDto.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/dto/request/ReviewCreateRequestDto.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/interceptor/AuthInterceptor.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/remote/interceptor/TokenAuthenticator.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/repository/AuthRepository.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/repository/AuthorRepository.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/repository/ChapterRepositoryImpl.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/repository/ImageRepository.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/repository/NovelDetailRepositoryImpl.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/repository/NovelRepositoryImpl.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/repository/ReadingProgressRepository.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/repository/ReadingSettingsRepository.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/repository/SettingsRepository.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/repository/TokenRefreshRepository.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/repository/UserNovelInteractionRepositoryImpl.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/data/repository/UserRepository.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/di/AppModule.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/di/NetworkModule.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/domain/model/Chapter.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/domain/model/Comment.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/domain/model/Novel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/domain/model/NovelDetail.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/domain/model/ReadingProgress.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/domain/model/Review.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/domain/model/UserNovelInteraction.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/domain/repository/ChapterRepository.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/domain/repository/NovelDetailRepository.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/domain/repository/NovelRepository.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/domain/repository/UserNovelInteractionRepository.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/navigation/NovelReadingNavigation.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/navigation/Screen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/components/BannerCard.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/components/BottomNavigationBar.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/components/EmailTextField.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/components/ErrorState.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/components/HomeScreenSkeleton.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/components/NovelCard.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/components/PasswordTextField.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/components/RankingCard.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/components/RankingListItem.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/components/ReadingSettingsDialog.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/components/StatsCard.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/components/novel/AddReviewDialog.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/components/novel/ChaptersContent.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/components/novel/CommentsContent.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/components/novel/NovelDetailContent.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/components/novel/NovelDetailStates.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/components/novel/NovelHeader.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/components/novel/OverviewContent.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/components/novel/RecommendationsContent.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/components/novel/ReviewsContent.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/AccountDetailScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/BookListScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/ChangePasswordScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/CommentsScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/CreateReviewScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/ExploreScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/HomeScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/NovelDetailScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/OnboardingScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/ProfileScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/ReadingScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/auth/ForgotPasswordScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/auth/LoginScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/auth/OTPVerificationScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/auth/RegisterScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/auth/RegisterWithEmailScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/auth/ResetPasswordScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/author/AuthorDashboardScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/author/BecomeAuthorScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/author/CreateChapterScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/author/CreateNovelScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/author/EditChapterScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/author/EditNovelScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/screens/author/NovelManageScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/theme/Color.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/theme/Font.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/theme/ReadingTheme.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/theme/Shapes.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/theme/Spacing.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/theme/Theme.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/theme/Type.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/viewmodel/AccountDetailViewModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/viewmodel/AuthViewModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/viewmodel/AuthorViewModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/viewmodel/BookListViewModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/viewmodel/ChangePasswordViewModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/viewmodel/CommentsViewModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/viewmodel/CreateReviewViewModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/viewmodel/ExploreViewModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/viewmodel/HomeViewModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/viewmodel/NovelDetailViewModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/viewmodel/ProfileViewModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/viewmodel/ReadingProgressViewModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/viewmodel/ReadingScreenViewModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/viewmodel/ReadingSettingsViewModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/ui/viewmodel/SettingsViewModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/util/Constants.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/util/ErrorHandler.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/util/HapticFeedback.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/util/JwtTokenHelper.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/util/NetworkResult.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/util/NovelToBookConverter.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/util/RefreshManager.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/miraimagiclab/novelreadingapp/util/UiState.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/ic_launcher_background.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/ic_launcher_foreground.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-hdpi/ic_launcher.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-hdpi/ic_launcher_round.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-mdpi/ic_launcher.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-mdpi/ic_launcher_round.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-xhdpi/ic_launcher.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-xhdpi/ic_launcher_round.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-xxhdpi/ic_launcher.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/values/colors.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/values/themes.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/xml/backup_rules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/xml/data_extraction_rules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/test/java/com/miraimagiclab/novelreadingapp/ExampleUnitTest.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/test/java/com/miraimagiclab/novelreadingapp/data/repository/ChapterRepositoryImplTest.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/test/java/com/miraimagiclab/novelreadingapp/data/repository/ReadingProgressRepositoryTest.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/test/java/com/miraimagiclab/novelreadingapp/ui/screens/ReadingScreenTest.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/test/java/com/miraimagiclab/novelreadingapp/ui/viewmodel/ReadingProgressViewModelTest.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/test/java/com/miraimagiclab/novelreadingapp/ui/viewmodel/ReadingScreenViewModelTest.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/test/java/com/miraimagiclab/novelreadingapp/ui/viewmodel/ReadingSettingsViewModelTest.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle.kts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle/libs.versions.toml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradlew" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradlew.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/hs_err_pid22692.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/settings.gradle.kts" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "Lain4504"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/Lain4504/novel-reading-app.git",
+    "accountId": "fb3aa01b-fea7-452e-8530-eaba29b0f4f2"
+  }
+}]]></component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "customColor": "",
+  "associatedIndex": 0
+}]]></component>
+  <component name="ProjectId" id="34eYwsjWoBbBSuKM1FryZQ05fTN" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "android.gradle.sync.needed": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "dart.analysis.tool.window.visible": "false",
+    "git-widget-placeholder": "main",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.17",
+    "project.structure.side.proportion": "0.2",
+    "show.migrate.to.gradle.popup": "false"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="121b5837-42c5-45ba-b0b7-b9d3b9328e5f" name="Changes" comment="" />
+      <created>1761575748786</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1761575748786</updated>
+    </task>
+    <servers />
+  </component>
+</project>
