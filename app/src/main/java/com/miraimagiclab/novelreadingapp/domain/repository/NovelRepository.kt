@@ -13,6 +13,19 @@ interface NovelRepository {
     fun getNewNovels(): Flow<List<Novel>>
     fun getCompletedNovels(): Flow<List<Novel>>
     
+    // Home screen specific refresh methods
+    suspend fun refreshBannerNovels()
+    suspend fun refreshRecommendedNovels()
+    suspend fun refreshRankingNovels()
+    suspend fun refreshNewNovels()
+    suspend fun refreshCompletedNovels()
+    
+    // Sync all data and remove novels that no longer exist on server (use carefully)
+    suspend fun syncAllNovels()
+    
+    // Clear all cached novels and rebuild from server
+    suspend fun clearCacheAndRefresh()
+    
     // Legacy methods (kept for backward compatibility)
     fun getTopNovelsByRating(): Flow<List<Novel>>
     fun getTopNovelsByFollowCount(): Flow<List<Novel>>

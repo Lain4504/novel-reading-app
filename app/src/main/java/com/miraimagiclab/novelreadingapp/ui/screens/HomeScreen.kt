@@ -29,6 +29,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.miraimagiclab.novelreadingapp.data.auth.SessionManager
 import com.miraimagiclab.novelreadingapp.ui.components.BannerCard
 import com.miraimagiclab.novelreadingapp.ui.components.ErrorState
@@ -53,6 +56,14 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
     val hapticFeedback = rememberHapticFeedback()
     val authState by sessionManager.authState.collectAsState()
+    
+    // Refresh data when screen resumes (user comes back from other screens)
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LifecycleResumeEffect(key1 = lifecycleOwner) {
+        // Refresh data when screen is resumed
+        viewModel.refreshData()
+        onPauseOrDispose { }
+    }
     
     Scaffold(
         contentWindowInsets = WindowInsets(0),

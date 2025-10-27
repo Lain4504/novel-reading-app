@@ -34,7 +34,11 @@ class HomeViewModel @Inject constructor(
             try {
                 _uiState.value = UiState.Loading
                 
-                // Combine all data streams - now calling API directly
+                // Sync all novels from server and remove deleted ones
+                // This method fetches all novels and only deletes old ones if ALL fetches succeed
+                novelRepository.syncAllNovels()
+
+                // Combine all data streams using new home screen specific methods
                 combine(
                     novelRepository.getBannerNovels(),
                     novelRepository.getRecommendedNovels(),
