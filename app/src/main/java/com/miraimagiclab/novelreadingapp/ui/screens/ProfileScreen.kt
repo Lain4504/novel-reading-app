@@ -25,7 +25,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.miraimagiclab.novelreadingapp.navigation.Screen
 import com.miraimagiclab.novelreadingapp.ui.theme.CustomShapes
 import com.miraimagiclab.novelreadingapp.ui.viewmodel.ProfileViewModel
 import com.miraimagiclab.novelreadingapp.ui.viewmodel.SettingsViewModel
@@ -35,6 +37,7 @@ import java.io.FileOutputStream
 
 @Composable
 fun ProfileScreen(
+    navController: NavController,
     onLoginClick: () -> Unit = {},
     onBecomeAuthorClick: () -> Unit = {},
     onMyNovelsClick: () -> Unit = {},
@@ -116,7 +119,9 @@ fun ProfileScreen(
             ProfileMenuItem("Personal data", Icons.Default.Person) { 
                 onPersonalDataClick()
             }
-            ProfileMenuItem("Account security", Icons.Default.AccountBox) { }
+            ProfileMenuItem("Change Password", Icons.Default.Lock) {
+                navController.navigate(Screen.ChangePassword.route)
+            }
             ProfileMenuItem("My Booklist", Icons.Default.Check) { 
                 onMyBooklistClick()
             }

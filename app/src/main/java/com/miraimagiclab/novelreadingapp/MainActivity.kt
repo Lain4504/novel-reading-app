@@ -77,8 +77,7 @@ class MainActivity : ComponentActivity() {
                                 Screen.Explore.route,
                                 Screen.BookList.route,
                                 Screen.Profile.route
-                            ) && currentRoute != Screen.Onboarding.route && !(currentRoute?.startsWith("book_details/") == true) && !(currentRoute?.startsWith("reading/") == true)
-                            ) && !(currentRoute?.startsWith("novel_detail/") == true) && !(currentRoute?.startsWith("reading/") == true)
+                            ) && currentRoute != Screen.Onboarding.route && !(currentRoute?.startsWith("book_details/") == true) && !(currentRoute?.startsWith("reading/") == true) && !(currentRoute?.startsWith("novel_detail/") == true) && !(currentRoute?.startsWith("reading/") == true)
                             if (showBottomNav) {
                                 BottomNavigationBar(
                                     currentRoute = currentRoute,

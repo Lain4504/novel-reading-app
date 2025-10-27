@@ -131,4 +131,6 @@ sealed class Screen(
     ) {
         fun createRoute(userId: String) = "account_detail/$userId"
     }
+
+    object ChangePassword : Screen("change_password")
 }

@@ -12,6 +12,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.miraimagiclab.novelreadingapp.ui.screens.ChangePasswordScreen
 import com.miraimagiclab.novelreadingapp.ui.screens.*
 import com.miraimagiclab.novelreadingapp.ui.screens.auth.*
 import com.miraimagiclab.novelreadingapp.ui.screens.author.*
@@ -90,6 +91,7 @@ fun NovelReadingNavigation(
         
         composable(Screen.Profile.route) {
             ProfileScreen(
+                navController = navController,
                 onLoginClick = {
                     navController.navigate(Screen.Login.route) {
                         // Clear the back stack to prevent going back to profile
@@ -403,6 +405,17 @@ fun NovelReadingNavigation(
                     navController.navigate(Screen.NovelDetail.createRoute(novelId))
                 }
             )
+        }
+        composable(Screen.ChangePassword.route) {
+            ChangePasswordScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onSuccess = {
+                    navController.popBackStack()
+                }
+            )
+        }
         }
     }
 }
