@@ -78,7 +78,11 @@ class NovelController(
         
         @RequestPart(name = "coverImage", required = false) 
         @Schema(description = "Cover image file (optional)", type = "string", format = "binary")
-        coverImage: MultipartFile?
+        coverImage: MultipartFile?,
+        
+        @RequestParam("coverUrl", required = false)
+        @Schema(description = "Cover image URL (optional, used when image is already uploaded)")
+        coverUrl: String? = null
     ): ResponseEntity<ApiResponse<NovelDto>> {
         // Parse categories from comma-separated string
         val categorySet = categories.split(",")
@@ -108,7 +112,10 @@ class NovelController(
             isR18 = isR18
         )
         
-        val finalRequest = if (coverImage != null && !coverImage.isEmpty) {
+        // Priority: coverUrl > coverImage upload
+        val finalRequest = if (!coverUrl.isNullOrBlank()) {
+            request.copy(coverImage = coverUrl)
+        } else if (coverImage != null && !coverImage.isEmpty) {
             val url = cloudinaryStorageService.uploadAndGetUrl(coverImage, folder = "novels/covers")
             request.copy(coverImage = url)
         } else request
@@ -153,9 +160,7 @@ class NovelController(
         categories: String? = null,
         
         @RequestParam("rating", required = false)
-        @Min(value = 0, message = "Rating must be at least 0")
-        @Max(value = 5, message = "Rating must be at most 5")
-        @Schema(description = "Novel rating (optional)")
+        @Schema(description = "Novel rating (optional, must be between 0 and 5)")
         rating: Double? = null,
         
         @RequestParam("wordCount", required = false)
@@ -174,13 +179,13 @@ class NovelController(
         @Schema(description = "Whether the novel is R18 content (optional)")
         isR18: Boolean? = null,
         
-        @RequestParam("coverUrl", required = false)
-        @Schema(description = "Cover image URL (optional)")
-        coverUrl: String? = null,
-        
         @RequestPart(name = "coverImage", required = false) 
         @Schema(description = "Cover image file (optional)", type = "string", format = "binary")
-        coverImage: MultipartFile?
+        coverImage: MultipartFile?,
+        
+        @RequestParam("coverUrl", required = false)
+        @Schema(description = "Cover image URL (optional, used when image is already uploaded)")
+        coverUrl: String? = null
     ): ResponseEntity<ApiResponse<NovelDto>> {
         // Parse categories from comma-separated string if provided
         val categorySet = if (categories != null && categories.isNotBlank()) {
@@ -216,16 +221,13 @@ class NovelController(
             isR18 = isR18
         )
         
-        val finalRequest = when {
-            coverImage != null && !coverImage.isEmpty -> {
-                val url = cloudinaryStorageService.uploadAndGetUrl(coverImage, folder = "novels/covers")
-                request.copy(coverImage = url)
-            }
-            coverUrl != null && coverUrl.isNotBlank() -> {
-                request.copy(coverImage = coverUrl)
-            }
-            else -> request
-        }
+        // Priority: coverUrl > coverImage upload
+        val finalRequest = if (!coverUrl.isNullOrBlank()) {
+            request.copy(coverImage = coverUrl)
+        } else if (coverImage != null && !coverImage.isEmpty) {
+            val url = cloudinaryStorageService.uploadAndGetUrl(coverImage, folder = "novels/covers")
+            request.copy(coverImage = url)
+        } else request
         
         val novel = novelService.updateNovel(id, finalRequest)
         return ResponseEntity.ok(ApiResponse.success(novel, "Novel updated successfully"))

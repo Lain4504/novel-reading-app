@@ -6,6 +6,8 @@ import com.miraimagiclab.novelreadingapp.data.remote.dto.PageResponse
 import com.miraimagiclab.novelreadingapp.domain.model.Novel
 import com.miraimagiclab.novelreadingapp.domain.repository.NovelRepository
 import com.miraimagiclab.novelreadingapp.util.UiState
+import com.miraimagiclab.novelreadingapp.util.RefreshManager
+import com.miraimagiclab.novelreadingapp.util.RefreshType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -20,11 +22,15 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ExploreViewModel @Inject constructor(
-    private val novelRepository: NovelRepository
+    private val novelRepository: NovelRepository,
+    private val refreshManager: RefreshManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState<ExploreUiState>>(UiState.Loading)
     val uiState: StateFlow<UiState<ExploreUiState>> = _uiState.asStateFlow()
+
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
     // Search state
     private val _searchQuery = MutableStateFlow("")
@@ -55,6 +61,17 @@ class ExploreViewModel @Inject constructor(
 
     init {
         loadAllData()
+        
+        // Observe refresh events
+        viewModelScope.launch {
+            refreshManager.refreshEvent.collect { refreshType ->
+                android.util.Log.d("ExploreViewModel", "Received refresh event: $refreshType")
+                if (refreshType == RefreshType.EXPLORE || refreshType == RefreshType.ALL) {
+                    android.util.Log.d("ExploreViewModel", "Refreshing data...")
+                    refreshData()
+                }
+            }
+        }
     }
 
     private fun loadAllData() {
@@ -62,15 +79,8 @@ class ExploreViewModel @Inject constructor(
             try {
                 _uiState.value = UiState.Loading
                 
-                // Load all novels by default (empty search query)
-                println("Loading all novels with sort: ${_sortBy.value}, direction: ${_sortDirection.value}")
-                val response = novelRepository.searchNovels("", 0, 20, _sortBy.value, _sortDirection.value)
-                println("Response received: ${response.content.size} novels")
-                _searchResults.value = response.content
-                _currentPage.value = 0
-                _hasMorePages.value = !response.last
-                
-                _uiState.value = UiState.Success(ExploreUiState())
+                // Fetch fresh data from server
+                loadDataFromServer()
             } catch (e: Exception) {
                 val errorMessage = when {
                     e.message?.contains("Unable to resolve host") == true -> 
@@ -88,8 +98,36 @@ class ExploreViewModel @Inject constructor(
         }
     }
 
+    private suspend fun loadDataFromServer() {
+        // Combine all data streams
+        combine(
+            novelRepository.getRecommendedNovels(),
+            novelRepository.getNewNovels()
+        ) { recommendedNovels, newNovels ->
+            ExploreUiState(
+                recommendedNovels = recommendedNovels,
+                ourPicksNovels = newNovels
+            )
+        }.collect { exploreUiState ->
+            _uiState.value = UiState.Success(exploreUiState)
+        }
+    }
+
     fun refreshData() {
-        loadAllData()
+        viewModelScope.launch {
+            android.util.Log.d("ExploreViewModel", "refreshData() called")
+            _isRefreshing.value = true
+            try {
+                // Re-fetch fresh data from server
+                loadDataFromServer()
+                android.util.Log.d("ExploreViewModel", "Data refreshed successfully")
+            } catch (e: Exception) {
+                // Handle error silently or update error state
+                android.util.Log.e("ExploreViewModel", "Error refreshing data: ${e.message}", e)
+            } finally {
+                _isRefreshing.value = false
+            }
+        }
     }
 
     fun updateSearchQuery(query: String) {

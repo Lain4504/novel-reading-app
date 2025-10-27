@@ -16,7 +16,7 @@ class NovelRepositoryImpl @Inject constructor(
     private val novelApiService: NovelApiService
 ) : NovelRepository {
 
-    // Home screen specific implementations - now calling API directly
+    // Home screen specific implementations - calling API directly (no cache)
     override fun getBannerNovels(): Flow<List<Novel>> {
         return flow {
             try {
@@ -97,74 +97,51 @@ class NovelRepositoryImpl @Inject constructor(
         }
     }
 
-    // Refresh methods are no longer needed since we call API directly
+    // Refresh methods - no-op since we always call API directly
+    override suspend fun refreshBannerNovels() {
+        // No-op: we call API directly in getBannerNovels()
+    }
 
-    // Legacy implementations - now calling API directly
+    override suspend fun refreshRecommendedNovels() {
+        // No-op: we call API directly in getRecommendedNovels()
+    }
+
+    override suspend fun refreshRankingNovels() {
+        // No-op: we call API directly in getRankingNovels()
+    }
+
+    override suspend fun refreshNewNovels() {
+        // No-op: we call API directly in getNewNovels()
+    }
+
+    override suspend fun refreshCompletedNovels() {
+        // No-op: we call API directly in getCompletedNovels()
+    }
+    
+    override suspend fun syncAllNovels() {
+        // No-op: we don't use cache anymore, always fetch from API
+    }
+    
+    override suspend fun clearCacheAndRefresh() {
+        // No-op: we don't have cache anymore
+    }
+
+    // Legacy methods (kept for backward compatibility)
     override fun getTopNovelsByRating(): Flow<List<Novel>> {
-        return flow {
-            try {
-                val response = novelApiService.getTopNovelsByRating()
-                if (response.success && response.data != null) {
-                    val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
-                    emit(novels)
-                } else {
-                    emit(emptyList())
-                }
-            } catch (e: Exception) {
-                emit(emptyList())
-            }
-        }
+        return getRankingNovels()
     }
 
     override fun getTopNovelsByFollowCount(): Flow<List<Novel>> {
-        return flow {
-            try {
-                val response = novelApiService.getTopNovelsByFollowCount()
-                if (response.success && response.data != null) {
-                    val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
-                    emit(novels)
-                } else {
-                    emit(emptyList())
-                }
-            } catch (e: Exception) {
-                emit(emptyList())
-            }
-        }
+        return getRecommendedNovels()
     }
 
     override fun getTopNovelsByViewCount(): Flow<List<Novel>> {
-        return flow {
-            try {
-                val response = novelApiService.getTopNovelsByViewCount()
-                if (response.success && response.data != null) {
-                    val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
-                    emit(novels)
-                } else {
-                    emit(emptyList())
-                }
-            } catch (e: Exception) {
-                emit(emptyList())
-            }
-        }
+        return getBannerNovels()
     }
 
     override fun getRecentlyUpdatedNovels(): Flow<List<Novel>> {
-        return flow {
-            try {
-                val response = novelApiService.getRecentlyUpdatedNovels()
-                if (response.success && response.data != null) {
-                    val novels = response.data.map { NovelMapper.mapDtoToDomain(it) }
-                    emit(novels)
-                } else {
-                    emit(emptyList())
-                }
-            } catch (e: Exception) {
-                emit(emptyList())
-            }
-        }
+        return getNewNovels()
     }
-
-    // All refresh methods removed - no longer needed with direct API calls
 
     override suspend fun getNovelById(id: String): Novel? {
         return try {
@@ -180,42 +157,41 @@ class NovelRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getNovelsByIds(ids: List<String>): List<Novel> {
-        println("DEBUG: getNovelsByIds called with IDs: $ids")
-        val fetchedNovels = mutableListOf<Novel>()
-        
-        // Fetch all novels from API directly
-        ids.forEach { novelId ->
-            try {
-                println("DEBUG: Fetching novel with ID: $novelId")
-                val response = novelApiService.getNovelById(novelId)
-                if (response.success && response.data != null) {
-                    val novel = NovelMapper.mapDtoToDomain(response.data)
-                    fetchedNovels.add(novel)
-                    println("DEBUG: Successfully fetched novel: ${novel.title}")
-                } else {
-                    println("DEBUG: Failed to fetch novel $novelId: ${response.message}")
+        return try {
+            val novels = mutableListOf<Novel>()
+            ids.forEach { novelId ->
+                try {
+                    val response = novelApiService.getNovelById(novelId)
+                    if (response.success && response.data != null) {
+                        novels.add(NovelMapper.mapDtoToDomain(response.data))
+                    }
+                } catch (e: Exception) {
+                    // Skip this novel if fetch fails
                 }
-            } catch (e: Exception) {
-                println("DEBUG: Exception fetching novel $novelId: ${e.message}")
-                e.printStackTrace()
             }
+            novels
+        } catch (e: Exception) {
+            emptyList()
         }
-        
-        println("DEBUG: Total novels returned: ${fetchedNovels.size}")
-        return fetchedNovels
     }
 
-    override suspend fun searchNovels(query: String, page: Int, size: Int, sortBy: String, sortDirection: String): PageResponse<Novel> {
+    // Search functionality
+    override suspend fun searchNovels(
+        query: String,
+        page: Int,
+        size: Int,
+        sortBy: String,
+        sortDirection: String
+    ): PageResponse<Novel> {
         return try {
-            // Always use search API to support sort options
-            val searchRequest = NovelSearchRequest(
-                title = if (query.isBlank()) null else query,
+            val request = NovelSearchRequest(
+                title = query,
                 page = page,
                 size = size,
                 sortBy = sortBy,
                 sortDirection = sortDirection
             )
-            val response = novelApiService.searchNovels(searchRequest)
+            val response = novelApiService.searchNovels(request)
             if (response.success && response.data != null) {
                 val novels = response.data.content.map { NovelMapper.mapDtoToDomain(it) }
                 PageResponse(
@@ -241,9 +217,6 @@ class NovelRepositoryImpl @Inject constructor(
                 )
             }
         } catch (e: Exception) {
-            // Log error for debugging
-            println("Error in searchNovels: ${e.message}")
-            e.printStackTrace()
             PageResponse(
                 content = emptyList(),
                 page = 0,

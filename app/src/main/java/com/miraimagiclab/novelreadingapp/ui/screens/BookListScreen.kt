@@ -14,6 +14,10 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Create
@@ -45,6 +49,7 @@ import com.miraimagiclab.novelreadingapp.ui.theme.GreenPrimary
 import com.miraimagiclab.novelreadingapp.ui.viewmodel.BookListViewModel
 import com.miraimagiclab.novelreadingapp.util.UiState
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun BookListScreen(
     onBookClick: (String) -> Unit = {},
@@ -54,14 +59,13 @@ fun BookListScreen(
     sessionManager: SessionManager
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
     val authState by sessionManager.authState.collectAsState()
     
-    // Refresh data every time the screen is composed (when user navigates back)
-    LaunchedEffect(Unit) {
-        if (authState.isLoggedIn) {
-            viewModel.refreshData()
-        }
-    }
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = isRefreshing,
+        onRefresh = { viewModel.refreshData() }
+    )
     
     // Show login prompt if not logged in
     if (!authState.isLoggedIn) {
@@ -142,31 +146,43 @@ fun BookListScreen(
     }
     
     // Show content when logged in
-    when (val currentState = uiState) {
-        is UiState.Idle, is UiState.Loading -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .pullRefresh(pullRefreshState)
+    ) {
+        when (val currentState = uiState) {
+            is UiState.Idle, is UiState.Loading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+            is UiState.Error -> {
+                ErrorState(
+                    message = currentState.message,
+                    onRetry = { viewModel.refreshData() },
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+            is UiState.Success -> {
+                BookListContent(
+                    followingNovels = currentState.data.novels,
+                    readingHistoryNovels = currentState.data.readingHistoryNovels,
+                    onBookClick = onBookClick,
+                    onBackClick = onBackClick,
+                    onDeleteNovel = { novelId -> viewModel.deleteNovel(novelId) }
+                )
             }
         }
-        is UiState.Error -> {
-            ErrorState(
-                message = currentState.message,
-                onRetry = { viewModel.refreshData() },
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-        is UiState.Success -> {
-            BookListContent(
-                followingNovels = currentState.data.novels,
-                readingHistoryNovels = currentState.data.readingHistoryNovels,
-                onBookClick = onBookClick,
-                onBackClick = onBackClick,
-                onDeleteNovel = { novelId -> viewModel.deleteNovel(novelId) }
-            )
-        }
+        
+        PullRefreshIndicator(
+            refreshing = isRefreshing,
+            state = pullRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
     }
 }
 

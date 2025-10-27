@@ -80,6 +80,17 @@ class UserService(
     }
 
     @Transactional(readOnly = true)
+    fun getAllUsers(page: Int, size: Int): org.springframework.data.domain.Page<UserDto> {
+        val pageable = org.springframework.data.domain.PageRequest.of(
+            page, 
+            size, 
+            org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt")
+        )
+        val usersPage = userRepository.findAll(pageable)
+        return usersPage.map { UserDto.fromEntity(it) }
+    }
+
+    @Transactional(readOnly = true)
     fun getUserById(id: String): UserDto {
         val user = userRepository.findById(id)
             .orElseThrow { UserNotFoundException("User with ID '$id' not found") }

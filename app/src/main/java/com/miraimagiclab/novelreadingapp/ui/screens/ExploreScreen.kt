@@ -12,6 +12,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.List
@@ -37,6 +41,7 @@ import com.miraimagiclab.novelreadingapp.ui.viewmodel.ExploreViewModel
 import com.miraimagiclab.novelreadingapp.util.UiState
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ExploreScreen(
     onBookClick: (String) -> Unit = {},
@@ -45,46 +50,206 @@ fun ExploreScreen(
 ) {
     val scrollState = rememberScrollState()
     val uiState by viewModel.uiState.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
-    val searchResults by viewModel.searchResults.collectAsState()
-    val isSearching by viewModel.isSearching.collectAsState()
-    val isLoadingMore by viewModel.isLoadingMore.collectAsState()
-    val hasMorePages by viewModel.hasMorePages.collectAsState()
-    val sortBy by viewModel.sortBy.collectAsState()
-    val sortDirection by viewModel.sortDirection.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
     
-    when (val currentState = uiState) {
-        is UiState.Idle, is UiState.Loading -> {
-            // Show loading state
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = isRefreshing,
+        onRefresh = { viewModel.refreshData() }
+    )
+    
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .pullRefresh(pullRefreshState)
+    ) {
+        when (val currentState = uiState) {
+            is UiState.Idle, is UiState.Loading -> {
+                // Show loading state
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+            is UiState.Error -> {
+                ErrorState(
+                    message = currentState.message,
+                    onRetry = { viewModel.refreshData() },
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+            is UiState.Success -> {
+                ExploreContentSimple(
+                    exploreData = currentState.data,
+                    onBookClick = onBookClick,
+                    onBackClick = onBackClick,
+                    scrollState = scrollState
+                )
             }
         }
-        is UiState.Error -> {
-            ErrorState(
-                message = currentState.message,
-                onRetry = { viewModel.refreshData() },
-                modifier = Modifier.fillMaxSize()
+        
+        PullRefreshIndicator(
+            refreshing = isRefreshing,
+            state = pullRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ExploreContentSimple(
+    exploreData: com.miraimagiclab.novelreadingapp.ui.viewmodel.ExploreUiState,
+    onBookClick: (String) -> Unit,
+    onBackClick: () -> Unit,
+    scrollState: androidx.compose.foundation.ScrollState
+) {
+    var query by remember { mutableStateOf("") }
+    var selectedFilter by remember { mutableStateOf("All") }
+
+    // Filter logic
+    fun matchesFilter(book: Novel): Boolean {
+        val filterOk = when (selectedFilter) {
+            "All" -> true
+            else -> true
+        }
+        val queryOk = query.isBlank() ||
+                book.title.contains(query, ignoreCase = true) ||
+                book.authorName.contains(query, ignoreCase = true)
+        return filterOk && queryOk
+    }
+
+    val recommended = remember(exploreData, query, selectedFilter) {
+        exploreData.recommendedNovels.filter { matchesFilter(it) }
+    }
+    val ourPicks = remember(exploreData, query, selectedFilter) {
+        exploreData.ourPicksNovels.filter { matchesFilter(it) }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+
+        // Top bar with Back + Title
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onBackClick) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            Text(
+                text = "Explore Books",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
             )
         }
-        is UiState.Success -> {
-            ExploreContent(
-                exploreData = currentState.data,
-                searchQuery = searchQuery,
-                searchResults = searchResults,
-                isSearching = isSearching,
-                isLoadingMore = isLoadingMore,
-                hasMorePages = hasMorePages,
-                onBookClick = onBookClick,
-                onBackClick = onBackClick,
-                onSearchQueryChange = { viewModel.updateSearchQuery(it) },
-                onLoadMore = { viewModel.loadMoreResults() },
-                onUpdateSort = { sortBy, sortDirection -> viewModel.updateSortOptions(sortBy, sortDirection) },
-                scrollState = scrollState
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Search Box
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(45.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                .border(
+                    1.dp,
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+                    RoundedCornerShape(10.dp)
+                )
+                .padding(horizontal = 12.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search icon",
+                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                BasicTextField(
+                    value = query,
+                    onValueChange = { query = it },
+                    singleLine = true,
+                    textStyle = LocalTextStyle.current.copy(
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    ),
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                    decorationBox = { innerTextField ->
+                        if (query.isEmpty()) {
+                            Text(
+                                "Search...",
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            )
+                        }
+                        innerTextField()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Recommended Section
+        if (recommended.isNotEmpty()) {
+            Text(
+                text = "Recommended for you",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold
+                )
             )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                contentPadding = PaddingValues(horizontal = Spacing.xs)
+            ) {
+                items(recommended) { book ->
+                    NovelCard(novel = book, onClick = { onBookClick(book.id) })
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // Our Picks Section
+        if (ourPicks.isNotEmpty()) {
+            Text(
+                text = "Our Picks",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                contentPadding = PaddingValues(horizontal = Spacing.xs)
+            ) {
+                items(ourPicks) { book ->
+                    NovelCard(novel = book, onClick = { onBookClick(book.id) })
+                }
+            }
         }
     }
 }
