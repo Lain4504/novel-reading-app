@@ -4,6 +4,8 @@ data class Comment(
     val id: String,
     val content: String,
     val userId: String,
+    val username: String? = null,
+    val avatarUrl: String? = null,
     val targetType: String,
     val novelId: String? = null,
     val parentId: String? = null,

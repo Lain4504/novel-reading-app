@@ -18,7 +18,8 @@ import java.time.LocalDateTime
 @Service
 @Transactional
 class CommentService(
-    private val commentRepository: CommentRepository
+    private val commentRepository: CommentRepository,
+    private val userService: UserService
 ) {
 
     fun createComment(request: CommentCreateRequest): CommentResponseDto {
@@ -35,7 +36,12 @@ class CommentService(
         )
 
         val saved = commentRepository.save(comment)
-        return CommentResponseDto.fromEntity(saved)
+        val user = try {
+            userService.getUserEntityById(request.userId)
+        } catch (e: Exception) {
+            null
+        }
+        return CommentResponseDto.fromEntity(saved, user)
     }
 
     fun createReply(commentId: String, request: CommentReplyCreateRequest): CommentResponseDto {
@@ -65,21 +71,38 @@ class CommentService(
         )
         commentRepository.save(updatedParent)
         
-        return CommentResponseDto.fromEntity(saved)
+        val user = try {
+            userService.getUserEntityById(request.userId)
+        } catch (e: Exception) {
+            null
+        }
+        return CommentResponseDto.fromEntity(saved, user)
     }
 
     @Transactional(readOnly = true)
     fun getCommentById(id: String): CommentResponseDto {
         val comment = commentRepository.findById(id)
             .orElseThrow { CommentNotFoundException("Comment with ID '$id' not found") }
-        return CommentResponseDto.fromEntity(comment)
+        val user = try {
+            userService.getUserEntityById(comment.userId ?: "")
+        } catch (e: Exception) {
+            null
+        }
+        return CommentResponseDto.fromEntity(comment, user)
     }
 
     @Transactional(readOnly = true)
     fun getCommentsByNovelId(novelId: String, page: Int = 0, size: Int = 20): PageResponse<CommentResponseDto> {
         val pageable: Pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))
         val comments = commentRepository.findByNovelIdAndParentIdIsNullAndDeletedFalse(novelId, pageable)
-        val commentDtos = comments.content.map { CommentResponseDto.fromEntity(it) }
+        val commentDtos = comments.content.map { comment ->
+            val user = try {
+                userService.getUserEntityById(comment.userId ?: "")
+            } catch (e: Exception) {
+                null
+            }
+            CommentResponseDto.fromEntity(comment, user)
+        }
 
         return PageResponse(
             content = commentDtos,
@@ -97,7 +120,14 @@ class CommentService(
     fun getRepliesByCommentId(commentId: String, page: Int = 0, size: Int = 10): PageResponse<CommentResponseDto> {
         val pageable: Pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "createdAt"))
         val replies = commentRepository.findByParentIdAndDeletedFalse(commentId, pageable)
-        val replyDtos = replies.content.map { CommentResponseDto.fromEntity(it) }
+        val replyDtos = replies.content.map { reply ->
+            val user = try {
+                userService.getUserEntityById(reply.userId ?: "")
+            } catch (e: Exception) {
+                null
+            }
+            CommentResponseDto.fromEntity(reply, user)
+        }
 
         return PageResponse(
             content = replyDtos,
@@ -121,7 +151,12 @@ class CommentService(
         )
 
         val saved = commentRepository.save(updated)
-        return CommentResponseDto.fromEntity(saved)
+        val user = try {
+            userService.getUserEntityById(existing.userId ?: "")
+        } catch (e: Exception) {
+            null
+        }
+        return CommentResponseDto.fromEntity(saved, user)
     }
 
     fun deleteComment(id: String) {

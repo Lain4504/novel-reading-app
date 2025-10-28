@@ -8,6 +8,8 @@ data class CommentResponseDto(
     val id: String,
     val content: String,
     val userId: String,
+    val username: String?,
+    val avatarUrl: String?,
     val targetType: String,
     val novelId: String?,
     val parentId: String?,
@@ -20,11 +22,13 @@ data class CommentResponseDto(
     val updatedAt: LocalDateTime
 ) {
     companion object {
-        fun fromEntity(comment: Comment): CommentResponseDto {
+        fun fromEntity(comment: Comment, user: com.miraimagiclab.novelreadingapp.model.User? = null): CommentResponseDto {
             return CommentResponseDto(
                 id = comment.id ?: "",
                 content = comment.content,
                 userId = comment.userId ?: "",
+                username = user?.username ?: "Unknown User",
+                avatarUrl = user?.avatarUrl,
                 targetType = comment.targetType.name,
                 novelId = comment.novelId,
                 parentId = comment.parentId,

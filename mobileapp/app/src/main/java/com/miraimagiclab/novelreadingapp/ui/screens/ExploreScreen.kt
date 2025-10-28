@@ -17,9 +17,12 @@ import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Search
+import com.miraimagiclab.novelreadingapp.R
+import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshotFlow
@@ -84,7 +87,8 @@ fun ExploreScreen(
                     exploreData = currentState.data,
                     onBookClick = onBookClick,
                     onBackClick = onBackClick,
-                    scrollState = scrollState
+                    scrollState = scrollState,
+                    viewModel = viewModel
                 )
             }
         }
@@ -103,29 +107,19 @@ private fun ExploreContentSimple(
     exploreData: com.miraimagiclab.novelreadingapp.ui.viewmodel.ExploreUiState,
     onBookClick: (String) -> Unit,
     onBackClick: () -> Unit,
-    scrollState: androidx.compose.foundation.ScrollState
+    scrollState: androidx.compose.foundation.ScrollState,
+    viewModel: ExploreViewModel
 ) {
-    var query by remember { mutableStateOf("") }
-    var selectedFilter by remember { mutableStateOf("All") }
-
-    // Filter logic
-    fun matchesFilter(book: Novel): Boolean {
-        val filterOk = when (selectedFilter) {
-            "All" -> true
-            else -> true
-        }
-        val queryOk = query.isBlank() ||
-                book.title.contains(query, ignoreCase = true) ||
-                book.authorName.contains(query, ignoreCase = true)
-        return filterOk && queryOk
-    }
-
-    val recommended = remember(exploreData, query, selectedFilter) {
-        exploreData.recommendedNovels.filter { matchesFilter(it) }
-    }
-    val ourPicks = remember(exploreData, query, selectedFilter) {
-        exploreData.ourPicksNovels.filter { matchesFilter(it) }
-    }
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val searchResults by viewModel.searchResults.collectAsState()
+    val isSearching by viewModel.isSearching.collectAsState()
+    val isLoadingMore by viewModel.isLoadingMore.collectAsState()
+    val hasMorePages by viewModel.hasMorePages.collectAsState()
+    val sortBy by viewModel.sortBy.collectAsState()
+    val sortDirection by viewModel.sortDirection.collectAsState()
+    
+    var selectedFilter by remember { mutableStateOf("Latest Updated") }
+    var showFilterMenu by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -143,7 +137,7 @@ private fun ExploreContentSimple(
         ) {
             IconButton(onClick = onBackClick) {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
                     tint = MaterialTheme.colorScheme.onSurface
                 )
@@ -159,96 +153,223 @@ private fun ExploreContentSimple(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Search Box
-        Box(
+        // Search + Filter Row
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(45.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                .border(
-                    1.dp,
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
-                    RoundedCornerShape(10.dp)
-                )
-                .padding(horizontal = 12.dp),
-            contentAlignment = Alignment.CenterStart
+                .height(45.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search icon",
-                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                BasicTextField(
-                    value = query,
-                    onValueChange = { query = it },
-                    singleLine = true,
-                    textStyle = LocalTextStyle.current.copy(
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurface
-                    ),
-                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                    decorationBox = { innerTextField ->
-                        if (query.isEmpty()) {
-                            Text(
-                                "Search...",
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                            )
-                        }
-                        innerTextField()
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
+            // Search Box
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(45.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    .border(
+                        1.dp,
+                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+                        RoundedCornerShape(10.dp)
+                    )
+                    .padding(horizontal = 12.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search icon",
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    BasicTextField(
+                        value = searchQuery,
+                        onValueChange = { viewModel.updateSearchQuery(it) },
+                        singleLine = true,
+                        textStyle = LocalTextStyle.current.copy(
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        ),
+                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                        decorationBox = { innerTextField ->
+                            if (searchQuery.isEmpty()) {
+                                Text(
+                                    "Search by title...",
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                )
+                            }
+                            innerTextField()
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+
+            // Filter button
+            Box {
+                IconButton(onClick = { showFilterMenu = true }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.filter_alt_24px),
+                        contentDescription = "Filter",
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = showFilterMenu,
+                    onDismissRequest = { showFilterMenu = false }
+                ) {
+                    listOf(
+                        "Latest Updated" to ("updatedAt" to "desc"),
+                        "Oldest Updated" to ("updatedAt" to "asc"),
+                        "Latest Created" to ("createdAt" to "desc"),
+                        "Oldest Created" to ("createdAt" to "asc"),
+                        "Highest Rating" to ("rating" to "desc"),
+                        "Lowest Rating" to ("rating" to "asc")
+                    ).forEach { (displayName, sortOptions) ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    displayName,
+                                    fontWeight = if (selectedFilter == displayName)
+                                        FontWeight.Bold else FontWeight.Normal
+                                )
+                            },
+                            onClick = {
+                                selectedFilter = displayName
+                                showFilterMenu = false
+                                viewModel.updateSortOptions(sortOptions.first, sortOptions.second)
+                            }
+                        )
+                    }
+                }
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Recommended Section
-        if (recommended.isNotEmpty()) {
-            Text(
-                text = "Recommended for you",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold
+        // Show search results if searching, otherwise show recommended/our picks
+        if (searchQuery.isNotBlank()) {
+            // Search Results Section
+            if (isSearching) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+            } else if (searchResults.isNotEmpty()) {
+                Text(
+                    text = "Search Results (${searchResults.size})",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 )
-            )
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-                contentPadding = PaddingValues(horizontal = Spacing.xs)
-            ) {
-                items(recommended) { book ->
-                    NovelCard(novel = book, onClick = { onBookClick(book.id) })
+                val listState = rememberLazyListState()
+                
+                // Infinite scroll detection
+                LaunchedEffect(listState, hasMorePages, isLoadingMore) {
+                    snapshotFlow { listState.layoutInfo.visibleItemsInfo }
+                        .collect { visibleItems ->
+                            if (visibleItems.isNotEmpty() && hasMorePages && !isLoadingMore) {
+                                val lastVisibleItem = visibleItems.last()
+                                val totalItems = listState.layoutInfo.totalItemsCount
+                                
+                                // Load more when user scrolls to last 3 items
+                                if (lastVisibleItem.index >= totalItems - 3) {
+                                    viewModel.loadMoreResults()
+                                }
+                            }
+                        }
+                }
+                
+                LazyColumn(
+                    state = listState,
+                    verticalArrangement = Arrangement.spacedBy(Spacing.md),
+                    contentPadding = PaddingValues(vertical = Spacing.sm)
+                ) {
+                    // Group search results into pairs (chunks of 2)
+                    val chunkedResults = searchResults.chunked(2)
+                    items(chunkedResults.size) { chunkIndex ->
+                        val rowNovels = chunkedResults[chunkIndex]
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            // First item in the row
+                            Box(
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                NovelCard(novel = rowNovels[0], onClick = { onBookClick(rowNovels[0].id) })
+                            }
+                            
+                            // Second item in the row (if exists)
+                            if (rowNovels.size > 1) {
+                                Box(
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    NovelCard(novel = rowNovels[1], onClick = { onBookClick(rowNovels[1].id) })
+                                }
+                            } else {
+                                // Empty space to maintain consistent layout
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
+                        }
+                    }
+                    
+                    // Load more indicator
+                    if (isLoadingMore) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            } else {
+                // No search results found
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No books found for \"$searchQuery\"",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(vertical = 32.dp)
+                    )
                 }
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
-        }
-
-        // Our Picks Section
-        if (ourPicks.isNotEmpty()) {
-            Text(
-                text = "Our Picks",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-                contentPadding = PaddingValues(horizontal = Spacing.xs)
+        } else {
+            // Show empty state when not searching
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
             ) {
-                items(ourPicks) { book ->
-                    NovelCard(novel = book, onClick = { onBookClick(book.id) })
-                }
+                Text(
+                    text = "Search for books to discover new novels",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(vertical = 32.dp)
+                )
             }
         }
     }
@@ -317,7 +438,7 @@ private fun ExploreContent(
         ) {
             IconButton(onClick = onBackClick) {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
                     tint = MaterialTheme.colorScheme.onSurface
                 )
@@ -390,7 +511,7 @@ private fun ExploreContent(
             Box {
                 IconButton(onClick = { showFilterMenu = true }) {
                     Icon(
-                        imageVector = Icons.Default.List,
+                        painter = painterResource(id = R.drawable.filter_alt_24px),
                         contentDescription = "Filter",
                         tint = MaterialTheme.colorScheme.onSurface
                     )

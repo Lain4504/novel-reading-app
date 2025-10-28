@@ -17,7 +17,8 @@ import org.springframework.web.bind.annotation.PathVariable
 @Service
 @Transactional
 class ChapterService (
-    private val chapterRepository: ChapterRepository
+    private val chapterRepository: ChapterRepository,
+    private val novelService: NovelService
 ){
     fun createChapter(novelId: String, request: ChapterCreateRequest): ChapterResponseDto {
         val chapter = Chapter(
@@ -80,6 +81,28 @@ class ChapterService (
     fun getChapterById(chapterId: String): ChapterResponseDto {
         val chapter = chapterRepository.findById(chapterId)
             .orElseThrow { Exception("Chapter with ID '$chapterId' not found") }
+        return ChapterResponseDto(
+            id = chapter.id!!,
+            novelId = chapter.novelId,
+            chapterTitle = chapter.chapterTitle,
+            chapterNumber = chapter.chapterNumber,
+            content = chapter.content,
+            wordCount = chapter.wordCount,
+            viewCount = chapter.viewCount,
+            createdAt = chapter.createdAt.toString(),
+            updatedAt = chapter.updatedAt.toString()
+        )
+    }
+
+    fun getChapterByNovelAndChapterId(novelId: String, chapterId: String): ChapterResponseDto {
+        val chapter = chapterRepository.findById(chapterId)
+            .orElseThrow { Exception("Chapter with ID '$chapterId' not found") }
+        
+        // Verify that the chapter belongs to the specified novel
+        if (chapter.novelId != novelId) {
+            throw Exception("Chapter with ID '$chapterId' does not belong to novel '$novelId'")
+        }
+        
         return ChapterResponseDto(
             id = chapter.id!!,
             novelId = chapter.novelId,
@@ -164,6 +187,10 @@ class ChapterService (
         )
 
         val savedChapter = chapterRepository.save(updatedChapter)
+        
+        // Also increment the novel's view count
+        novelService.incrementViewCount(chapter.novelId)
+        
         return ChapterResponseDto(
             id = savedChapter.id!!,
             novelId = savedChapter.novelId,

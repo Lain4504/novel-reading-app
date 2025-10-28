@@ -22,7 +22,11 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
+import com.miraimagiclab.novelreadingapp.R
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.Star
+import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
@@ -161,7 +166,7 @@ fun ReadingScreen(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
                             tint = MaterialTheme.colorScheme.onSurface
                         )
@@ -241,29 +246,24 @@ fun ReadingScreen(
                         .background(Color.Black.copy(alpha = 0.3f))
                         .align(Alignment.Center)
                 ) {
-                    Card(
+                    Column(
                         modifier = Modifier
                             .padding(32.dp)
+                            .background(currentTheme.surfaceColor)
+                            .padding(24.dp)
                             .align(Alignment.Center),
-                        colors = CardDefaults.cardColors(
-                            containerColor = currentTheme.surfaceColor
-                        )
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Column(
-                            modifier = Modifier.padding(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            CircularProgressIndicator(
-                                color = GreenPrimary,
-                                modifier = Modifier.size(32.dp)
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "Loading chapter...",
-                                color = currentTheme.onSurfaceColor,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
+                        CircularProgressIndicator(
+                            color = GreenPrimary,
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Loading chapter...",
+                            color = currentTheme.onSurfaceColor,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                     }
                 }
             }
@@ -374,20 +374,12 @@ fun ReadingScreen(
                             onClick = { handlePreviousChapter() },
                             enabled = readingViewModel.hasPreviousChapter(),
                              colors = ButtonDefaults.buttonColors(
-                                 containerColor = if (readingViewModel.hasPreviousChapter()) Color.Transparent else Color.Transparent,
+                                 containerColor = Color.Transparent,
                                  contentColor = if (readingViewModel.hasPreviousChapter()) 
                                      MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                                  else 
                                      MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                              ),
-                             border = androidx.compose.foundation.BorderStroke(
-                                 1.dp,
-                                 if (readingViewModel.hasPreviousChapter()) 
-                                     MaterialTheme.colorScheme.outline
-                                 else 
-                                     MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-                             ),
-                             shape = RoundedCornerShape(8.dp),
                              modifier = Modifier
                                  .height(48.dp)
                                  .animateContentSize()
@@ -397,7 +389,7 @@ fun ReadingScreen(
                                  horizontalArrangement = Arrangement.spacedBy(8.dp)
                              ) {
                                  Icon(
-                                     imageVector = Icons.Default.ArrowBack,
+                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                      contentDescription = "Previous",
                                      modifier = Modifier.size(18.dp)
                                  )
@@ -421,7 +413,7 @@ fun ReadingScreen(
                                  }
                              ) {
                                  Icon(
-                                     imageVector = Icons.Default.Star,
+                                     painter = painterResource(id = R.drawable.star_24px),
                                      contentDescription = "Novel Details",
                                      tint = MaterialTheme.colorScheme.onSurface,
                                      modifier = Modifier.size(24.dp)
@@ -436,7 +428,7 @@ fun ReadingScreen(
                                  }
                              ) {
                                  Icon(
-                                     imageVector = Icons.Default.List,
+                                     painter = painterResource(id = R.drawable.home_24px),
                                      contentDescription = "Chapter List",
                                      tint = MaterialTheme.colorScheme.onSurface,
                                      modifier = Modifier.size(24.dp)
@@ -467,7 +459,6 @@ fun ReadingScreen(
                                 containerColor = if (readingViewModel.hasNextChapter()) GreenPrimary else GreenPrimary.copy(alpha = 0.3f),
                                 contentColor = Color.White
                             ),
-                             shape = RoundedCornerShape(8.dp),
                              modifier = Modifier
                                  .height(48.dp)
                                  .animateContentSize()
@@ -481,7 +472,7 @@ fun ReadingScreen(
                                      style = MaterialTheme.typography.bodyMedium
                                  )
                                  Icon(
-                                     imageVector = Icons.Default.ArrowBack,
+                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                      contentDescription = "Next",
                                      modifier = Modifier.size(18.dp)
                                  )
@@ -499,14 +490,12 @@ fun ReadingScreen(
                         .background(Color.Black.copy(alpha = 0.5f))
                         .clickable { showChapterList = false }
                 ) {
-                    Card(
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth(0.8f)
                             .fillMaxHeight(0.7f)
-                            .align(Alignment.Center),
-                        colors = CardDefaults.cardColors(
-                            containerColor = currentTheme.surfaceColor
-                        )
+                            .background(currentTheme.surfaceColor)
+                            .align(Alignment.Center)
                     ) {
                         Column(
                             modifier = Modifier.padding(16.dp)

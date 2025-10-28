@@ -10,8 +10,11 @@ import retrofit2.http.*
 
 interface ChapterApiService {
 
-    @GET("chapters/{chapterId}")
-    suspend fun getChapterById(@Path("chapterId") chapterId: String): ApiResponse<ChapterDto>
+    @GET("chapters/novels/{novelId}/{chapterId}")
+    suspend fun getChapterById(
+        @Path("novelId") novelId: String,
+        @Path("chapterId") chapterId: String
+    ): Response<ApiResponse<ChapterDto>>
 
     @GET("chapters/novels/{novelId}")
     suspend fun getChaptersByNovelId(

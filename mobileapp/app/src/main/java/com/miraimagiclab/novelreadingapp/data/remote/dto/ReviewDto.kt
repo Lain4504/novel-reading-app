@@ -9,6 +9,12 @@ data class ReviewDto(
     @SerializedName("userId")
     val userId: String,
     
+    @SerializedName("username")
+    val username: String?,
+    
+    @SerializedName("avatarUrl")
+    val avatarUrl: String?,
+    
     @SerializedName("novelId")
     val novelId: String,
     
