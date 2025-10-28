@@ -1,5 +1,6 @@
 package com.miraimagiclab.novelreadingapp.ui.screens.author
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
@@ -67,7 +68,8 @@ fun AuthorDashboardScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onCreateNovelClick,
-                containerColor = MaterialTheme.colorScheme.primary
+                containerColor = MaterialTheme.colorScheme.primary,
+                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 0.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Create Novel")
             }
@@ -95,8 +97,8 @@ fun AuthorDashboardScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     // Novel cards
                     items(authorNovels) { novel ->
@@ -151,36 +153,40 @@ private fun EmptyNovelsState(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(32.dp),
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
             imageVector = Icons.Default.Info,
             contentDescription = null,
-            modifier = Modifier.size(80.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
+            modifier = Modifier.size(48.dp),
+            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
         )
         
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         
         Text(
             text = "No Novels Yet",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.SemiBold
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Medium
         )
         
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(4.dp))
         
         Text(
             text = "Start your writing journey by creating your first novel",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
         
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(20.dp))
         
-        Button(onClick = onCreateNovelClick) {
+        Button(
+            onClick = onCreateNovelClick,
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+        ) {
             Text("Create Your First Novel")
         }
     }
@@ -192,63 +198,65 @@ private fun NovelCard(
     onClick: () -> Unit,
     onLongClick: () -> Unit
 ) {
-    Card(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
+            )
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick
-            ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            )
+            .padding(12.dp)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Cover image
             AsyncImage(
-                model = novel.coverImage ?: "https://via.placeholder.com/80x120",
+                model = novel.coverImage ?: "https://via.placeholder.com/60x90",
                 contentDescription = "Novel cover",
                 modifier = Modifier
-                    .size(80.dp, 120.dp)
-                    .clip(MaterialTheme.shapes.medium),
+                    .size(60.dp, 90.dp)
+                    .clip(MaterialTheme.shapes.small),
                 contentScale = ContentScale.Crop
             )
             
             // Novel info
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 // Title
                 Text(
                     text = novel.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Medium,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
                 
-                // Status with colored badge
-                StatusChip(status = novel.status)
+                // Status
+                Text(
+                    text = novel.status,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = when (novel.status.uppercase()) {
+                        "PUBLISHED" -> MaterialTheme.colorScheme.primary
+                        "ONGOING" -> MaterialTheme.colorScheme.tertiary
+                        "COMPLETED" -> MaterialTheme.colorScheme.secondary
+                        "DRAFT" -> MaterialTheme.colorScheme.outline
+                        else -> MaterialTheme.colorScheme.outline
+                    }
+                )
                 
                 // Additional info
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Text(
-                        text = "${novel.chapterCount} chapters",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    
-                    Text(
-                        text = "${novel.viewCount} views",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                Text(
+                    text = "${novel.chapterCount} chapters • ${novel.viewCount} views",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
             
             // Arrow indicator
@@ -256,35 +264,12 @@ private fun NovelCard(
                 imageVector = Icons.Default.ArrowForward,
                 contentDescription = "View details",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(16.dp)
             )
         }
     }
 }
 
-@Composable
-private fun StatusChip(status: String) {
-    val statusColor = when (status.uppercase()) {
-        "PUBLISHED" -> MaterialTheme.colorScheme.primary
-        "ONGOING" -> MaterialTheme.colorScheme.tertiary
-        "COMPLETED" -> MaterialTheme.colorScheme.secondary
-        "DRAFT" -> MaterialTheme.colorScheme.outline
-        else -> MaterialTheme.colorScheme.outline
-    }
-    
-    Surface(
-        shape = MaterialTheme.shapes.small,
-        color = statusColor.copy(alpha = 0.1f)
-    ) {
-        Text(
-            text = status,
-            style = MaterialTheme.typography.labelSmall,
-            color = statusColor,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-        )
-    }
-}
 
 @Composable
 private fun DeleteConfirmDialog(
@@ -294,8 +279,19 @@ private fun DeleteConfirmDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Delete Novel?") },
-        text = { Text("Are you sure you want to delete \"$novelTitle\"? This action cannot be undone.") },
+        title = { 
+            Text(
+                "Delete Novel?",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Medium
+            )
+        },
+        text = { 
+            Text(
+                "Are you sure you want to delete \"$novelTitle\"? This action cannot be undone.",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        },
         confirmButton = {
             TextButton(
                 onClick = onConfirm, 

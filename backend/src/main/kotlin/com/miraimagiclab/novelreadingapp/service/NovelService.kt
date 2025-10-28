@@ -103,22 +103,15 @@ class NovelService(
         )
         val pageable: Pageable = PageRequest.of(request.page, request.size, sort)
 
-        // Use title as keyword for search, or combine title and authorName if both provided
-        val keyword = when {
-            request.title != null && request.authorName != null -> "${request.title} ${request.authorName}"
-            request.title != null -> request.title
-            request.authorName != null -> request.authorName
-            else -> null
-        }
-
-        val novels = if (keyword == null && request.categories == null && request.status == null && 
-                        request.minRating == null && request.maxRating == null && request.isR18 == null) {
-            // If no search criteria, use simple findAll
+        val novels = if (request.title == null && request.authorName == null &&
+            request.categories == null && request.status == null &&
+            request.minRating == null && request.maxRating == null &&
+            request.isR18 == null) {
             novelRepository.findAll(pageable)
         } else {
-            // Use complex search with criteria
             novelRepository.findByMultipleCriteria(
-                keyword = keyword,
+                title = request.title,
+                authorName = request.authorName,
                 categories = request.categories,
                 status = request.status,
                 minRating = request.minRating,

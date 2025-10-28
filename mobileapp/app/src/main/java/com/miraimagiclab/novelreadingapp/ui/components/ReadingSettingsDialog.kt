@@ -13,6 +13,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.ui.res.painterResource
+import com.miraimagiclab.novelreadingapp.R
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -55,14 +58,11 @@ fun ReadingSettingsDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        Card(
+        Box(
             modifier = Modifier
                 .fillMaxWidth(0.9f)
-                .fillMaxHeight(0.8f),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
+                .fillMaxHeight(0.8f)
+                .background(MaterialTheme.colorScheme.surface)
         ) {
             Column(
                 modifier = Modifier
@@ -91,13 +91,13 @@ fun ReadingSettingsDialog(
                             }
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Refresh,
+                                painter = painterResource(id = R.drawable.restart_alt_24px),
                                 contentDescription = "Reset to defaults"
                             )
                         }
                         IconButton(onClick = onDismiss) {
                             Icon(
-                                imageVector = Icons.Default.Check,
+                                imageVector = Icons.Default.Done,
                                 contentDescription = "Done"
                             )
                         }
@@ -148,11 +148,11 @@ fun ReadingSettingsDialog(
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
                     
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = ReadingThemes.getThemeByName(readingTheme).backgroundColor
-                        )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(ReadingThemes.getThemeByName(readingTheme).backgroundColor)
+                            .padding(16.dp)
                     ) {
                         Text(
                             text = previewText,
@@ -161,8 +161,7 @@ fun ReadingSettingsDialog(
                                 fontFamily = getFontFamilyByName(fontFamily),
                                 lineHeight = (fontSize * lineSpacing).sp,
                                 fontSize = fontSize.sp
-                            ),
-                            modifier = Modifier.padding(16.dp)
+                            )
                         )
                     }
                     

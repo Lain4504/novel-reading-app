@@ -43,6 +43,9 @@ class SecurityConfig(
                     // Allow public access to read novels (GET requests only)
                     .requestMatchers(HttpMethod.GET, "/novels", "/novels/**").permitAll() // Allow GET requests to novels
                     
+                    // Allow public access to search novels (POST request)
+                    .requestMatchers(HttpMethod.POST, "/novels/search").permitAll() // Allow POST requests to search novels
+                    
                     // Allow public access to read chapters (GET requests only)
                     .requestMatchers(HttpMethod.GET, "/chapters", "/chapters/**").permitAll() // Allow GET requests to chapters
                     

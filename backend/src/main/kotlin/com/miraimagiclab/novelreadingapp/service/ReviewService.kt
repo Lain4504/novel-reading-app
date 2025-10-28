@@ -59,14 +59,16 @@ class ReviewService(
         )
 
         val savedReview = reviewRepository.save(review)
-        return ReviewDto.fromEntity(savedReview)
+        val user = userRepository.findById(request.userId).orElse(null)
+        return ReviewDto.fromEntity(savedReview, user)
     }
 
     @Transactional(readOnly = true)
     fun getReviewById(id: String): ReviewDto {
         val review = reviewRepository.findById(id)
             .orElseThrow { IllegalArgumentException("Review with ID '$id' not found") }
-        return ReviewDto.fromEntity(review)
+        val user = userRepository.findById(review.userId).orElse(null)
+        return ReviewDto.fromEntity(review, user)
     }
 
     @Transactional(readOnly = true)
@@ -74,7 +76,10 @@ class ReviewService(
         val pageable: Pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))
         val reviews = reviewRepository.findByUserId(userId, pageable)
 
-        val reviewDtos = reviews.content.map { ReviewDto.fromEntity(it) }
+        val reviewDtos = reviews.content.map { review ->
+            val user = userRepository.findById(review.userId).orElse(null)
+            ReviewDto.fromEntity(review, user)
+        }
         return PageResponse(
             content = reviewDtos,
             page = reviews.number,
@@ -92,7 +97,10 @@ class ReviewService(
         val pageable: Pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))
         val reviews = reviewRepository.findByNovelId(novelId, pageable)
 
-        val reviewDtos = reviews.content.map { ReviewDto.fromEntity(it) }
+        val reviewDtos = reviews.content.map { review ->
+            val user = userRepository.findById(review.userId).orElse(null)
+            ReviewDto.fromEntity(review, user)
+        }
         return PageResponse(
             content = reviewDtos,
             page = reviews.number,
@@ -108,14 +116,20 @@ class ReviewService(
     @Transactional(readOnly = true)
     fun getReviewByUserAndNovel(userId: String, novelId: String): ReviewDto? {
         val review = reviewRepository.findByUserIdAndNovelId(userId, novelId)
-        return review.map { ReviewDto.fromEntity(it) }.orElse(null)
+        return review.map { reviewEntity ->
+            val user = userRepository.findById(reviewEntity.userId).orElse(null)
+            ReviewDto.fromEntity(reviewEntity, user)
+        }.orElse(null)
     }
 
     @Transactional(readOnly = true)
     fun getTopReviewsByNovel(novelId: String, limit: Int = 10): List<ReviewDto> {
         return reviewRepository.findTop10ByNovelIdOrderByCreatedAtDesc(novelId)
             .take(limit)
-            .map { ReviewDto.fromEntity(it) }
+            .map { review ->
+                val user = userRepository.findById(review.userId).orElse(null)
+                ReviewDto.fromEntity(review, user)
+            }
     }
 
     @Transactional(readOnly = true)

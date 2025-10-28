@@ -48,6 +48,9 @@ class AuthorViewModel @Inject constructor(
     private val _selectedNovel = MutableStateFlow<NovelDto?>(null)
     val selectedNovel: StateFlow<NovelDto?> = _selectedNovel.asStateFlow()
 
+    private val _currentChapter = MutableStateFlow<ChapterDto?>(null)
+    val currentChapter: StateFlow<ChapterDto?> = _currentChapter.asStateFlow()
+
     fun requestAuthorRole(userId: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
@@ -377,6 +380,27 @@ class AuthorViewModel @Inject constructor(
     fun clearSelectedNovel() {
         _selectedNovel.value = null
     }
+
+    fun loadChapterDetail(novelId: String, chapterId: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            authorRepository.getChapterById(novelId, chapterId)
+                .onSuccess { chapter ->
+                    _currentChapter.value = chapter
+                    _uiState.value = _uiState.value.copy(isLoading = false)
+                }
+                .onFailure { error ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = error.message
+                    )
+                }
+        }
+    }
+
+    fun clearCurrentChapter() {
+        _currentChapter.value = null
+    }
 }
 
 data class AuthorUiState(
@@ -387,5 +411,6 @@ data class AuthorUiState(
     val createdNovel: NovelDto? = null,
     val updatedNovel: NovelDto? = null,
     val createdChapter: ChapterDto? = null,
-    val updatedChapter: ChapterDto? = null
+    val updatedChapter: ChapterDto? = null,
+    val currentChapter: ChapterDto? = null
 )

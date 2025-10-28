@@ -59,6 +59,15 @@ class ChapterController(
         return ResponseEntity.ok(ApiResponse.success(chapter, "Chapter retrieved successfully"))
     }
 
+    @GetMapping("/novels/{novelId}/{chapterId}")
+    fun getChapterByNovelAndChapterId(
+        @PathVariable("novelId") novelId: String,
+        @PathVariable("chapterId") chapterId: String
+    ): ResponseEntity<ApiResponse<ChapterResponseDto>> {
+        val chapter = chapterService.getChapterByNovelAndChapterId(novelId, chapterId)
+        return ResponseEntity.ok(ApiResponse.success(chapter, "Chapter retrieved successfully"))
+    }
+
     @GetMapping("/novels/{novelId}")
     fun getChaptersByNovelId(
         @PathVariable("novelId") novelId: String,

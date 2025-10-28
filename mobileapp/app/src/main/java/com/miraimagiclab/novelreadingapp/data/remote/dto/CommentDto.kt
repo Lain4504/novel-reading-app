@@ -12,6 +12,12 @@ data class CommentDto(
     @SerializedName("userId")
     val userId: String,
     
+    @SerializedName("username")
+    val username: String?,
+    
+    @SerializedName("avatarUrl")
+    val avatarUrl: String?,
+    
     @SerializedName("targetType")
     val targetType: String,
     

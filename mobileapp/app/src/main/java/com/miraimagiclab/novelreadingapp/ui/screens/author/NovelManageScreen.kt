@@ -1,13 +1,17 @@
 package com.miraimagiclab.novelreadingapp.ui.screens.author
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.ui.res.painterResource
+import com.miraimagiclab.novelreadingapp.R
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -50,13 +54,11 @@ fun NovelManageScreen(
                 title = { Text("Manage Novel") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
-                    IconButton(onClick = onEditNovelClick) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit Novel")
-                    }
+                    // Removed duplicate edit icon - edit functionality is available in NovelInfoCard below
                 },
                 windowInsets = WindowInsets(0)
             )
@@ -64,7 +66,8 @@ fun NovelManageScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onCreateChapterClick,
-                containerColor = MaterialTheme.colorScheme.primary
+                containerColor = MaterialTheme.colorScheme.primary,
+                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 0.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Create Chapter")
             }
@@ -92,8 +95,8 @@ fun NovelManageScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     // Novel info header
                     item {
@@ -156,36 +159,41 @@ private fun EmptyChaptersState(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(32.dp),
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
             imageVector = Icons.Default.Add,
             contentDescription = null,
-            modifier = Modifier.size(80.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
+            modifier = Modifier.size(48.dp),
+            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
         )
         
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         
         Text(
             text = "No Chapters Yet",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.SemiBold
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Medium
         )
         
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(4.dp))
         
         Text(
             text = "Start writing by creating your first chapter",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
         
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(20.dp))
         
-        Button(onClick = onCreateChapterClick) {
+        Button(
+            onClick = onCreateChapterClick,
+            modifier = Modifier.fillMaxWidth(),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+        ) {
             Text("Create First Chapter")
         }
     }
@@ -196,50 +204,54 @@ private fun NovelInfoCard(
     novelId: String,
     onEditClick: () -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth()
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+            )
+            .padding(16.dp)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
-                model = "https://via.placeholder.com/80x120",
+                model = "https://via.placeholder.com/60x90",
                 contentDescription = "Novel cover",
-                modifier = Modifier.size(80.dp, 120.dp)
+                modifier = Modifier.size(60.dp, 90.dp)
             )
             
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(12.dp))
             
             Column(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
                     text = "Novel Title", // TODO: Load actual novel title
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                
+                Spacer(modifier = Modifier.height(2.dp))
+                
+                Text(
+                    text = "Author Name", // TODO: Load actual author name
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 
                 Spacer(modifier = Modifier.height(4.dp))
                 
-                Text(
-                    text = "Author Name", // TODO: Load actual author name
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = "Status: DRAFT", // TODO: Load actual status
+                        text = "DRAFT",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "Chapters: 0", // TODO: Load actual chapter count
+                        text = "0 chapters",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -247,7 +259,11 @@ private fun NovelInfoCard(
             }
             
             IconButton(onClick = onEditClick) {
-                Icon(Icons.Default.Edit, contentDescription = "Edit Novel")
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit Novel",
+                    tint = MaterialTheme.colorScheme.primary
+                )
             }
         }
     }
@@ -259,59 +275,46 @@ private fun ChapterItem(
     onClick: () -> Unit,
     onLongClick: () -> Unit
 ) {
-    Card(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
+            )
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick
             )
+            .padding(12.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier.weight(1f)
             ) {
                 Text(
                     text = "Chapter ${chapter.chapterNumber}: ${chapter.chapterTitle}",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Medium
                 )
                 
+                Spacer(modifier = Modifier.height(2.dp))
+                
                 Text(
-                    text = "${chapter.wordCount} words",
+                    text = "${chapter.wordCount} words • ${chapter.viewCount} views",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             
-            Spacer(modifier = Modifier.height(8.dp))
-            
             Text(
-                text = chapter.content.take(150) + if (chapter.content.length > 150) "..." else "",
+                text = chapter.createdAt.take(10),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Text(
-                    text = "Views: ${chapter.viewCount}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = "Created: ${chapter.createdAt.take(10)}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
         }
     }
 }
@@ -324,8 +327,19 @@ private fun DeleteChapterDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Delete Chapter?") },
-        text = { Text("Are you sure you want to delete \"$chapterTitle\"? This action cannot be undone.") },
+        title = { 
+            Text(
+                "Delete Chapter?",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Medium
+            )
+        },
+        text = { 
+            Text(
+                "Are you sure you want to delete \"$chapterTitle\"? This action cannot be undone.",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        },
         confirmButton = {
             TextButton(
                 onClick = onConfirm, 

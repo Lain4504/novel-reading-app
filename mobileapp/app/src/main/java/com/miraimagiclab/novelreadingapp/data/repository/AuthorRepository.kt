@@ -224,4 +224,17 @@ class AuthorRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
+    suspend fun getChapterById(novelId: String, chapterId: String): Result<ChapterDto> {
+        return try {
+            val response = chapterApiService.getChapterById(novelId, chapterId)
+            if (response.isSuccessful && response.body()?.success == true) {
+                Result.success(response.body()!!.data!!)
+            } else {
+                Result.failure(Exception(response.message() ?: "Failed to get chapter"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

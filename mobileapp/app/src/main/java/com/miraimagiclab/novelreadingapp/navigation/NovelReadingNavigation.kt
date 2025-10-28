@@ -257,6 +257,9 @@ fun NovelReadingNavigation(
                 novelId = novelId,
                 onBackClick = {
                     navController.popBackStack()
+                },
+                onAvatarClick = { userId ->
+                    navController.navigate(Screen.AccountDetail.createRoute(userId))
                 }
             )
         }

@@ -4,8 +4,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.ui.res.painterResource
+import com.miraimagiclab.novelreadingapp.R
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -32,8 +35,17 @@ fun EditChapterScreen(
 
     // Load chapter data
     LaunchedEffect(chapterId) {
-        // TODO: Load chapter details and populate form
-        // For now, we'll use placeholder values
+        viewModel.loadChapterDetail(novelId, chapterId)
+    }
+    
+    // Update form when chapter data is loaded
+    val currentChapter by viewModel.currentChapter.collectAsState()
+    LaunchedEffect(currentChapter) {
+        currentChapter?.let { chapter ->
+            chapterTitle = chapter.chapterTitle
+            chapterNumber = chapter.chapterNumber
+            content = chapter.content
+        }
     }
 
     LaunchedEffect(uiState.updatedChapter) {
@@ -48,14 +60,17 @@ fun EditChapterScreen(
                 title = { Text("Edit Chapter") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
                     IconButton(
                         onClick = { showDeleteDialog = true }
                     ) {
-                        Icon(Icons.Default.Delete, contentDescription = "Delete")
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete"
+                        )
                     }
                 },
                 windowInsets = WindowInsets(0)
@@ -80,7 +95,8 @@ fun EditChapterScreen(
                 },
                 label = { Text("Chapter Number") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                enabled = !uiState.isLoading
             )
 
             // Chapter Title
@@ -89,7 +105,8 @@ fun EditChapterScreen(
                 onValueChange = { chapterTitle = it },
                 label = { Text("Chapter Title") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                enabled = !uiState.isLoading
             )
 
             // Content
@@ -106,7 +123,8 @@ fun EditChapterScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(400.dp),
-                maxLines = 20
+                maxLines = 20,
+                enabled = !uiState.isLoading
             )
 
             // Word count
@@ -146,16 +164,16 @@ fun EditChapterScreen(
 
             // Error message
             uiState.error?.let { error ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer
-                    )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
                 ) {
                     Text(
                         text = error,
                         modifier = Modifier.padding(16.dp),
-                        color = MaterialTheme.colorScheme.onErrorContainer
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
             }
@@ -165,15 +183,29 @@ fun EditChapterScreen(
         if (showDeleteDialog) {
             AlertDialog(
                 onDismissRequest = { showDeleteDialog = false },
-                title = { Text("Delete Chapter") },
-                text = { Text("Are you sure you want to delete this chapter? This action cannot be undone.") },
+                title = { 
+                    Text(
+                        "Delete Chapter",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                },
+                text = { 
+                    Text(
+                        "Are you sure you want to delete this chapter? This action cannot be undone.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
                 confirmButton = {
                     TextButton(
                         onClick = {
                             viewModel.deleteChapter(chapterId)
                             showDeleteDialog = false
                             onBackClick()
-                        }
+                        },
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        )
                     ) {
                         Text("Delete")
                     }

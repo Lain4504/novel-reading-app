@@ -22,13 +22,13 @@ fun NovelHeader(novelDetail: NovelDetail) {
             .padding(Spacing.lg),
         horizontalArrangement = Arrangement.spacedBy(Spacing.lg)
     ) {
-        // Book Cover
+        // Book Cover - Made larger
         AsyncImage(
             model = novelDetail.novel.coverImage,
             contentDescription = novelDetail.novel.title,
             modifier = Modifier
-                .width(100.dp)
-                .height(140.dp)
+                .width(140.dp)
+                .height(200.dp)
                 .clip(CustomShapes.bookCoverShape),
             contentScale = ContentScale.Crop
         )
@@ -38,53 +38,84 @@ fun NovelHeader(novelDetail: NovelDetail) {
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(Spacing.sm)
         ) {
-            // Author - Primary info
+            // Title - Most prominent
             Text(
-                text = novelDetail.novel.authorName,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
+                text = novelDetail.novel.title,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
             
-            // Status with subtle styling
+            // Author
             Text(
-                text = novelDetail.novel.status.name,
+                text = "by ${novelDetail.novel.authorName}",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+            )
+            
+            // Status
+            Text(
+                text = "Status: ${novelDetail.novel.status.name}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Medium
             )
             
-            // Categories - Secondary info
-            Text(
-                text = novelDetail.novel.categories.joinToString(" • "),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-            
-            // Additional info in smaller text
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(Spacing.md)
-            ) {
+            // Categories
+            if (novelDetail.novel.categories.isNotEmpty()) {
                 Text(
-                    text = "Created: ${novelDetail.novel.createdAt}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                )
-                
-                Text(
-                    text = "•",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
-                )
-                
-                Text(
-                    text = "${novelDetail.novel.wordCount} words",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    text = "Categories: ${novelDetail.novel.categories.joinToString(", ")}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
+            
+            // Word count
+            Text(
+                text = "Word count: ${novelDetail.novel.wordCount}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
+            
+            // Chapter count
+            Text(
+                text = "Chapters: ${novelDetail.novel.chapterCount}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
+            
+            // View count
+            Text(
+                text = "Views: ${novelDetail.novel.viewCount}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
+            
+            // Follow count
+            Text(
+                text = "Follows: ${novelDetail.novel.followCount}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
+            
+            // Rating
+            Text(
+                text = "Rating: ${String.format("%.1f", novelDetail.novel.rating)} (${novelDetail.novel.ratingCount} reviews)",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
+            
+            // Created date
+            Text(
+                text = "Created: ${novelDetail.novel.createdAt}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
         }
     }
 }

@@ -50,6 +50,8 @@ object NovelDetailMapper {
             id = commentDto.id,
             content = commentDto.content,
             userId = commentDto.userId,
+            username = commentDto.username,
+            avatarUrl = commentDto.avatarUrl,
             targetType = commentDto.targetType,
             novelId = commentDto.novelId,
             parentId = commentDto.parentId,
@@ -69,6 +71,8 @@ object NovelDetailMapper {
         return Review(
             id = reviewDto.id,
             userId = reviewDto.userId,
+            username = reviewDto.username,
+            avatarUrl = reviewDto.avatarUrl,
             novelId = reviewDto.novelId,
             overallRating = reviewDto.overallRating,
             writingQuality = reviewDto.writingQuality,

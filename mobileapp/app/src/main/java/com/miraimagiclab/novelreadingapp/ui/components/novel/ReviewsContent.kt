@@ -8,14 +8,22 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Add
+import com.miraimagiclab.novelreadingapp.R
+import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.miraimagiclab.novelreadingapp.domain.model.*
 import com.miraimagiclab.novelreadingapp.ui.theme.Spacing
 
@@ -111,8 +119,7 @@ fun AverageRatingSection(novelDetail: NovelDetail) {
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                shape = RoundedCornerShape(8.dp)
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f)
             )
             .padding(Spacing.md)
     ) {
@@ -141,7 +148,7 @@ fun AverageRatingSection(novelDetail: NovelDetail) {
                 ) {
                     repeat(5) { index ->
                         Icon(
-                            imageVector = Icons.Default.Star,
+                            painter = painterResource(id = R.drawable.star_24px),
                             contentDescription = "Star",
                             tint = Color(0xFFFFD700),
                             modifier = Modifier.size(18.dp)
@@ -227,8 +234,7 @@ fun DetailedReviewItem(review: Review) {
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
-                shape = RoundedCornerShape(8.dp)
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f)
             )
             .padding(Spacing.md)
     ) {
@@ -239,29 +245,48 @@ fun DetailedReviewItem(review: Review) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Avatar placeholder
+                // User avatar (clickable)
                 Box(
                     modifier = Modifier
                         .size(36.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            shape = CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
+                        .clip(CircleShape)
                 ) {
-                    Text(
-                        text = review.userId.take(1).uppercase(),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    if (review.avatarUrl != null && review.avatarUrl.isNotBlank()) {
+                        AsyncImage(
+                            model = review.avatarUrl,
+                            contentDescription = "User avatar",
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop,
+                            error = painterResource(id = android.R.drawable.ic_menu_gallery),
+                            placeholder = painterResource(id = android.R.drawable.ic_menu_gallery)
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                    shape = CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = (review.username ?: review.userId).take(1).uppercase(),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
                 }
                 
                 Spacer(modifier = Modifier.width(Spacing.sm))
                 
                 Column {
                     Text(
-                        text = review.userId,
+                        text = review.username ?: review.userId,
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface
@@ -281,7 +306,7 @@ fun DetailedReviewItem(review: Review) {
             ) {
                 repeat(review.overallRating.toInt()) {
                     Icon(
-                        imageVector = Icons.Default.Star,
+                        painter = painterResource(id = R.drawable.star_24px),
                         contentDescription = "Star",
                         tint = Color(0xFFFFD700),
                         modifier = Modifier.size(14.dp)

@@ -24,20 +24,9 @@ class ChapterRepositoryImpl @Inject constructor(
         if (cachedChapter != null) {
             emit(cachedChapter)
         } else {
-            // If not in cache, fetch from API
-            try {
-                val response = chapterApiService.getChapterById(chapterId)
-                if (response.success && response.data != null) {
-                    val chapter = ChapterMapper.mapDtoToDomain(response.data)
-                    chapterCache[chapterId] = chapter
-                    emit(chapter)
-                } else {
-                    emit(null)
-                }
-            } catch (e: Exception) {
-                // Handle error - emit null for now
-                emit(null)
-            }
+            // If not in cache, we need novelId to fetch from API
+            // For now, emit null - this should be handled by the calling code
+            emit(null)
         }
     }
 
@@ -69,15 +58,8 @@ class ChapterRepositoryImpl @Inject constructor(
     }
 
     override suspend fun refreshChapter(chapterId: String) {
-        try {
-            val response = chapterApiService.getChapterById(chapterId)
-            if (response.success && response.data != null) {
-                val chapter = ChapterMapper.mapDtoToDomain(response.data)
-                chapterCache[chapterId] = chapter
-            }
-        } catch (e: Exception) {
-            // Handle error - could log or throw
-        }
+        // This method needs novelId to work properly
+        // For now, do nothing - should be handled by calling code
     }
 
     override suspend fun refreshChaptersByNovelId(novelId: String) {
@@ -103,19 +85,9 @@ class ChapterRepositoryImpl @Inject constructor(
             return cachedChapter
         }
 
-        // If not in cache, fetch from API
-        return try {
-            val response = chapterApiService.getChapterById(chapterId)
-            if (response.success && response.data != null) {
-                val chapter = ChapterMapper.mapDtoToDomain(response.data)
-                chapterCache[chapterId] = chapter
-                chapter
-            } else {
-                null
-            }
-        } catch (e: Exception) {
-            null
-        }
+        // If not in cache, we need novelId to fetch from API
+        // For now, return null - this should be handled by the calling code
+        return null
     }
 
     override suspend fun getChaptersByNovelIdSync(novelId: String): List<Chapter> {
@@ -154,6 +126,29 @@ class ChapterRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             // Fire-and-forget: don't block UI on failure
             // Could log error for debugging
+        }
+    }
+
+    // New method to get chapter by novelId and chapterId
+    suspend fun getChapterById(novelId: String, chapterId: String): Chapter? {
+        // First try cache
+        val cachedChapter = chapterCache[chapterId]
+        if (cachedChapter != null) {
+            return cachedChapter
+        }
+
+        // If not in cache, fetch from API
+        return try {
+            val response = chapterApiService.getChapterById(novelId, chapterId)
+            if (response.isSuccessful && response.body()?.success == true && response.body()?.data != null) {
+                val chapter = ChapterMapper.mapDtoToDomain(response.body()!!.data!!)
+                chapterCache[chapterId] = chapter
+                chapter
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
         }
     }
 }

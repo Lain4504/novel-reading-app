@@ -6,6 +6,8 @@ import java.time.LocalDateTime
 data class ReviewDto(
     val id: String,
     val userId: String,
+    val username: String?,
+    val avatarUrl: String?,
     val novelId: String,
     val overallRating: Double,
     val writingQuality: Int,
@@ -21,10 +23,12 @@ data class ReviewDto(
     val updatedAt: LocalDateTime
 ) {
     companion object {
-        fun fromEntity(review: Review): ReviewDto {
+        fun fromEntity(review: Review, user: com.miraimagiclab.novelreadingapp.model.User? = null): ReviewDto {
             return ReviewDto(
                 id = review.id ?: "",
                 userId = review.userId,
+                username = user?.username ?: "Unknown User",
+                avatarUrl = user?.avatarUrl,
                 novelId = review.novelId,
                 overallRating = review.overallRating,
                 writingQuality = review.writingQuality,

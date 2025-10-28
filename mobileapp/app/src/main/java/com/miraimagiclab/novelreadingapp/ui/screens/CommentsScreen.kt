@@ -26,6 +26,7 @@ import com.miraimagiclab.novelreadingapp.util.UiState
 fun CommentsScreen(
     novelId: String,
     onBackClick: () -> Unit,
+    onAvatarClick: (String) -> Unit = {},
     viewModel: CommentsViewModel = hiltViewModel()
 ) {
     var commentText by remember { mutableStateOf("") }
@@ -184,6 +185,7 @@ fun CommentsScreen(
                         onHideRepliesClick = { commentId ->
                             viewModel.clearReplies(commentId)
                         },
+                        onAvatarClick = onAvatarClick,
                         showReplies = showReplies,
                         replies = replies,
                         isLoadingReplies = isLoadingReplies
@@ -225,7 +227,7 @@ fun CommentInputBar(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "Replying to @${replyToComment.userId}",
+                            text = "Replying to @${replyToComment.username ?: replyToComment.userId}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

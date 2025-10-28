@@ -143,7 +143,7 @@ private fun ErrorContent(
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Button(onClick = onRetry) {
+            TextButton(onClick = onRetry) {
                 Text("Retry")
             }
         }
@@ -180,114 +180,86 @@ private fun AccountDetailContent(
 
 @Composable
 private fun UserHeaderSection(user: UserDto) {
-    Card(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        // Avatar and Basic Info
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Background Image (if available)
-            if (!user.backgroundUrl.isNullOrEmpty()) {
-                AsyncImage(
-                    model = user.backgroundUrl,
-                    contentDescription = "Background",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp)
-                        .clip(RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.Crop
-                )
-            }
-
-            // Avatar and Basic Info
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            AsyncImage(
+                model = user.avatarUrl ?: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200",
+                contentDescription = "Profile avatar",
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(CircleShape)
+            )
+            
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                AsyncImage(
-                    model = user.avatarUrl ?: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200",
-                    contentDescription = "Profile avatar",
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(CircleShape)
+                Text(
+                    text = user.displayName ?: user.username,
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Bold
+                    )
                 )
                 
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                // Role badges - simplified
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(
-                        text = user.displayName ?: user.username,
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            fontWeight = FontWeight.Bold
+                    user.roles.forEach { role ->
+                        Text(
+                            text = role,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                    )
-                    
-                    // Role badges
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        user.roles.forEach { role ->
-                            Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = when (role) {
-                                    "AUTHOR" -> MaterialTheme.colorScheme.primary
-                                    "ADMIN" -> MaterialTheme.colorScheme.error
-                                    else -> MaterialTheme.colorScheme.secondary
-                                }
-                            ) {
-                                Text(
-                                    text = role,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = Color.White,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                )
-                            }
-                        }
                     }
                 }
             }
+        }
 
-            // Bio
-            if (!user.bio.isNullOrEmpty()) {
-                Text(
-                    text = user.bio,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+        // Bio
+        if (!user.bio.isNullOrEmpty()) {
+            Text(
+                text = user.bio,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
 
-            // Additional Info
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                InfoRow(
-                    icon = Icons.Default.Email,
-                    label = "Email",
-                    value = user.email
-                )
-                
-                InfoRow(
-                    icon = Icons.Default.Person,
-                    label = "Username",
-                    value = user.username
-                )
-                
-                InfoRow(
-                    icon = Icons.Default.Star,
-                    label = "Joined",
-                    value = formatDate(user.createdAt)
-                )
-                
-                InfoRow(
-                    icon = Icons.Default.Info,
-                    label = "Status",
-                    value = user.status
-                )
-            }
+        // Additional Info - simplified
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            InfoRow(
+                icon = Icons.Default.Email,
+                label = "Email",
+                value = user.email
+            )
+            
+            InfoRow(
+                icon = Icons.Default.Person,
+                label = "Username",
+                value = user.username
+            )
+            
+            InfoRow(
+                icon = Icons.Default.Star,
+                label = "Joined",
+                value = formatDate(user.createdAt)
+            )
+            
+            InfoRow(
+                icon = Icons.Default.Info,
+                label = "Status",
+                value = user.status
+            )
         }
     }
 }
@@ -305,14 +277,12 @@ private fun InfoRow(
         Icon(
             imageVector = icon,
             contentDescription = label,
-            modifier = Modifier.size(20.dp),
+            modifier = Modifier.size(18.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyMedium.copy(
-                fontWeight = FontWeight.Medium
-            ),
+            style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.width(80.dp)
         )
         Text(
@@ -333,9 +303,7 @@ private fun AuthorNovelsSection(
     ) {
         Text(
             text = "Novels by this author",
-            style = MaterialTheme.typography.headlineSmall.copy(
-                fontWeight = FontWeight.Bold
-            ),
+            style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
@@ -361,33 +329,28 @@ private fun AuthorNovelsSection(
                 }
             }
             is UiState.Error -> {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer
-                    )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = "Error",
-                            tint = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                        Text(
-                            text = "Failed to load novels",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                        Text(
-                            text = state.message,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Error",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                    Text(
+                        text = "Failed to load novels",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Text(
+                        text = state.message,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
             is UiState.Success -> {
@@ -395,8 +358,7 @@ private fun AuthorNovelsSection(
                 if (novels.isEmpty()) {
                     EmptyNovelsState()
                 } else {
-                    // Use a regular Column with Row layout instead of LazyVerticalGrid
-                    // to avoid nested scrollable components
+                    // Use LazyVerticalGrid for better performance and consistency
                     val chunkedNovels = novels.chunked(2)
                     Column(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -434,35 +396,30 @@ private fun AuthorNovelsSection(
 
 @Composable
 private fun EmptyNovelsState() {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Star,
-                contentDescription = "No novels",
-                modifier = Modifier.size(48.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = "No novels published yet",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = "This author hasn't published any novels yet.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
-        }
+        Icon(
+            imageVector = Icons.Default.Star,
+            contentDescription = "No novels",
+            modifier = Modifier.size(48.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = "No novels published yet",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = "This author hasn't published any novels yet.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
     }
 }
 

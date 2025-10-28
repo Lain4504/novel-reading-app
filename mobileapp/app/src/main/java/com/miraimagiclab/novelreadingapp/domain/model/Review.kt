@@ -3,6 +3,8 @@ package com.miraimagiclab.novelreadingapp.domain.model
 data class Review(
     val id: String,
     val userId: String,
+    val username: String? = null,
+    val avatarUrl: String? = null,
     val novelId: String,
     val overallRating: Double,
     val writingQuality: Int,
