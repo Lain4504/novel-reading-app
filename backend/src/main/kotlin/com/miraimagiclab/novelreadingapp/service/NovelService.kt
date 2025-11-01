@@ -103,22 +103,36 @@ class NovelService(
         )
         val pageable: Pageable = PageRequest.of(request.page, request.size, sort)
 
-        val novels = if (request.title == null && request.authorName == null &&
-            request.categories == null && request.status == null &&
-            request.minRating == null && request.maxRating == null &&
-            request.isR18 == null) {
-            novelRepository.findAll(pageable)
-        } else {
-            novelRepository.findByMultipleCriteria(
-                title = request.title,
-                authorName = request.authorName,
-                categories = request.categories,
-                status = request.status,
-                minRating = request.minRating,
-                maxRating = request.maxRating,
-                isR18 = request.isR18,
-                pageable = pageable
-            )
+        // Use simple repository methods when possible for better performance
+        val novels = when {
+            // Only title search
+            request.title != null && request.authorName == null && request.categories == null &&
+            request.status == null && request.minRating == null && request.maxRating == null && request.isR18 == null -> {
+                novelRepository.findByTitleContainingIgnoreCase(request.title, pageable)
+            }
+            // Only author search
+            request.title == null && request.authorName != null && request.categories == null &&
+            request.status == null && request.minRating == null && request.maxRating == null && request.isR18 == null -> {
+                novelRepository.findByAuthorNameContainingIgnoreCase(request.authorName, pageable)
+            }
+            // No filters - get all
+            request.title == null && request.authorName == null && request.categories == null &&
+            request.status == null && request.minRating == null && request.maxRating == null && request.isR18 == null -> {
+                novelRepository.findAll(pageable)
+            }
+            // Complex search with multiple criteria
+            else -> {
+                novelRepository.findByMultipleCriteria(
+                    title = request.title,
+                    authorName = request.authorName,
+                    categories = request.categories,
+                    status = request.status,
+                    minRating = request.minRating,
+                    maxRating = request.maxRating,
+                    isR18 = request.isR18,
+                    pageable = pageable
+                )
+            }
         }
 
         val novelDtos = novels.content.map { NovelDto.fromEntity(it) }

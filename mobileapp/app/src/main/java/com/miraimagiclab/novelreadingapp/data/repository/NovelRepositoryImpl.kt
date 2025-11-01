@@ -185,7 +185,7 @@ class NovelRepositoryImpl @Inject constructor(
     ): PageResponse<Novel> {
         return try {
             val request = NovelSearchRequest(
-                title = query,
+                title = if (query.isBlank()) null else query,
                 page = page,
                 size = size,
                 sortBy = sortBy,
