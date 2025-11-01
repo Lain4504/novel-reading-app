@@ -51,83 +51,76 @@ fun ExploreScreen(
     onBackClick: () -> Unit = {},
     viewModel: ExploreViewModel = hiltViewModel()
 ) {
-    val scrollState = rememberScrollState()
-    val uiState by viewModel.uiState.collectAsState()
-    val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val exploreState by viewModel.exploreState.collectAsState()
     
     val pullRefreshState = rememberPullRefreshState(
-        refreshing = isRefreshing,
+        refreshing = exploreState.isRefreshing,
         onRefresh = { viewModel.refreshData() }
     )
+    
+    // Show snackbar for errors
+    exploreState.errorMessage?.let { errorMessage ->
+        LaunchedEffect(errorMessage) {
+            // Error will be shown in the UI
+        }
+    }
     
     Box(
         modifier = Modifier
             .fillMaxSize()
             .pullRefresh(pullRefreshState)
     ) {
-        when (val currentState = uiState) {
-            is UiState.Idle, is UiState.Loading -> {
-                // Show loading state
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
-            is UiState.Error -> {
-                ErrorState(
-                    message = currentState.message,
-                    onRetry = { viewModel.refreshData() },
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-            is UiState.Success -> {
-                ExploreContentSimple(
-                    exploreData = currentState.data,
-                    onBookClick = onBookClick,
-                    onBackClick = onBackClick,
-                    scrollState = scrollState,
-                    viewModel = viewModel
-                )
-            }
+        // Show error state only for initial load errors when there are no novels
+        if (exploreState.errorMessage != null && exploreState.novels.isEmpty() && !exploreState.isLoading) {
+            ErrorState(
+                message = exploreState.errorMessage!!,
+                onRetry = { 
+                    if (exploreState.searchQuery.isBlank()) {
+                        viewModel.refreshData()
+                    } else {
+                        viewModel.updateSearchQuery(exploreState.searchQuery)
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            // Main content
+            ExploreContent(
+                state = exploreState,
+                onBookClick = onBookClick,
+                onBackClick = onBackClick,
+                onSearchQueryChange = { viewModel.updateSearchQuery(it) },
+                onLoadMore = { viewModel.loadMoreResults() },
+                onUpdateSort = { sortBy, direction -> viewModel.updateSortOptions(sortBy, direction) }
+            )
         }
         
         PullRefreshIndicator(
-            refreshing = isRefreshing,
+            refreshing = exploreState.isRefreshing,
             state = pullRefreshState,
             modifier = Modifier.align(Alignment.TopCenter)
         )
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ExploreContentSimple(
-    exploreData: com.miraimagiclab.novelreadingapp.ui.viewmodel.ExploreUiState,
+private fun ExploreContent(
+    state: com.miraimagiclab.novelreadingapp.ui.viewmodel.ExploreState,
     onBookClick: (String) -> Unit,
     onBackClick: () -> Unit,
-    scrollState: androidx.compose.foundation.ScrollState,
-    viewModel: ExploreViewModel
+    onSearchQueryChange: (String) -> Unit,
+    onLoadMore: () -> Unit,
+    onUpdateSort: (String, String) -> Unit
 ) {
-    val searchQuery by viewModel.searchQuery.collectAsState()
-    val searchResults by viewModel.searchResults.collectAsState()
-    val isSearching by viewModel.isSearching.collectAsState()
-    val isLoadingMore by viewModel.isLoadingMore.collectAsState()
-    val hasMorePages by viewModel.hasMorePages.collectAsState()
-    val sortBy by viewModel.sortBy.collectAsState()
-    val sortDirection by viewModel.sortDirection.collectAsState()
-    
     var selectedFilter by remember { mutableStateOf("Latest Updated") }
     var showFilterMenu by remember { mutableStateOf(false) }
-
+    val listState = rememberLazyListState()
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(scrollState)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-
         // Top bar with Back + Title
         Row(
             modifier = Modifier
@@ -184,8 +177,8 @@ private fun ExploreContentSimple(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     BasicTextField(
-                        value = searchQuery,
-                        onValueChange = { viewModel.updateSearchQuery(it) },
+                        value = state.searchQuery,
+                        onValueChange = onSearchQueryChange,
                         singleLine = true,
                         textStyle = LocalTextStyle.current.copy(
                             fontSize = 14.sp,
@@ -193,7 +186,7 @@ private fun ExploreContentSimple(
                         ),
                         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                         decorationBox = { innerTextField ->
-                            if (searchQuery.isEmpty()) {
+                            if (state.searchQuery.isEmpty()) {
                                 Text(
                                     "Search by title...",
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
@@ -239,7 +232,7 @@ private fun ExploreContentSimple(
                             onClick = {
                                 selectedFilter = displayName
                                 showFilterMenu = false
-                                viewModel.updateSortOptions(sortOptions.first, sortOptions.second)
+                                onUpdateSort(sortOptions.first, sortOptions.second)
                             }
                         )
                     }
@@ -249,10 +242,10 @@ private fun ExploreContentSimple(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Show search results if searching, otherwise show recommended/our picks
-        if (searchQuery.isNotBlank()) {
-            // Search Results Section
-            if (isSearching) {
+        // Show novels or loading/empty state
+        when {
+            state.isLoading -> {
+                // Loading state
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
@@ -262,30 +255,18 @@ private fun ExploreContentSimple(
                         modifier = Modifier.size(32.dp)
                     )
                 }
-            } else if (searchResults.isNotEmpty()) {
-                Text(
-                    text = "Search Results (${searchResults.size})",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                val listState = rememberLazyListState()
-                
-                // Infinite scroll detection
-                LaunchedEffect(listState, hasMorePages, isLoadingMore) {
+            }
+            state.novels.isNotEmpty() -> {
+                // Show novels list with infinite scroll
+                LaunchedEffect(listState, state.hasMorePages, state.isLoadingMore) {
                     snapshotFlow { listState.layoutInfo.visibleItemsInfo }
                         .collect { visibleItems ->
-                            if (visibleItems.isNotEmpty() && hasMorePages && !isLoadingMore) {
+                            if (visibleItems.isNotEmpty() && state.hasMorePages && !state.isLoadingMore) {
                                 val lastVisibleItem = visibleItems.last()
                                 val totalItems = listState.layoutInfo.totalItemsCount
                                 
-                                // Load more when user scrolls to last 3 items
                                 if (lastVisibleItem.index >= totalItems - 3) {
-                                    viewModel.loadMoreResults()
+                                    onLoadMore()
                                 }
                             }
                         }
@@ -296,37 +277,28 @@ private fun ExploreContentSimple(
                     verticalArrangement = Arrangement.spacedBy(Spacing.md),
                     contentPadding = PaddingValues(vertical = Spacing.sm)
                 ) {
-                    // Group search results into pairs (chunks of 2)
-                    val chunkedResults = searchResults.chunked(2)
+                    val chunkedResults = state.novels.chunked(2)
                     items(chunkedResults.size) { chunkIndex ->
                         val rowNovels = chunkedResults[chunkIndex]
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(Spacing.md),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            // First item in the row
-                            Box(
-                                modifier = Modifier.weight(1f)
-                            ) {
+                            Box(modifier = Modifier.weight(1f)) {
                                 NovelCard(novel = rowNovels[0], onClick = { onBookClick(rowNovels[0].id) })
                             }
                             
-                            // Second item in the row (if exists)
                             if (rowNovels.size > 1) {
-                                Box(
-                                    modifier = Modifier.weight(1f)
-                                ) {
+                                Box(modifier = Modifier.weight(1f)) {
                                     NovelCard(novel = rowNovels[1], onClick = { onBookClick(rowNovels[1].id) })
                                 }
                             } else {
-                                // Empty space to maintain consistent layout
                                 Spacer(modifier = Modifier.weight(1f))
                             }
                         }
                     }
                     
-                    // Load more indicator
-                    if (isLoadingMore) {
+                    if (state.isLoadingMore) {
                         item {
                             Box(
                                 modifier = Modifier
@@ -342,14 +314,15 @@ private fun ExploreContentSimple(
                         }
                     }
                 }
-            } else {
-                // No search results found
+            }
+            state.searchQuery.isNotBlank() -> {
+                // No search results
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No books found for \"$searchQuery\"",
+                        text = "No books found for \"${state.searchQuery}\"",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                         textAlign = TextAlign.Center,
@@ -357,273 +330,20 @@ private fun ExploreContentSimple(
                     )
                 }
             }
-        } else {
-            // Show empty state when not searching
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Search for books to discover new novels",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(vertical = 32.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ExploreContent(
-    exploreData: com.miraimagiclab.novelreadingapp.ui.viewmodel.ExploreUiState,
-    searchQuery: String,
-    searchResults: List<Novel>,
-    isSearching: Boolean,
-    isLoadingMore: Boolean,
-    hasMorePages: Boolean,
-    onBookClick: (String) -> Unit,
-    onBackClick: () -> Unit,
-    onSearchQueryChange: (String) -> Unit,
-    onLoadMore: () -> Unit,
-    onUpdateSort: (String, String) -> Unit,
-    scrollState: androidx.compose.foundation.ScrollState
-) {
-    var showFilterMenu by remember { mutableStateOf(false) }
-    var selectedFilter by remember { mutableStateOf("Latest Updated") }
-    
-    val listState = rememberLazyListState()
-    
-    // Apply filter function
-    fun applyFilter(filterOption: String, onUpdateSort: (String, String) -> Unit) {
-        val (sortBy, sortDirection) = when (filterOption) {
-            "Latest Updated" -> "updatedAt" to "desc"
-            "Oldest Updated" -> "updatedAt" to "asc"
-            "Latest Created" -> "createdAt" to "desc"
-            "Oldest Created" -> "createdAt" to "asc"
-            else -> "updatedAt" to "desc"
-        }
-        onUpdateSort(sortBy, sortDirection)
-    }
-    
-    // Infinite scroll detection
-    LaunchedEffect(listState, hasMorePages, isLoadingMore) {
-        snapshotFlow { listState.layoutInfo.visibleItemsInfo }
-            .collect { visibleItems ->
-                if (visibleItems.isNotEmpty() && hasMorePages && !isLoadingMore) {
-                    val lastVisibleItem = visibleItems.last()
-                    val totalItems = listState.layoutInfo.totalItemsCount
-                    
-                    // Load more when user scrolls to last 3 items
-                    if (lastVisibleItem.index >= totalItems - 3) {
-                        onLoadMore()
-                    }
-                }
-            }
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-
-        // 🔙 Top bar with Back + Title
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
-            }
-            Text(
-                text = "Explore Books",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // 🔍 Search + Filter Row
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(45.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            // Custom Search Box
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(45.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                    .border(
-                        1.dp,
-                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
-                        RoundedCornerShape(10.dp)
-                    )
-                    .padding(horizontal = 12.dp),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Search icon",
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    BasicTextField(
-                        value = searchQuery,
-                        onValueChange = onSearchQueryChange,
-                        singleLine = true,
-                        textStyle = LocalTextStyle.current.copy(
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurface
-                        ),
-                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                        decorationBox = { innerTextField ->
-                            if (searchQuery.isEmpty()) {
-                                Text(
-                                    "Search...",
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                                )
-                            }
-                            innerTextField()
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
-
-            // Filter button
-            Box {
-                IconButton(onClick = { showFilterMenu = true }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.filter_alt_24px),
-                        contentDescription = "Filter",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                DropdownMenu(
-                    expanded = showFilterMenu,
-                    onDismissRequest = { showFilterMenu = false }
+            else -> {
+                // Empty state when no novels and no search query
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    listOf("Latest Updated", "Oldest Updated", "Latest Created", "Oldest Created").forEach { option ->
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    option,
-                                    fontWeight = if (selectedFilter == option)
-                                        FontWeight.Bold else FontWeight.Normal
-                                )
-                            },
-                            onClick = {
-                                selectedFilter = option
-                                showFilterMenu = false
-                                // Apply filter based on selection
-                                applyFilter(option, onUpdateSort)
-                            }
-                        )
-                    }
+                    Text(
+                        text = "No novels available",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(vertical = 32.dp)
+                    )
                 }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Show all novels with search functionality
-        if (isSearching) {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-        } else if (searchResults.isNotEmpty()) {
-            LazyColumn(
-                state = listState,
-                verticalArrangement = Arrangement.spacedBy(Spacing.md),
-                contentPadding = PaddingValues(vertical = Spacing.sm)
-            ) {
-                // Group search results into pairs (chunks of 2)
-                val chunkedResults = searchResults.chunked(2)
-                items(chunkedResults.size) { chunkIndex ->
-                    val rowNovels = chunkedResults[chunkIndex]
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        // First item in the row
-                        Box(
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            NovelCard(novel = rowNovels[0], onClick = { onBookClick(rowNovels[0].id) })
-                        }
-                        
-                        // Second item in the row (if exists)
-                        if (rowNovels.size > 1) {
-                            Box(
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                NovelCard(novel = rowNovels[1], onClick = { onBookClick(rowNovels[1].id) })
-                            }
-                        } else {
-                            // Empty space to maintain consistent layout
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
-                    }
-                }
-                
-                // Load more indicator
-                if (isLoadingMore) {
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                    }
-                }
-            }
-        } else {
-            // No results found
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = if (searchQuery.isNotBlank()) {
-                        "No books found for \"$searchQuery\""
-                    } else {
-                        "No books available"
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(vertical = 32.dp)
-                )
             }
         }
     }
