@@ -94,4 +94,13 @@ class UserNovelInteractionController(
         val wishlist = userNovelInteractionService.getUserWishlist(userId)
         return ResponseEntity.ok(ApiResponse.success(wishlist, "User wishlist retrieved successfully"))
     }
+
+    @DeleteMapping("/users/{userId}/novels/{novelId}")
+    fun deleteUserNovelInteraction(
+        @PathVariable userId: String,
+        @PathVariable novelId: String
+    ): ResponseEntity<ApiResponse<Unit>> {
+        userNovelInteractionService.deleteUserNovelInteraction(userId, novelId)
+        return ResponseEntity.ok(ApiResponse.success(Unit, "User novel interaction deleted successfully"))
+    }
 }

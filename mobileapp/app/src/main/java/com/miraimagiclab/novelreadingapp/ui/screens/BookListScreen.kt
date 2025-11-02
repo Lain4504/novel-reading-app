@@ -1,50 +1,32 @@
 package com.miraimagiclab.novelreadingapp.ui.screens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.miraimagiclab.novelreadingapp.data.auth.SessionManager
 import com.miraimagiclab.novelreadingapp.domain.model.Novel
-import com.miraimagiclab.novelreadingapp.domain.model.NovelStatus
 import com.miraimagiclab.novelreadingapp.ui.components.ErrorState
 import com.miraimagiclab.novelreadingapp.ui.components.NovelCard
-import com.miraimagiclab.novelreadingapp.ui.components.StatsCard
 import com.miraimagiclab.novelreadingapp.ui.theme.GreenPrimary
 import com.miraimagiclab.novelreadingapp.ui.viewmodel.BookListViewModel
 import com.miraimagiclab.novelreadingapp.util.UiState
@@ -200,11 +182,8 @@ private fun BookListContent(
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabs = listOf("Reading History", "Following")
     
-    // Drag and Drop state
-    var draggedNovelId by remember { mutableStateOf<String?>(null) }
-    var deleteButtonPosition by remember { mutableStateOf(Offset.Zero) }
-    var deleteButtonSize by remember { mutableStateOf(IntSize.Zero) }
-    var isHoveringDeleteButton by remember { mutableStateOf(false) }
+    // Dropdown menu state - tracks which novel's dropdown is shown
+    var showDeleteDropdownForNovelId by remember { mutableStateOf<String?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var novelToDelete by remember { mutableStateOf<String?>(null) }
 
@@ -254,53 +233,28 @@ private fun BookListContent(
             .fillMaxSize()
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        // Top bar with Delete button
+        // Top bar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                Text(
-                    text = "My Library",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
+            IconButton(onClick = onBackClick) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
-            
-            // Delete Button (Drop Zone)
-            Box(
-                modifier = Modifier
-                    .onGloballyPositioned { coordinates ->
-                        deleteButtonPosition = coordinates.positionInRoot()
-                        deleteButtonSize = coordinates.size
-                    }
-            ) {
-                IconButton(
-                    onClick = { /* No direct click action */ }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete",
-                        tint = if (isHoveringDeleteButton) 
-                            MaterialTheme.colorScheme.error 
-                        else 
-                            androidx.compose.ui.graphics.Color(0xFF118B50)
-                    )
-                }
-            }
+
+            Text(
+                text = "My Library",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            )
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -333,46 +287,52 @@ private fun BookListContent(
             items(currentNovels, key = { it.id }) { book ->
                 Box(
                     modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(0.7f)
                         .pointerInput(book.id) {
-                            detectDragGesturesAfterLongPress(
-                                onDragStart = {
-                                    draggedNovelId = book.id
-                                },
-                                onDrag = { change, dragAmount ->
-                                    change.consume()
-                                    val currentPosition = change.position
-                                    
-                                    // Check if hovering over delete button
-                                    val isOver = currentPosition.x + deleteButtonPosition.x in 
-                                        deleteButtonPosition.x..(deleteButtonPosition.x + deleteButtonSize.width) &&
-                                        currentPosition.y in 
-                                        deleteButtonPosition.y..(deleteButtonPosition.y + deleteButtonSize.height)
-                                    
-                                    isHoveringDeleteButton = isOver
-                                },
-                                onDragEnd = {
-                                    if (isHoveringDeleteButton && draggedNovelId != null) {
-                                        novelToDelete = draggedNovelId
-                                        showDeleteDialog = true
-                                    }
-                                    draggedNovelId = null
-                                    isHoveringDeleteButton = false
-                                },
-                                onDragCancel = {
-                                    draggedNovelId = null
-                                    isHoveringDeleteButton = false
+                            detectTapGestures(
+                                onTap = { onBookClick(book.id) },
+                                onLongPress = {
+                                    showDeleteDropdownForNovelId = book.id
                                 }
                             )
                         }
                 ) {
                     NovelCard(
                         novel = book,
-                        onClick = { 
-                            if (draggedNovelId == null) {
-                                onBookClick(book.id) 
-                            }
-                        }
+                        onClick = { onBookClick(book.id) },
+                        enableInternalClick = false, // tắt clickable bên trong
+                        modifier = Modifier.matchParentSize()
                     )
+
+                    DropdownMenu(
+                        expanded = showDeleteDropdownForNovelId == book.id,
+                        onDismissRequest = { showDeleteDropdownForNovelId = null }
+                    ) {
+                        DropdownMenuItem(
+                            text = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                    Text(
+                                        text = "Xóa khỏi danh sách",
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            },
+                            onClick = {
+                                showDeleteDropdownForNovelId = null
+                                novelToDelete = book.id
+                                showDeleteDialog = true
+                            }
+                        )
+                    }
                 }
             }
         }
