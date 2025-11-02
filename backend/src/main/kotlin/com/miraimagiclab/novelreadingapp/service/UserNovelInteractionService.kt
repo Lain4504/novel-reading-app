@@ -167,4 +167,8 @@ class UserNovelInteractionService(
         return userNovelInteractionRepository.findByUserIdAndInWishlist(userId, true)
             .map { UserNovelInteractionDto.fromEntity(it) }
     }
+
+    fun deleteUserNovelInteraction(userId: String, novelId: String) {
+        userNovelInteractionRepository.deleteByUserIdAndNovelId(userId, novelId)
+    }
 }

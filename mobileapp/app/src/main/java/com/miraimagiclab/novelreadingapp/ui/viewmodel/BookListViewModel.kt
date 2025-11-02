@@ -137,11 +137,14 @@ class BookListViewModel @Inject constructor(
                 
                 userNovelInteractionRepository.deleteUserNovelInteraction(userId, novelId)
                 
-                // Refresh the list after deletion
-                loadAllData()
+                // Refresh the list after deletion - use refreshData to avoid full screen loading
+                refreshData()
             } catch (e: Exception) {
-                // Handle error silently or show error message
+                // Log error and refresh anyway to ensure UI is in sync
+                println("Error deleting novel: ${e.message}")
                 e.printStackTrace()
+                // Still refresh to ensure UI is up to date
+                refreshData()
             }
         }
     }
