@@ -46,6 +46,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import android.app.DownloadManager
+import android.content.Context
+import android.net.Uri
+import android.os.Environment
+import androidx.compose.ui.platform.LocalContext
 import com.miraimagiclab.novelreadingapp.ui.components.ReadingSettingsDialog
 import com.miraimagiclab.novelreadingapp.ui.theme.GreenPrimary
 import com.miraimagiclab.novelreadingapp.ui.theme.ReadingThemes
@@ -79,6 +84,8 @@ fun ReadingScreen(
     // Collect auth state to get real user ID
     val authState by sessionManager.authState.collectAsState()
     val userId = authState.userId ?: ""
+    val accessToken = authState.accessToken
+    val isAdmin = authState.roles.contains("ADMIN")
 
     // Collect reading settings
     val fontFamily by viewModel.fontFamily.collectAsState()
@@ -96,6 +103,7 @@ fun ReadingScreen(
     val chapterListState by readingViewModel.chapterList.collectAsState()
     val isLoading by readingViewModel.isLoading.collectAsState()
     val error by readingViewModel.error.collectAsState()
+    val context = LocalContext.current
     
     // Load chapter data when screen is first displayed
     LaunchedEffect(novelId, chapterId) {
@@ -448,6 +456,46 @@ fun ReadingScreen(
                                      tint = MaterialTheme.colorScheme.onSurface,
                                      modifier = Modifier.size(24.dp)
                                  )
+                             }
+
+                             if (isAdmin) {
+                                 // Export PDF Icon
+                                 IconButton(
+                                     onClick = {
+                                         hapticFeedback.light()
+                                         val chapterTitle = when (val state = currentChapterState) {
+                                             is UiState.Success -> state.data.chapterTitle
+                                             else -> "chapter-$chapterId"
+                                         }
+                                         val safeName = chapterTitle.replace(Regex("[^\\p{L}\\p{N} _-]"), "")
+                                             .ifBlank { "chapter-$chapterId" }
+                                         val fileName = "$safeName.pdf"
+                                         // BASE_URL already includes /api/, so do not add "api" again
+                                         val url = com.miraimagiclab.novelreadingapp.util.Constants.BASE_URL + "chapters/" + chapterId + "/export-pdf"
+                                         try {
+                                             val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                                             val request = DownloadManager.Request(Uri.parse(url))
+                                                 .setTitle(fileName)
+                                                 .setDescription("Exporting chapter as PDF")
+                                                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                                             // Attach JWT so only ADMIN can download
+                                             if (!accessToken.isNullOrBlank()) {
+                                                 request.addRequestHeader("Authorization", "Bearer ${accessToken}")
+                                             }
+                                             try {
+                                                 request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
+                                             } catch (_: Exception) { }
+                                             dm.enqueue(request)
+                                         } catch (_: Exception) { }
+                                     }
+                                 ) {
+                                     Icon(
+                                         imageVector = Icons.Default.List,
+                                         contentDescription = "Export PDF",
+                                         tint = MaterialTheme.colorScheme.onSurface,
+                                         modifier = Modifier.size(24.dp)
+                                     )
+                                 }
                              }
                          }
 

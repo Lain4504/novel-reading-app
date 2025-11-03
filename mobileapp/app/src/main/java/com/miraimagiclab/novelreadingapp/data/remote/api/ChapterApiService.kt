@@ -6,6 +6,8 @@ import com.miraimagiclab.novelreadingapp.data.remote.dto.PageResponse
 import com.miraimagiclab.novelreadingapp.data.remote.dto.ChapterCreateRequest
 import com.miraimagiclab.novelreadingapp.data.remote.dto.ChapterUpdateRequest
 import retrofit2.Response
+import okhttp3.ResponseBody
+import retrofit2.http.Streaming
 import retrofit2.http.*
 
 interface ChapterApiService {
@@ -43,6 +45,10 @@ interface ChapterApiService {
 
     @POST("chapters/{chapterId}/increment-view")
     suspend fun incrementChapterViewCount(@Path("chapterId") chapterId: String): ApiResponse<ChapterDto>
+
+    @Streaming
+    @GET("chapters/{chapterId}/export-pdf")
+    suspend fun downloadChapterPdf(@Path("chapterId") chapterId: String): Response<ResponseBody>
 }
 
 
