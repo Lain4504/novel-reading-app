@@ -203,4 +203,150 @@ class ChapterService (
             updatedAt = savedChapter.updatedAt.toString()
         )
     }
+    fun generateChapterPdf(chapterId: String): ByteArray {
+        val chapter = chapterRepository.findById(chapterId)
+            .orElseThrow { Exception("Chapter with ID '$chapterId' not found") }
+
+        val document = org.apache.pdfbox.pdmodel.PDDocument()
+        try {
+            val pageSize = org.apache.pdfbox.pdmodel.common.PDRectangle.A4
+            val margin = 50f
+            val titleFontSize = 16f
+            val bodyFontSize = 12f
+            val titleLeading = 22f
+            val bodyLeading = 18f
+
+            // Load Unicode-capable font if available; fallback to built-in fonts
+            val resourceStream = this::class.java.getResourceAsStream("/fonts/NotoSerif-Regular.ttf")
+            val titleFont: org.apache.pdfbox.pdmodel.font.PDFont
+            val bodyFont: org.apache.pdfbox.pdmodel.font.PDFont
+            if (resourceStream != null) {
+                val unicodeFont = org.apache.pdfbox.pdmodel.font.PDType0Font.load(document, resourceStream, true)
+                titleFont = unicodeFont
+                bodyFont = unicodeFont
+            } else {
+                titleFont = org.apache.pdfbox.pdmodel.font.PDType1Font.HELVETICA_BOLD
+                bodyFont = org.apache.pdfbox.pdmodel.font.PDType1Font.HELVETICA
+            }
+
+            fun wrapText(text: String, font: org.apache.pdfbox.pdmodel.font.PDFont, fontSize: Float, maxWidth: Float): List<String> {
+                val result = mutableListOf<String>()
+                val paragraphs = text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+                for (para in paragraphs) {
+                    val words = para.split(" ")
+                    var line = StringBuilder()
+                    for (word in words) {
+                        val tentative = if (line.isEmpty()) word else "${line} $word"
+                        val width = font.getStringWidth(tentative) / 1000 * fontSize
+                        if (width <= maxWidth) {
+                            line = StringBuilder(tentative)
+                        } else {
+                            if (line.isNotEmpty()) {
+                                result.add(line.toString())
+                            }
+                            // If single word is too long, hard-break it
+                            var remaining = word
+                            while (font.getStringWidth(remaining) / 1000 * fontSize > maxWidth && remaining.length > 1) {
+                                var i = remaining.length - 1
+                                var broken = false
+                                while (i > 0) {
+                                    val part = remaining.substring(0, i)
+                                    val w = font.getStringWidth(part) / 1000 * fontSize
+                                    if (w <= maxWidth) {
+                                        result.add(part)
+                                        remaining = remaining.substring(i)
+                                        broken = true
+                                        break
+                                    }
+                                    i--
+                                }
+                                if (!broken) break
+                            }
+                            line = StringBuilder(remaining)
+                        }
+                    }
+                    if (line.isNotEmpty()) {
+                        result.add(line.toString())
+                    }
+                    // Blank line between paragraphs
+                    result.add("")
+                }
+                // Remove trailing blank inserted after last paragraph
+                if (result.isNotEmpty() && result.last().isEmpty()) {
+                    result.removeAt(result.size - 1)
+                }
+                return result
+            }
+
+            var page = org.apache.pdfbox.pdmodel.PDPage(pageSize)
+            document.addPage(page)
+
+            var yPosition = pageSize.height - margin
+
+            // Draw title
+            run {
+                val contentStream = org.apache.pdfbox.pdmodel.PDPageContentStream(
+                    document,
+                    page,
+                    org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode.APPEND,
+                    true
+                )
+                contentStream.beginText()
+                contentStream.setFont(titleFont, titleFontSize)
+                contentStream.newLineAtOffset(margin, yPosition)
+                contentStream.showText(chapter.chapterTitle)
+                contentStream.endText()
+                contentStream.close()
+                yPosition -= titleLeading
+            }
+
+            // Draw content with wrapping and pagination
+            val lines = wrapText(chapter.content, bodyFont, bodyFontSize, pageSize.width - 2 * margin)
+
+            var contentStream = org.apache.pdfbox.pdmodel.PDPageContentStream(
+                document,
+                page,
+                org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode.APPEND,
+                true
+            )
+            contentStream.beginText()
+            contentStream.setFont(bodyFont, bodyFontSize)
+            contentStream.setLeading(bodyLeading)
+            contentStream.newLineAtOffset(margin, yPosition)
+
+            val bottomY = margin
+            for (line in lines) {
+                if (yPosition - bodyLeading < bottomY) {
+                    contentStream.endText()
+                    contentStream.close()
+                    // new page
+                    page = org.apache.pdfbox.pdmodel.PDPage(pageSize)
+                    document.addPage(page)
+                    yPosition = pageSize.height - margin
+                    contentStream = org.apache.pdfbox.pdmodel.PDPageContentStream(
+                        document,
+                        page,
+                        org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode.APPEND,
+                        true
+                    )
+                    contentStream.beginText()
+                    contentStream.setFont(bodyFont, bodyFontSize)
+                    contentStream.setLeading(bodyLeading)
+                    contentStream.newLineAtOffset(margin, yPosition)
+                }
+                contentStream.showText(line)
+                contentStream.newLineAtOffset(0f, -bodyLeading)
+                yPosition -= bodyLeading
+            }
+
+            contentStream.endText()
+            contentStream.close()
+
+            val baos = java.io.ByteArrayOutputStream()
+            document.save(baos)
+            return baos.toByteArray()
+        } finally {
+            document.close()
+        }
+    }
 }

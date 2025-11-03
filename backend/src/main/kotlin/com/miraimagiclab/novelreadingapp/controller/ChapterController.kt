@@ -19,6 +19,9 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
+import org.springframework.core.io.ByteArrayResource
 
 @RestController
 @RequestMapping("/chapters")
@@ -94,4 +97,25 @@ class ChapterController(
         return ResponseEntity.ok(ApiResponse.success(chapter, "Chapter view count incremented successfully"))
     }
 
+    @GetMapping("/{chapterId}/export-pdf", produces = [MediaType.APPLICATION_PDF_VALUE])
+    fun exportChapterPdf(@PathVariable("chapterId") chapterId: String): ResponseEntity<ByteArrayResource> {
+        val pdfBytes = chapterService.generateChapterPdf(chapterId)
+        val chapterTitle = try {
+            chapterService.getChapterById(chapterId).chapterTitle
+        } catch (e: Exception) {
+            "chapter-$chapterId"
+        }
+        val safeFilename = chapterTitle
+            .replace(Regex("[\\s]+"), " ")
+            .trim()
+            .replace(Regex("[^\\p{L}\\p{N} _-]"), "")
+            .ifBlank { "chapter-$chapterId" } + ".pdf"
+
+        val resource = ByteArrayResource(pdfBytes)
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"$safeFilename\"")
+            .contentType(MediaType.APPLICATION_PDF)
+            .contentLength(pdfBytes.size.toLong())
+            .body(resource)
+    }
 }
