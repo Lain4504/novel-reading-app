@@ -225,9 +225,14 @@ class ChapterService (
                 titleFont = unicodeFont
                 bodyFont = unicodeFont
             } else {
+                // Use standard fonts that support basic Unicode characters
                 titleFont = org.apache.pdfbox.pdmodel.font.PDType1Font.HELVETICA_BOLD
                 bodyFont = org.apache.pdfbox.pdmodel.font.PDType1Font.HELVETICA
             }
+
+            // Sanitize text to remove unsupported Unicode characters
+            val sanitizedTitle = chapter.chapterTitle.replace(Regex("[^\\x00-\\x7F]"), "?")
+            val sanitizedContent = chapter.content.replace(Regex("[^\\x00-\\x7F]"), "?")
 
             fun wrapText(text: String, font: org.apache.pdfbox.pdmodel.font.PDFont, fontSize: Float, maxWidth: Float): List<String> {
                 val result = mutableListOf<String>()
@@ -294,14 +299,14 @@ class ChapterService (
                 contentStream.beginText()
                 contentStream.setFont(titleFont, titleFontSize)
                 contentStream.newLineAtOffset(margin, yPosition)
-                contentStream.showText(chapter.chapterTitle)
+                contentStream.showText(sanitizedTitle)
                 contentStream.endText()
                 contentStream.close()
                 yPosition -= titleLeading
             }
 
             // Draw content with wrapping and pagination
-            val lines = wrapText(chapter.content, bodyFont, bodyFontSize, pageSize.width - 2 * margin)
+            val lines = wrapText(sanitizedContent, bodyFont, bodyFontSize, pageSize.width - 2 * margin)
 
             var contentStream = org.apache.pdfbox.pdmodel.PDPageContentStream(
                 document,

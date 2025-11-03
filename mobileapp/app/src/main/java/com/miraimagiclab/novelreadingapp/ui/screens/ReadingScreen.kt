@@ -458,45 +458,6 @@ fun ReadingScreen(
                                  )
                              }
 
-                             if (isAdmin) {
-                                 // Export PDF Icon
-                                 IconButton(
-                                     onClick = {
-                                         hapticFeedback.light()
-                                         val chapterTitle = when (val state = currentChapterState) {
-                                             is UiState.Success -> state.data.chapterTitle
-                                             else -> "chapter-$chapterId"
-                                         }
-                                         val safeName = chapterTitle.replace(Regex("[^\\p{L}\\p{N} _-]"), "")
-                                             .ifBlank { "chapter-$chapterId" }
-                                         val fileName = "$safeName.pdf"
-                                         // BASE_URL already includes /api/, so do not add "api" again
-                                         val url = com.miraimagiclab.novelreadingapp.util.Constants.BASE_URL + "chapters/" + chapterId + "/export-pdf"
-                                         try {
-                                             val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-                                             val request = DownloadManager.Request(Uri.parse(url))
-                                                 .setTitle(fileName)
-                                                 .setDescription("Exporting chapter as PDF")
-                                                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                                             // Attach JWT so only ADMIN can download
-                                             if (!accessToken.isNullOrBlank()) {
-                                                 request.addRequestHeader("Authorization", "Bearer ${accessToken}")
-                                             }
-                                             try {
-                                                 request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
-                                             } catch (_: Exception) { }
-                                             dm.enqueue(request)
-                                         } catch (_: Exception) { }
-                                     }
-                                 ) {
-                                     Icon(
-                                         imageVector = Icons.Default.List,
-                                         contentDescription = "Export PDF",
-                                         tint = MaterialTheme.colorScheme.onSurface,
-                                         modifier = Modifier.size(24.dp)
-                                     )
-                                 }
-                             }
                          }
 
                         // Next button
@@ -620,7 +581,10 @@ fun ReadingScreen(
             if (showReadingSettings) {
                 ReadingSettingsDialog(
                     viewModel = viewModel,
-                    onDismiss = { showReadingSettings = false }
+                    onDismiss = { showReadingSettings = false },
+                    novelId = novelId,
+                    chapterId = chapterId,
+                    sessionManager = sessionManager
                 )
             }
         }

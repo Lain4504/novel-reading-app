@@ -31,17 +31,35 @@ import com.miraimagiclab.novelreadingapp.ui.theme.ReadingThemes
 import com.miraimagiclab.novelreadingapp.ui.theme.getFontFamilyByName
 import com.miraimagiclab.novelreadingapp.ui.viewmodel.ReadingSettingsViewModel
 import com.miraimagiclab.novelreadingapp.ui.viewmodel.ReadingSettings
+import android.app.DownloadManager
+import android.content.Context
+import android.net.Uri
+import android.os.Environment
+import androidx.compose.ui.platform.LocalContext
+import com.miraimagiclab.novelreadingapp.data.auth.SessionManager
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReadingSettingsDialog(
     viewModel: ReadingSettingsViewModel,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    novelId: String? = null,
+    chapterId: String? = null,
+    sessionManager: SessionManager? = null
 ) {
     val fontFamily by viewModel.fontFamily.collectAsState()
     val fontSize by viewModel.fontSize.collectAsState()
     val lineSpacing by viewModel.lineSpacing.collectAsState()
     val readingTheme by viewModel.readingTheme.collectAsState()
+
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
+    // Collect auth state to get real user ID
+    val authState = sessionManager?.authState?.collectAsState()
+    val accessToken = authState?.value?.accessToken
     
     // Quick access presets
     val quickPresets = listOf(
@@ -251,6 +269,67 @@ fun ReadingSettingsDialog(
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
+
+                    // Export PDF Section
+                    if (novelId != null && chapterId != null && sessionManager != null) {
+                        Text(
+                            text = "Offline Reading",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        )
+
+                        Button(
+                            onClick = {
+                                coroutineScope.launch {
+                                    try {
+                                        val fileName = "chapter-${chapterId}.pdf"
+                                        val url = com.miraimagiclab.novelreadingapp.util.Constants.BASE_URL + "api/chapters/" + chapterId + "/export-pdf"
+
+                                        val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                                        val request = DownloadManager.Request(Uri.parse(url))
+                                            .setTitle(fileName)
+                                            .setDescription("Downloading chapter for offline reading")
+                                            .setMimeType("application/pdf")
+                                            .setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI or DownloadManager.Request.NETWORK_MOBILE)
+                                            .setVisibleInDownloadsUi(true)
+                                            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+
+                                        // Attach JWT for authenticated users
+                                        if (!accessToken.isNullOrBlank()) {
+                                            request.addRequestHeader("Authorization", "Bearer ${accessToken}")
+                                        }
+
+                                        try {
+                                            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
+                                            request.setAllowedOverMetered(true)
+                                            request.setAllowedOverRoaming(true)
+                                        } catch (_: Exception) { }
+
+                                        val downloadId = dm.enqueue(request)
+                                        // Optional: Show a toast or log the download ID
+                                        android.widget.Toast.makeText(context, "Download started", android.widget.Toast.LENGTH_SHORT).show()
+                                    } catch (e: Exception) {
+                                        android.widget.Toast.makeText(context, "Download failed: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.filter_alt_24px),
+                                contentDescription = "Download",
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Download Chapter PDF")
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+                    }
 
                     // Reading Theme Section
                     Text(

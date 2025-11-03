@@ -143,7 +143,7 @@ export const novelApi = {
 
 export const chapterApi = {
   exportPdf: async (chapterId: string): Promise<Blob> => {
-    // Downloads a PDF blob for the given chapterId
+    // Downloads a PDF blob for the given chapterId (now available to all authenticated users)
     const response = await api.get(`/chapters/${chapterId}/export-pdf`, {
       responseType: 'blob',
     });
