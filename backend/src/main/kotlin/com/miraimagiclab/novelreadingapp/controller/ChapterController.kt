@@ -108,12 +108,16 @@ class ChapterController(
         val safeFilename = chapterTitle
             .replace(Regex("[\\s]+"), " ")
             .trim()
-            .replace(Regex("[^\\p{L}\\p{N} _-]"), "")
+            .replace(Regex("[^\\x00-\\x7F]"), "") // Remove non-ASCII characters
+            .replace(Regex("[^a-zA-Z0-9 _-]"), "") // Remove special characters except space, underscore, dash
+            .trim()
             .ifBlank { "chapter-$chapterId" } + ".pdf"
 
         val resource = ByteArrayResource(pdfBytes)
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"$safeFilename\"")
+            .header(HttpHeaders.CONTENT_TYPE, "application/pdf")
+            .header(HttpHeaders.CACHE_CONTROL, "no-cache")
             .contentType(MediaType.APPLICATION_PDF)
             .contentLength(pdfBytes.size.toLong())
             .body(resource)

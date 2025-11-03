@@ -46,7 +46,7 @@ export default function ChaptersExportPage() {
           Export Chương PDF
         </h1>
         <p style={{ color: 'var(--gray)' }}>
-          Tải về file PDF cho nội dung của một chương theo ID
+          Tải về file PDF cho nội dung của một chương theo ID (dành cho tất cả người dùng đã đăng nhập)
         </p>
       </div>
 

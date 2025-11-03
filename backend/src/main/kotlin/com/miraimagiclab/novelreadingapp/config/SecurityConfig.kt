@@ -46,8 +46,8 @@ class SecurityConfig(
                     // Allow public access to search novels (POST request)
                     .requestMatchers(HttpMethod.POST, "/novels/search").permitAll() // Allow POST requests to search novels
                     
-                    // Export PDF restricted to ADMIN
-                    .requestMatchers(HttpMethod.GET, "/chapters/*/export-pdf").hasRole("ADMIN")
+                    // Allow authenticated users to export PDF for offline reading
+                    .requestMatchers(HttpMethod.GET, "/chapters/*/export-pdf").authenticated()
                     
                     // Allow public access to read chapters (GET requests only)
                     .requestMatchers(HttpMethod.GET, "/chapters", "/chapters/**").permitAll() // Allow GET requests to chapters
