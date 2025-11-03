@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { FiUsers, FiBook, FiLogOut, FiHome } from 'react-icons/fi';
+import { FiUsers, FiBook, FiLogOut, FiHome, FiDownload } from 'react-icons/fi';
 import { clearAuth, getUser } from '@/lib/auth';
 
 export default function Sidebar() {
@@ -21,6 +21,7 @@ export default function Sidebar() {
     { href: '/dashboard', icon: FiHome, label: 'Dashboard' },
     { href: '/dashboard/users', icon: FiUsers, label: 'Quản lý User' },
     { href: '/dashboard/novels', icon: FiBook, label: 'Quản lý Novel' },
+    { href: '/dashboard/chapters-export', icon: FiDownload, label: 'Export Chương PDF' },
   ];
 
   return (
