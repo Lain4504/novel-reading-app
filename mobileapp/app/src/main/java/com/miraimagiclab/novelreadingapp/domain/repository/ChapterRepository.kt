@@ -39,6 +39,14 @@ interface ChapterRepository {
     suspend fun getChapterByIdSync(chapterId: String): Chapter?
     
     /**
+     * Get chapter by novelId and chapterId, fetch from API if not in cache
+     * @param novelId The ID of the novel
+     * @param chapterId The ID of the chapter
+     * @return Chapter or null if not found
+     */
+    suspend fun getChapterByIdSync(novelId: String, chapterId: String): Chapter?
+    
+    /**
      * Get cached chapters for novel if available, otherwise fetch from API
      * @param novelId The ID of the novel
      * @return List of chapters

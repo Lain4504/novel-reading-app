@@ -89,6 +89,28 @@ class ChapterRepositoryImpl @Inject constructor(
         // For now, return null - this should be handled by the calling code
         return null
     }
+    
+    override suspend fun getChapterByIdSync(novelId: String, chapterId: String): Chapter? {
+        // First try cache
+        val cachedChapter = chapterCache[chapterId]
+        if (cachedChapter != null) {
+            return cachedChapter
+        }
+
+        // If not in cache, fetch from API
+        return try {
+            val response = chapterApiService.getChapterById(novelId, chapterId)
+            if (response.isSuccessful && response.body()?.success == true && response.body()?.data != null) {
+                val chapter = ChapterMapper.mapDtoToDomain(response.body()!!.data!!)
+                chapterCache[chapterId] = chapter
+                chapter
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
 
     override suspend fun getChaptersByNovelIdSync(novelId: String): List<Chapter> {
         // First try cache
@@ -129,26 +151,5 @@ class ChapterRepositoryImpl @Inject constructor(
         }
     }
 
-    // New method to get chapter by novelId and chapterId
-    suspend fun getChapterById(novelId: String, chapterId: String): Chapter? {
-        // First try cache
-        val cachedChapter = chapterCache[chapterId]
-        if (cachedChapter != null) {
-            return cachedChapter
-        }
 
-        // If not in cache, fetch from API
-        return try {
-            val response = chapterApiService.getChapterById(novelId, chapterId)
-            if (response.isSuccessful && response.body()?.success == true && response.body()?.data != null) {
-                val chapter = ChapterMapper.mapDtoToDomain(response.body()!!.data!!)
-                chapterCache[chapterId] = chapter
-                chapter
-            } else {
-                null
-            }
-        } catch (e: Exception) {
-            null
-        }
-    }
 }
