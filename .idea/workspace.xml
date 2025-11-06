@@ -7,10 +7,11 @@
     <list default="true" id="121b5837-42c5-45ba-b0b7-b9d3b9328e5f" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.gradle/config.properties" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/config.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobileapp/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/mobileapp/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin-web/src/lib/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/admin-web/src/lib/api.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin-web/src/types/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/admin-web/src/types/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,8 +56,8 @@
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "new-khangnld",
-    "last_opened_file_path": "D:/Ky8/PRM392/novel-reading-app",
+    "git-widget-placeholder": "ai-feature",
+    "last_opened_file_path": "C:/Users/Thanh Phuong/Documents/My learning/PRM/novel/novel-reading-app",
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.17",
     "project.structure.side.proportion": "0.2",

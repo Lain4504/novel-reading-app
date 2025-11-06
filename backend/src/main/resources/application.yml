@@ -87,3 +87,11 @@ cloudinary:
   api-key: ${CLOUDINARY_API_KEY}
   api-secret: ${CLOUDINARY_API_SECRET}
 
+
+
+# AI Gemini configuration
+gemini:
+  api-key: ${GEMINI_API_KEY}
+  model: ${GEMINI_MODEL:gemini-2.5-flash}
+  endpoint: ${GEMINI_ENDPOINT:https://generativelanguage.googleapis.com}
+  timeout-ms: ${GEMINI_TIMEOUT_MS:15000}
