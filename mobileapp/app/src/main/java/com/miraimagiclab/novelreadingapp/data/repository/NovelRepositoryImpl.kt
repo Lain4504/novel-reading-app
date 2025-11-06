@@ -2,6 +2,7 @@ package com.miraimagiclab.novelreadingapp.data.repository
 
 import com.miraimagiclab.novelreadingapp.data.mapper.NovelMapper
 import com.miraimagiclab.novelreadingapp.data.remote.api.NovelApiService
+import com.miraimagiclab.novelreadingapp.data.remote.api.RecommendationApiService
 import com.miraimagiclab.novelreadingapp.data.remote.dto.NovelSearchRequest
 import com.miraimagiclab.novelreadingapp.data.remote.dto.PageResponse
 import com.miraimagiclab.novelreadingapp.domain.model.Novel
@@ -13,7 +14,8 @@ import javax.inject.Singleton
 
 @Singleton
 class NovelRepositoryImpl @Inject constructor(
-    private val novelApiService: NovelApiService
+    private val novelApiService: NovelApiService,
+    private val recommendationApiService: RecommendationApiService
 ) : NovelRepository {
 
     // Home screen specific implementations - calling API directly (no cache)
@@ -227,6 +229,38 @@ class NovelRepositoryImpl @Inject constructor(
                 last = true,
                 numberOfElements = 0
             )
+        }
+    }
+
+    override fun getAiRecommendations(userId: String, limit: Int): Flow<List<Novel>> {
+        return flow {
+            try {
+                val response = recommendationApiService.getRecommendations(userId, limit)
+                if (response.success && response.data != null) {
+                    val novels = response.data.map { NovelMapper.mapDtoToDomain(it.novel) }
+                    emit(novels)
+                } else {
+                    emit(emptyList())
+                }
+            } catch (e: Exception) {
+                emit(emptyList())
+            }
+        }
+    }
+
+    override fun getAiRecommendationsByTopic(topic: String, limit: Int): Flow<List<Novel>> {
+        return flow {
+            try {
+                val response = recommendationApiService.getRecommendationsByTopic(topic, limit)
+                if (response.success && response.data != null) {
+                    val novels = response.data.map { NovelMapper.mapDtoToDomain(it.novel) }
+                    emit(novels)
+                } else {
+                    emit(emptyList())
+                }
+            } catch (e: Exception) {
+                emit(emptyList())
+            }
         }
     }
 }

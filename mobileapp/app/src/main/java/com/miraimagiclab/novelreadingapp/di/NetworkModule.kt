@@ -10,6 +10,7 @@ import com.miraimagiclab.novelreadingapp.data.remote.api.ReviewApiService
 import com.miraimagiclab.novelreadingapp.data.remote.api.UserNovelInteractionApiService
 import com.miraimagiclab.novelreadingapp.data.remote.api.UserApiService
 import com.miraimagiclab.novelreadingapp.data.remote.api.ImageApiService
+import com.miraimagiclab.novelreadingapp.data.remote.api.RecommendationApiService
 import com.miraimagiclab.novelreadingapp.data.auth.SessionManager
 import com.miraimagiclab.novelreadingapp.data.local.prefs.AuthDataStore
 import com.miraimagiclab.novelreadingapp.data.remote.interceptor.AuthInterceptor
@@ -173,5 +174,11 @@ object NetworkModule {
     @Singleton
     fun provideImageApiService(@Named("authedRetrofit") retrofit: Retrofit): ImageApiService {
         return retrofit.create(ImageApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRecommendationApiService(@Named("authedRetrofit") retrofit: Retrofit): RecommendationApiService {
+        return retrofit.create(RecommendationApiService::class.java)
     }
 }

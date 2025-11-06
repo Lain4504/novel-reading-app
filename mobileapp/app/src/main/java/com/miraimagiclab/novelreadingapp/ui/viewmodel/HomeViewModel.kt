@@ -31,6 +31,10 @@ class HomeViewModel @Inject constructor(
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
+    // AI topic entered by user; when set, use topic-based AI recommendations
+    private val _aiTopic = MutableStateFlow<String?>(null)
+    val aiTopic: StateFlow<String?> = _aiTopic.asStateFlow()
+
     init {
         loadAllData()
         
@@ -72,9 +76,21 @@ class HomeViewModel @Inject constructor(
 
     private suspend fun loadDataFromServer() {
         // Combine all data streams using new home screen specific methods
+        val recFlow =
+            if (_aiTopic.value?.isNotBlank() == true && authState.value.isLoggedIn) {
+                // Topic-based AI recommendations using Gemini (user provided topic)
+                novelRepository.getAiRecommendationsByTopic(_aiTopic.value!!.trim(), 12)
+            } else if (authState.value.isLoggedIn && !authState.value.userId.isNullOrBlank()) {
+                // Personalized recommendations using Gemini (based on interactions)
+                novelRepository.getAiRecommendations(authState.value.userId!!, 12)
+            } else {
+                // Fallback to popular recommendations when not logged in
+                novelRepository.getRecommendedNovels()
+            }
+
         combine(
             novelRepository.getBannerNovels(),
-            novelRepository.getRecommendedNovels(),
+            recFlow,
             novelRepository.getRankingNovels(),
             novelRepository.getNewNovels(),
             novelRepository.getCompletedNovels()
@@ -110,6 +126,12 @@ class HomeViewModel @Inject constructor(
 
     fun onBookClick(bookId: String) {
         // Handle book click - can be passed to UI via event
+    }
+
+    // Set or clear AI topic; triggers refresh to load topic-based recommendations
+    fun setAiTopic(topic: String?) {
+        _aiTopic.value = topic?.takeIf { it.isNotBlank() }
+        refreshData()
     }
 }
 
