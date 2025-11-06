@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -52,6 +53,7 @@ fun ProfileScreen(
     val updateUserState by viewModel.updateUserState.collectAsState()
     val isDarkMode by settingsViewModel.isDarkMode.collectAsState()
     val isLoggedIn = authState.isLoggedIn
+    val context = LocalContext.current
     
     var showEditDialog by remember { mutableStateOf(false) }
 
@@ -108,7 +110,7 @@ fun ProfileScreen(
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 IconButton(onClick = { showEditDialog = true }) {
-                    Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit profile")
+                    Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit profile")
                 }
             }
 
@@ -116,23 +118,23 @@ fun ProfileScreen(
 
             // Account settings
             SectionTitle("Account settings")
-            ProfileMenuItem("Personal data", Icons.Default.Person) { 
+            ProfileMenuItem("Personal data", Icons.Filled.Person) { 
                 onPersonalDataClick()
             }
-            ProfileMenuItem("Change Password", Icons.Default.Lock) {
+            ProfileMenuItem("Change Password", Icons.Filled.Lock) {
                 navController.navigate(Screen.ChangePassword.route)
             }
-            ProfileMenuItem("My Booklist", Icons.Default.Check) { 
+            ProfileMenuItem("My Booklist", Icons.Filled.LibraryBooks) { 
                 onMyBooklistClick()
             }
             
             // Author features
             if (!authState.roles.contains("AUTHOR")) {
-                ProfileMenuItem("Become Author", Icons.Default.Edit) { 
+                ProfileMenuItem("Become Author", Icons.Filled.EditNote) { 
                     onBecomeAuthorClick()
                 }
             } else {
-                ProfileMenuItem("My Novels", Icons.Default.Info) {
+                ProfileMenuItem("My Novels", Icons.Filled.MenuBook) {
                     onMyNovelsClick()
                 }
             }
@@ -148,10 +150,24 @@ fun ProfileScreen(
             )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+            // Novel update notifications toggle
+            // Note: FCM token is automatically managed by MainActivity when user logs in
+            // and notifications are enabled. No need for manual scheduling/canceling.
+            NotificationMenuItem(
+                title = "Thông báo chương mới",
+                enabled = settingsViewModel.isNovelUpdateNotificationsEnabled.collectAsState().value,
+                onToggle = { enabled ->
+                    settingsViewModel.setNovelUpdateNotificationsEnabled(enabled)
+                    // FCM token management is handled in MainActivity
+                    // When enabled, token will be sent to server automatically
+                    // When disabled, user can delete token from server if needed (optional)
+                }
+            )
             
             // Logout section
             SectionTitle("Account")
-            ProfileMenuItem("Logout", Icons.Default.ExitToApp) {
+            ProfileMenuItem("Logout", Icons.Filled.Logout) {
                 onLogoutClick()
             }
             
@@ -285,7 +301,7 @@ fun ProfileMenuItem(title: String, icon: androidx.compose.ui.graphics.vector.Ima
         Text(text = title, style = MaterialTheme.typography.bodyMedium)
         Spacer(modifier = Modifier.weight(1f))
         Icon(
-            imageVector = Icons.Default.KeyboardArrowRight,
+            imageVector = Icons.Filled.ChevronRight,
             contentDescription = null
         )
     }
@@ -304,7 +320,7 @@ fun AppThemeMenuItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            imageVector = Icons.Default.Settings,
+            imageVector = Icons.Filled.Settings,
             contentDescription = title,
             modifier = Modifier.size(22.dp)
         )
@@ -321,6 +337,40 @@ fun AppThemeMenuItem(
         Switch(
             checked = isDarkMode,
             onCheckedChange = { onToggle() }
+        )
+    }
+}
+
+@Composable
+fun NotificationMenuItem(
+    title: String,
+    enabled: Boolean,
+    onToggle: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Notifications,
+            contentDescription = title,
+            modifier = Modifier.size(22.dp)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Column {
+            Text(text = title, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = if (enabled) "Bật" else "Tắt",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Spacer(modifier = Modifier.weight(1f))
+        Switch(
+            checked = enabled,
+            onCheckedChange = { onToggle(it) }
         )
     }
 }
@@ -419,7 +469,7 @@ fun EditProfileDialog(
                         enabled = !isLoading && uploadImageState !is UiState.Loading
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Close,
+                            imageVector = Icons.Filled.Close,
                             contentDescription = "Close",
                             tint = Color(0xFF666666)
                         )
@@ -534,7 +584,7 @@ fun EditProfileDialog(
                                             .background(Color.Black.copy(alpha = 0.5f), CircleShape)
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Default.Close,
+                                            imageVector = Icons.Filled.Close,
                                             contentDescription = "Remove",
                                             tint = Color.White,
                                             modifier = Modifier.size(12.dp)
@@ -549,7 +599,7 @@ fun EditProfileDialog(
                                     )
                                 } else {
                                     Icon(
-                                        imageVector = Icons.Default.AccountCircle,
+                                        imageVector = Icons.Filled.AccountCircle,
                                         contentDescription = null,
                                         tint = Color(0xFFCCCCCC),
                                         modifier = Modifier.size(40.dp)
@@ -573,7 +623,7 @@ fun EditProfileDialog(
                                 shape = RoundedCornerShape(12.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Add,
+                                    imageVector = Icons.Filled.Add,
                                     contentDescription = null,
                                     modifier = Modifier.size(18.dp)
                                 )
@@ -625,7 +675,7 @@ fun EditProfileDialog(
                                             .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Default.Close,
+                                            imageVector = Icons.Filled.Close,
                                             contentDescription = "Remove",
                                             tint = Color.White,
                                             modifier = Modifier.size(12.dp)
@@ -640,7 +690,7 @@ fun EditProfileDialog(
                                     )
                                 } else {
                                     Icon(
-                                        imageVector = Icons.Default.Add,
+                                        imageVector = Icons.Filled.Add,
                                         contentDescription = null,
                                         tint = Color(0xFFCCCCCC),
                                         modifier = Modifier.size(32.dp)
@@ -664,7 +714,7 @@ fun EditProfileDialog(
                                 shape = RoundedCornerShape(12.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Add,
+                                    imageVector = Icons.Filled.Add,
                                     contentDescription = null,
                                     modifier = Modifier.size(18.dp)
                                 )
@@ -700,7 +750,7 @@ fun EditProfileDialog(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Person,
+                                    imageVector = Icons.Filled.Person,
                                     contentDescription = null,
                                     tint = Color(0xFF999999),
                                     modifier = Modifier.size(18.dp)
@@ -724,7 +774,7 @@ fun EditProfileDialog(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Email,
+                                    imageVector = Icons.Filled.Email,
                                     contentDescription = null,
                                     tint = Color(0xFF999999),
                                     modifier = Modifier.size(18.dp)

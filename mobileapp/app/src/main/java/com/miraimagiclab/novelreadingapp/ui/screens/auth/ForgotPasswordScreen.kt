@@ -38,7 +38,7 @@ fun ForgotPasswordScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBackClick) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
             }
             Text(
                 text = "Forgot Password",

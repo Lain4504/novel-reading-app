@@ -110,7 +110,7 @@
                      contentAlignment = Alignment.Center
                  ) {
                      Icon(
-                         Icons.Default.Star,
+                         Icons.Filled.Star,
                          contentDescription = null,
                          modifier = Modifier.size(50.dp),
                          tint = Color.White
@@ -135,7 +135,7 @@
                      contentAlignment = Alignment.Center
                  ) {
                      Icon(
-                         Icons.Default.Search,
+                         Icons.Filled.Search,
                          contentDescription = null,
                          modifier = Modifier.size(50.dp),
                          tint = Color.White

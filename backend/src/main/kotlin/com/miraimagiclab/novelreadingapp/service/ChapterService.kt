@@ -18,9 +18,16 @@ import org.springframework.web.bind.annotation.PathVariable
 @Transactional
 class ChapterService (
     private val chapterRepository: ChapterRepository,
-    private val novelService: NovelService
+    private val novelService: NovelService,
+    private val userNovelInteractionService: UserNovelInteractionService,
+    private val deviceTokenService: DeviceTokenService,
+    private val fcmService: FcmService
 ){
     fun createChapter(novelId: String, request: ChapterCreateRequest): ChapterResponseDto {
+        val logger = org.slf4j.LoggerFactory.getLogger(ChapterService::class.java)
+        logger.info("=== ChapterService: Creating new chapter ===")
+        logger.info("NovelId: $novelId, ChapterTitle: ${request.chapterTitle}")
+        
         val chapter = Chapter(
             novelId = novelId,
             chapterTitle = request.chapterTitle,
@@ -29,7 +36,25 @@ class ChapterService (
             viewCount = 0,
             chapterNumber = chapterRepository.countByNovelId(novelId) + 1
         )
+        logger.info("Chapter number calculated: ${chapter.chapterNumber}")
+        
         val savedChapter = chapterRepository.save(chapter)
+        logger.info("Chapter saved with ID: ${savedChapter.id}")
+        
+        // Update novel stats (chapterCount, wordCount) from all chapters
+        try {
+            novelService.updateNovelStatsFromChapters(novelId)
+            logger.info("Novel stats updated successfully for novel $novelId")
+        } catch (e: Exception) {
+            logger.error("Failed to update novel stats: ${e.message}", e)
+            // Don't fail chapter creation if stats update fails
+        }
+        
+        // Send push notifications to users following this novel
+        logger.info("Triggering notification sending for chapter ${savedChapter.id}")
+        sendChapterUpdateNotifications(novelId, savedChapter)
+        
+        logger.info("=== ChapterService: Chapter creation completed ===")
         return ChapterResponseDto(
             id = savedChapter.id!!,
             novelId = savedChapter.novelId,
@@ -41,6 +66,111 @@ class ChapterService (
             createdAt = savedChapter.createdAt.toString(),
             updatedAt = savedChapter.updatedAt.toString()
         )
+    }
+    
+    private fun sendChapterUpdateNotifications(novelId: String, chapter: Chapter) {
+        val logger = org.slf4j.LoggerFactory.getLogger(ChapterService::class.java)
+        
+        try {
+            logger.info("=== START: Sending chapter update notifications ===")
+            logger.info("NovelId: $novelId, ChapterId: ${chapter.id}, ChapterNumber: ${chapter.chapterNumber}, ChapterTitle: ${chapter.chapterTitle}")
+            
+            // Get all users following this novel with notifications enabled
+            val allInteractions = userNovelInteractionService.getNovelInteractions(novelId)
+            logger.info("Total interactions for novel $novelId: ${allInteractions.size}")
+            
+            val interactions = allInteractions.filter { it.hasFollowing && it.notify }
+            logger.info("Interactions with hasFollowing=true and notify=true: ${interactions.size}")
+            
+            if (interactions.isEmpty()) {
+                logger.warn("No users found following this novel with notifications enabled. Skipping notifications.")
+                return
+            }
+            
+            // Log each interaction
+            interactions.forEach { interaction ->
+                logger.debug("User ${interaction.userId}: following=${interaction.hasFollowing}, notify=${interaction.notify}, currentChapter=${interaction.currentChapterNumber}")
+            }
+            
+            // Get novel title
+            val novel = try {
+                novelService.getNovelById(novelId)
+            } catch (e: Exception) {
+                logger.warn("Failed to get novel details: ${e.message}")
+                null
+            }
+            val novelTitle = novel?.title ?: "Truyện bạn theo dõi"
+            logger.info("Novel title: $novelTitle")
+            
+            // Get user IDs
+            val userIds = interactions.map { it.userId }.distinct()
+            logger.info("Unique user IDs to notify: ${userIds.size} - $userIds")
+            
+            // Get FCM tokens for these users
+            val tokensByUserId = deviceTokenService.getTokensByUserIds(userIds)
+            logger.info("Total users with tokens: ${tokensByUserId.size}")
+            
+            var totalTokens = 0
+            tokensByUserId.forEach { (userId, tokens) ->
+                logger.info("User $userId has ${tokens.size} token(s)")
+                totalTokens += tokens.size
+                tokens.forEach { token ->
+                    logger.debug("User $userId token: ${token.take(20)}...")
+                }
+            }
+            
+            if (totalTokens == 0) {
+                logger.warn("No FCM tokens found for any users. Notifications cannot be sent.")
+                return
+            }
+            
+            // Prepare notification content
+            val title = "$novelTitle có chương mới"
+            val body = "Chương ${chapter.chapterNumber}: ${chapter.chapterTitle}"
+            val data = mapOf(
+                "type" to "NEW_CHAPTER",
+                "novelId" to novelId,
+                "chapterId" to (chapter.id ?: ""),
+                "chapterNumber" to chapter.chapterNumber.toString()
+            )
+            
+            logger.info("Notification content - Title: $title, Body: $body")
+            logger.info("Notification data: $data")
+            
+            // Send notifications to all tokens
+            var notificationsSent = 0
+            var notificationsSkipped = 0
+            
+            tokensByUserId.forEach { (userId, tokens) ->
+                // Get user's current chapter number to check if this is a new chapter
+                val interaction = interactions.find { it.userId == userId }
+                val currentChapterNumber = interaction?.currentChapterNumber ?: 0
+                
+                logger.info("User $userId: currentChapter=$currentChapterNumber, newChapter=${chapter.chapterNumber}")
+                
+                if (chapter.chapterNumber > currentChapterNumber) {
+                    tokens.forEach { token ->
+                        logger.info("Sending notification to user $userId, token: ${token.take(20)}...")
+                        val success = fcmService.sendNotification(token, title, body, data)
+                        if (success) {
+                            notificationsSent++
+                            logger.info("✓ Notification sent successfully to user $userId")
+                        } else {
+                            logger.error("✗ Failed to send notification to user $userId")
+                        }
+                    }
+                } else {
+                    notificationsSkipped += tokens.size
+                    logger.info("Skipping notification for user $userId: chapter $currentChapterNumber >= ${chapter.chapterNumber}")
+                }
+            }
+            
+            logger.info("=== END: Notifications sent=$notificationsSent, skipped=$notificationsSkipped ===")
+        } catch (e: Exception) {
+            // Log error but don't fail chapter creation
+            logger.error("Error sending chapter update notifications: ${e.message}", e)
+            logger.error("Stack trace:", e)
+        }
     }
 
     fun updateChapter(novelId: String, chapterId: String, request: ChapterUpdateRequest): ChapterResponseDto {
@@ -58,6 +188,18 @@ class ChapterService (
             wordCount = request.content.split("\\s+".toRegex()).size
         )
         val savedChapter = chapterRepository.save(updatedChapter)
+        
+        // Update novel stats (wordCount) from all chapters if content changed
+        if (existingChapter.wordCount != savedChapter.wordCount) {
+            try {
+                novelService.updateNovelStatsFromChapters(novelId)
+            } catch (e: Exception) {
+                val logger = org.slf4j.LoggerFactory.getLogger(ChapterService::class.java)
+                logger.error("Failed to update novel stats after chapter update: ${e.message}", e)
+                // Don't fail chapter update if stats update fails
+            }
+        }
+        
         return ChapterResponseDto(
             id = savedChapter.id!!,
             novelId = savedChapter.novelId,
@@ -72,10 +214,22 @@ class ChapterService (
     }
 
     fun deleteChapter(@PathVariable("chapterId") chapterId: String): ResponseEntity<Nothing> {
-        if (!chapterRepository.existsById(chapterId)) {
-            throw Exception("Chapter with ID '$chapterId' not found")
-        }
+        val chapter = chapterRepository.findById(chapterId)
+            .orElseThrow { Exception("Chapter with ID '$chapterId' not found") }
+        
+        val novelId = chapter.novelId
+        
         chapterRepository.deleteById(chapterId)
+        
+        // Update novel stats (chapterCount, wordCount) from remaining chapters
+        try {
+            novelService.updateNovelStatsFromChapters(novelId)
+        } catch (e: Exception) {
+            val logger = org.slf4j.LoggerFactory.getLogger(ChapterService::class.java)
+            logger.error("Failed to update novel stats after chapter deletion: ${e.message}", e)
+            // Don't fail chapter deletion if stats update fails
+        }
+        
         return ResponseEntity.noContent().build()
     }
     fun getChapterById(chapterId: String): ChapterResponseDto {

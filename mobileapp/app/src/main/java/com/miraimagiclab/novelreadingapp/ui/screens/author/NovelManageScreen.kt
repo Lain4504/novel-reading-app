@@ -69,7 +69,7 @@ fun NovelManageScreen(
                 containerColor = MaterialTheme.colorScheme.primary,
                 elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 0.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Create Chapter")
+                Icon(Icons.Filled.Add, contentDescription = "Create Chapter")
             }
         }
     ) { innerPadding ->
@@ -164,7 +164,7 @@ private fun EmptyChaptersState(
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            imageVector = Icons.Default.Add,
+            imageVector = Icons.Filled.Add,
             contentDescription = null,
             modifier = Modifier.size(48.dp),
             tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
@@ -260,7 +260,7 @@ private fun NovelInfoCard(
             
             IconButton(onClick = onEditClick) {
                 Icon(
-                    imageVector = Icons.Default.Edit,
+                    imageVector = Icons.Filled.Edit,
                     contentDescription = "Edit Novel",
                     tint = MaterialTheme.colorScheme.primary
                 )

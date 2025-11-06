@@ -164,7 +164,7 @@ fun CreateReviewScreen(
                             horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Star,
+                                imageVector = Icons.Filled.Star,
                                 contentDescription = "Error",
                                 tint = MaterialTheme.colorScheme.onErrorContainer,
                                 modifier = Modifier.size(20.dp)

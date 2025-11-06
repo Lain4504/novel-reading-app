@@ -53,7 +53,7 @@ fun ReviewsContent(
             // Add review button
             IconButton(onClick = { onNavigateToCreateReview(novelDetail.novel.id) }) {
                 Icon(
-                    imageVector = Icons.Default.Add,
+                    imageVector = Icons.Filled.Add,
                     contentDescription = "Add review",
                     tint = MaterialTheme.colorScheme.primary
                 )
@@ -73,7 +73,7 @@ fun ReviewsContent(
                     verticalArrangement = Arrangement.spacedBy(Spacing.md)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Star,
+                        imageVector = Icons.Filled.Star,
                         contentDescription = "No reviews",
                         tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                         modifier = Modifier.size(48.dp)

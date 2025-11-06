@@ -436,7 +436,7 @@ fun ReadingScreen(
                                  }
                              ) {
                                  Icon(
-                                     imageVector = Icons.Default.Settings,
+                                     imageVector = Icons.Filled.Settings,
                                      contentDescription = "Reading Settings",
                                      tint = MaterialTheme.colorScheme.onSurface,
                                      modifier = Modifier.size(24.dp)

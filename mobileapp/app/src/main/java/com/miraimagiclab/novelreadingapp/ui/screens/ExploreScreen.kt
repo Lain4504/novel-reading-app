@@ -4,10 +4,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -114,7 +117,7 @@ private fun ExploreContent(
 ) {
     var selectedFilter by remember { mutableStateOf("Latest Updated") }
     var showFilterMenu by remember { mutableStateOf(false) }
-    val listState = rememberLazyListState()
+    val gridState = rememberLazyGridState()
     
     Column(
         modifier = Modifier
@@ -171,7 +174,7 @@ private fun ExploreContent(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = Icons.Default.Search,
+                        imageVector = Icons.Filled.Search,
                         contentDescription = "Search icon",
                         tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
@@ -240,7 +243,7 @@ private fun ExploreContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Show novels or loading/empty state
         when {
@@ -257,13 +260,13 @@ private fun ExploreContent(
                 }
             }
             state.novels.isNotEmpty() -> {
-                // Show novels list with infinite scroll
-                LaunchedEffect(listState, state.hasMorePages, state.isLoadingMore) {
-                    snapshotFlow { listState.layoutInfo.visibleItemsInfo }
+                // Show novels grid with infinite scroll
+                LaunchedEffect(gridState, state.hasMorePages, state.isLoadingMore) {
+                    snapshotFlow { gridState.layoutInfo.visibleItemsInfo }
                         .collect { visibleItems ->
                             if (visibleItems.isNotEmpty() && state.hasMorePages && !state.isLoadingMore) {
                                 val lastVisibleItem = visibleItems.last()
-                                val totalItems = listState.layoutInfo.totalItemsCount
+                                val totalItems = gridState.layoutInfo.totalItemsCount
                                 
                                 if (lastVisibleItem.index >= totalItems - 3) {
                                     onLoadMore()
@@ -272,34 +275,36 @@ private fun ExploreContent(
                         }
                 }
                 
-                LazyColumn(
-                    state = listState,
-                    verticalArrangement = Arrangement.spacedBy(Spacing.md),
-                    contentPadding = PaddingValues(vertical = Spacing.sm)
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    state = gridState,
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                    contentPadding = PaddingValues(bottom = 80.dp, top = 0.dp)
                 ) {
-                    val chunkedResults = state.novels.chunked(2)
-                    items(chunkedResults.size) { chunkIndex ->
-                        val rowNovels = chunkedResults[chunkIndex]
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Box(modifier = Modifier.weight(1f)) {
-                                NovelCard(novel = rowNovels[0], onClick = { onBookClick(rowNovels[0].id) })
-                            }
-                            
-                            if (rowNovels.size > 1) {
-                                Box(modifier = Modifier.weight(1f)) {
-                                    NovelCard(novel = rowNovels[1], onClick = { onBookClick(rowNovels[1].id) })
+                    items(state.novels, key = { it.id }) { book ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .pointerInput(book.id) {
+                                    detectTapGestures(
+                                        onTap = { onBookClick(book.id) }
+                                    )
                                 }
-                            } else {
-                                Spacer(modifier = Modifier.weight(1f))
-                            }
+                        ) {
+                            NovelCard(
+                                novel = book,
+                                onClick = { onBookClick(book.id) },
+                                enableInternalClick = false,
+                                modifier = Modifier.fillMaxWidth(),
+                                coverHeight = 280.dp
+                            )
                         }
                     }
                     
                     if (state.isLoadingMore) {
-                        item {
+                        item(span = { GridItemSpan(2) }) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()

@@ -115,7 +115,7 @@ fun ReadingSettingsDialog(
                         }
                         IconButton(onClick = onDismiss) {
                             Icon(
-                                imageVector = Icons.Default.Done,
+                                imageVector = Icons.Filled.Check,
                                 contentDescription = "Done"
                             )
                         }

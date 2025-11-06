@@ -9,6 +9,9 @@ import com.miraimagiclab.novelreadingapp.exception.DuplicateNovelException
 import com.miraimagiclab.novelreadingapp.exception.NovelNotFoundException
 import com.miraimagiclab.novelreadingapp.model.Novel
 import com.miraimagiclab.novelreadingapp.repository.NovelRepository
+import com.miraimagiclab.novelreadingapp.repository.ChapterRepository
+import com.miraimagiclab.novelreadingapp.repository.ReviewRepository
+import com.miraimagiclab.novelreadingapp.repository.CommentRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -20,8 +23,10 @@ import java.time.LocalDateTime
 @Transactional
 class NovelService(
     private val novelRepository: NovelRepository,
-    private val reviewService: ReviewService,
-    private val userNovelInteractionService: UserNovelInteractionService
+    private val userNovelInteractionService: UserNovelInteractionService,
+    private val chapterRepository: ChapterRepository,
+    private val reviewRepository: ReviewRepository,
+    private val commentRepository: CommentRepository
 ) {
 
     fun createNovel(request: NovelCreateRequest): NovelDto {
@@ -316,6 +321,79 @@ class NovelService(
         val updatedNovel = novel.copy(
             rating = newRating,
             ratingCount = currentRatingCount,
+            updatedAt = LocalDateTime.now()
+        )
+
+        val savedNovel = novelRepository.save(updatedNovel)
+        return NovelDto.fromEntity(savedNovel)
+    }
+
+    /**
+     * Cập nhật các chỉ số thống kê của novel từ chapters (wordCount, chapterCount)
+     * Được gọi khi có thay đổi về chapters (tạo, cập nhật, xóa)
+     */
+    fun updateNovelStatsFromChapters(novelId: String): NovelDto {
+        val novel = novelRepository.findById(novelId)
+            .orElseThrow { NovelNotFoundException("Novel with ID '$novelId' not found") }
+
+        val chapters = chapterRepository.findByNovelId(novelId)
+        val chapterCount = chapters.size
+        val wordCount = chapters.sumOf { it.wordCount }
+
+        val updatedNovel = novel.copy(
+            chapterCount = chapterCount,
+            wordCount = wordCount,
+            updatedAt = LocalDateTime.now()
+        )
+
+        val savedNovel = novelRepository.save(updatedNovel)
+        return NovelDto.fromEntity(savedNovel)
+    }
+
+    /**
+     * Cập nhật rating và ratingCount của novel từ reviews
+     * Được gọi khi có thay đổi về reviews (tạo, cập nhật, xóa)
+     */
+    fun updateNovelStatsFromReviews(novelId: String): NovelDto {
+        val novel = novelRepository.findById(novelId)
+            .orElseThrow { NovelNotFoundException("Novel with ID '$novelId' not found") }
+
+        val reviews = reviewRepository.findByNovelId(novelId)
+        val reviewCount = reviews.size
+        val averageRating = if (reviewCount > 0) {
+            reviews.map { it.overallRating }.average()
+        } else {
+            0.0
+        }
+
+        // Update comment count from both reviews and comments
+        val commentCount = commentRepository.countByNovelIdAndDeletedFalse(novelId).toInt() + reviewCount
+
+        val updatedNovel = novel.copy(
+            rating = averageRating,
+            ratingCount = reviewCount,
+            commentCount = commentCount,
+            updatedAt = LocalDateTime.now()
+        )
+
+        val savedNovel = novelRepository.save(updatedNovel)
+        return NovelDto.fromEntity(savedNovel)
+    }
+
+    /**
+     * Cập nhật commentCount của novel từ comments và reviews
+     * Được gọi khi có thay đổi về comments (tạo, xóa)
+     */
+    fun updateNovelCommentCount(novelId: String): NovelDto {
+        val novel = novelRepository.findById(novelId)
+            .orElseThrow { NovelNotFoundException("Novel with ID '$novelId' not found") }
+
+        // Count includes both comments and reviews
+        val commentCount = commentRepository.countByNovelIdAndDeletedFalse(novelId).toInt() + 
+                          reviewRepository.countByNovelId(novelId).toInt()
+
+        val updatedNovel = novel.copy(
+            commentCount = commentCount,
             updatedAt = LocalDateTime.now()
         )
 

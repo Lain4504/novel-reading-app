@@ -62,7 +62,7 @@ fun StatsCard(
             }
             
             Icon(
-                imageVector = Icons.Default.ArrowForward,
+                imageVector = Icons.Filled.ChevronRight,
                 contentDescription = "View details",
                 tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                 modifier = Modifier.size(16.dp)

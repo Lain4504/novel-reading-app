@@ -59,7 +59,7 @@ fun AccountDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -127,7 +127,7 @@ private fun ErrorContent(
             modifier = Modifier.padding(24.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.Star,
+                imageVector = Icons.Filled.Star,
                 contentDescription = "Error",
                 modifier = Modifier.size(48.dp),
                 tint = MaterialTheme.colorScheme.error
@@ -238,25 +238,25 @@ private fun UserHeaderSection(user: UserDto) {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             InfoRow(
-                icon = Icons.Default.Email,
+                icon = Icons.Filled.Email,
                 label = "Email",
                 value = user.email
             )
             
             InfoRow(
-                icon = Icons.Default.Person,
+                icon = Icons.Filled.Person,
                 label = "Username",
                 value = user.username
             )
             
             InfoRow(
-                icon = Icons.Default.Star,
+                icon = Icons.Filled.Star,
                 label = "Joined",
                 value = formatDate(user.createdAt)
             )
             
             InfoRow(
-                icon = Icons.Default.Info,
+                icon = Icons.Filled.Info,
                 label = "Status",
                 value = user.status
             )
@@ -337,7 +337,7 @@ private fun AuthorNovelsSection(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Star,
+                        imageVector = Icons.Filled.Star,
                         contentDescription = "Error",
                         tint = MaterialTheme.colorScheme.error
                     )
@@ -404,7 +404,7 @@ private fun EmptyNovelsState() {
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Icon(
-            imageVector = Icons.Default.Star,
+            imageVector = Icons.Filled.Star,
             contentDescription = "No novels",
             modifier = Modifier.size(48.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant

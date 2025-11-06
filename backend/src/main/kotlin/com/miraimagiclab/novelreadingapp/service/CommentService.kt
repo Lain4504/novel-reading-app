@@ -19,7 +19,8 @@ import java.time.LocalDateTime
 @Transactional
 class CommentService(
     private val commentRepository: CommentRepository,
-    private val userService: UserService
+    private val userService: UserService,
+    private val novelService: NovelService
 ) {
 
     fun createComment(request: CommentCreateRequest): CommentResponseDto {
@@ -36,6 +37,18 @@ class CommentService(
         )
 
         val saved = commentRepository.save(comment)
+        
+        // Update novel comment count (only if novelId is not null)
+        if (request.novelId != null) {
+            try {
+                novelService.updateNovelCommentCount(request.novelId)
+            } catch (e: Exception) {
+                // Log error but don't fail comment creation if stats update fails
+                val logger = org.slf4j.LoggerFactory.getLogger(CommentService::class.java)
+                logger.error("Failed to update novel comment count after comment creation: ${e.message}", e)
+            }
+        }
+        
         val user = try {
             userService.getUserEntityById(request.userId)
         } catch (e: Exception) {
@@ -70,6 +83,17 @@ class CommentService(
             updatedAt = LocalDateTime.now()
         )
         commentRepository.save(updatedParent)
+        
+        // Update novel comment count (replies are also counted as comments, only if novelId is not null)
+        if (parent.novelId != null) {
+            try {
+                novelService.updateNovelCommentCount(parent.novelId)
+            } catch (e: Exception) {
+                // Log error but don't fail reply creation if stats update fails
+                val logger = org.slf4j.LoggerFactory.getLogger(CommentService::class.java)
+                logger.error("Failed to update novel comment count after reply creation: ${e.message}", e)
+            }
+        }
         
         val user = try {
             userService.getUserEntityById(request.userId)
@@ -163,7 +187,19 @@ class CommentService(
         val comment = commentRepository.findById(id)
             .orElseThrow { CommentNotFoundException("Comment with ID '$id' not found") }
 
+        val novelId = comment.novelId
         val updated = comment.copy(deleted = true, updatedAt = LocalDateTime.now())
         commentRepository.save(updated)
+        
+        // Update novel comment count after soft delete (only if novelId is not null)
+        if (novelId != null) {
+            try {
+                novelService.updateNovelCommentCount(novelId)
+            } catch (e: Exception) {
+                // Log error but don't fail comment deletion if stats update fails
+                val logger = org.slf4j.LoggerFactory.getLogger(CommentService::class.java)
+                logger.error("Failed to update novel comment count after comment deletion: ${e.message}", e)
+            }
+        }
     }
 }

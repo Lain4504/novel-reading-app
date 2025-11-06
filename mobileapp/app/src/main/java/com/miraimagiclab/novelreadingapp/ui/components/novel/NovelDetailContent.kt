@@ -46,7 +46,7 @@ fun NovelDetailContent(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "Back",
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -56,7 +56,7 @@ fun NovelDetailContent(
                     val userInteraction by viewModel.userInteraction.collectAsState()
                     IconButton(onClick = { viewModel.toggleFollow() }) {
                         Icon(
-                            imageVector = if (userInteraction?.hasFollowing == true) Icons.Default.Star else Icons.Default.Star,
+                            imageVector = if (userInteraction?.hasFollowing == true) Icons.Filled.Star else Icons.Outlined.Star,
                             contentDescription = if (userInteraction?.hasFollowing == true) "Remove from favorites" else "Add to favorites",
                             tint = if (userInteraction?.hasFollowing == true) Color(0xFFFFD700) else MaterialTheme.colorScheme.primary
                         )

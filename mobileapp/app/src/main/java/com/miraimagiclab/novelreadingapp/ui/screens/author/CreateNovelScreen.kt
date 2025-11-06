@@ -165,7 +165,7 @@ fun CreateNovelScreen(
                 title = { Text("Create Novel") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 windowInsets = WindowInsets(0)
@@ -249,7 +249,7 @@ fun CreateNovelScreen(
                                 .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Close,
+                                imageVector = Icons.Filled.Close,
                                 contentDescription = "Remove",
                                 tint = Color.White,
                                 modifier = Modifier.size(16.dp)
@@ -257,7 +257,7 @@ fun CreateNovelScreen(
                         }
                     } else {
                         Icon(
-                            imageVector = Icons.Default.Add,
+                            imageVector = Icons.Filled.Add,
                             contentDescription = null,
                             tint = Color(0xFFCCCCCC),
                             modifier = Modifier.size(32.dp)
@@ -277,7 +277,7 @@ fun CreateNovelScreen(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Add,
+                        imageVector = Icons.Filled.Add,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )

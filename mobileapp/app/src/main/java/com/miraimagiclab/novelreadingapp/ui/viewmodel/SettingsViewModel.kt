@@ -28,6 +28,13 @@ class SettingsViewModel @Inject constructor(
             initialValue = false
         )
 
+    val isNovelUpdateNotificationsEnabled: StateFlow<Boolean> = settingsRepository.getNovelUpdateNotificationsEnabledFlow()
+        .stateIn(
+            scope = viewModelScope,
+            started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
+            initialValue = true
+        )
+
     fun toggleDarkMode() {
         viewModelScope.launch {
             val currentMode = isDarkMode.value
@@ -41,5 +48,9 @@ class SettingsViewModel @Inject constructor(
 
     fun setHasSeenOnboarding(hasSeen: Boolean) {
         settingsRepository.setHasSeenOnboarding(hasSeen)
+    }
+
+    fun setNovelUpdateNotificationsEnabled(enabled: Boolean) {
+        settingsRepository.setNovelUpdateNotificationsEnabled(enabled)
     }
 }
