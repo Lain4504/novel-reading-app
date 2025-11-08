@@ -3,6 +3,7 @@ package com.miraimagiclab.novelreadingapp.ui.components
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -30,26 +31,26 @@ fun BottomNavigationBar(
             BottomNavItem(
                 route = Screen.Explore.route,
                 title = "Explore",
-                icon = Icons.Default.Lock,
-                selectedIcon = Icons.Default.Lock
+                icon = Icons.Outlined.Explore,
+                selectedIcon = Icons.Filled.Explore
             ),
             BottomNavItem(
                 route = Screen.Home.route,
                 title = "Home",
-                icon = Icons.Default.Home,
-                selectedIcon = Icons.Default.Home
+                icon = Icons.Outlined.Home,
+                selectedIcon = Icons.Filled.Home
             ),
             BottomNavItem(
                 route = Screen.BookList.route,
                 title = "Library",
-                icon = Icons.Default.Menu,
-                selectedIcon = Icons.Default.Menu
+                icon = Icons.Outlined.LibraryBooks,
+                selectedIcon = Icons.Filled.LibraryBooks
             ),
             BottomNavItem(
                 route = Screen.Profile.route,
                 title = "Profile",
-                icon = Icons.Default.Person,
-                selectedIcon = Icons.Default.Person
+                icon = Icons.Outlined.Person,
+                selectedIcon = Icons.Filled.Person
             )
         )
     } else {
@@ -58,20 +59,20 @@ fun BottomNavigationBar(
             BottomNavItem(
                 route = Screen.Explore.route,
                 title = "Explore",
-                icon = Icons.Default.Menu,
-                selectedIcon = Icons.Default.Menu
+                icon = Icons.Outlined.Explore,
+                selectedIcon = Icons.Filled.Explore
             ),
             BottomNavItem(
                 route = Screen.Home.route,
                 title = "Home",
-                icon = Icons.Default.Home,
-                selectedIcon = Icons.Default.Home
+                icon = Icons.Outlined.Home,
+                selectedIcon = Icons.Filled.Home
             ),
             BottomNavItem(
                 route = Screen.Profile.route,
                 title = "Profile",
-                icon = Icons.Default.Person,
-                selectedIcon = Icons.Default.Person
+                icon = Icons.Outlined.Person,
+                selectedIcon = Icons.Filled.Person
             )
         )
     }

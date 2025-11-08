@@ -22,7 +22,8 @@ import java.time.LocalDateTime
 class ReviewService(
     private val reviewRepository: ReviewRepository,
     private val userRepository: UserRepository,
-    private val novelRepository: NovelRepository
+    private val novelRepository: NovelRepository,
+    private val novelService: NovelService
 ) {
 
     fun createReview(request: ReviewCreateRequest): ReviewDto {
@@ -59,6 +60,16 @@ class ReviewService(
         )
 
         val savedReview = reviewRepository.save(review)
+        
+        // Update novel stats (rating, ratingCount, commentCount) from all reviews
+        try {
+            novelService.updateNovelStatsFromReviews(request.novelId)
+        } catch (e: Exception) {
+            // Log error but don't fail review creation if stats update fails
+            val logger = org.slf4j.LoggerFactory.getLogger(ReviewService::class.java)
+            logger.error("Failed to update novel stats after review creation: ${e.message}", e)
+        }
+        
         val user = userRepository.findById(request.userId).orElse(null)
         return ReviewDto.fromEntity(savedReview, user)
     }
@@ -153,16 +164,35 @@ class ReviewService(
     }
 
     fun deleteReview(id: String) {
-        if (!reviewRepository.existsById(id)) {
-            throw IllegalArgumentException("Review with ID '$id' not found")
-        }
+        val review = reviewRepository.findById(id)
+            .orElseThrow { IllegalArgumentException("Review with ID '$id' not found") }
+        val novelId = review.novelId
+        
         reviewRepository.deleteById(id)
+        
+        // Update novel stats (rating, ratingCount, commentCount) from remaining reviews
+        try {
+            novelService.updateNovelStatsFromReviews(novelId)
+        } catch (e: Exception) {
+            // Log error but don't fail review deletion if stats update fails
+            val logger = org.slf4j.LoggerFactory.getLogger(ReviewService::class.java)
+            logger.error("Failed to update novel stats after review deletion: ${e.message}", e)
+        }
     }
 
     fun deleteReviewByUserAndNovel(userId: String, novelId: String) {
         val review = reviewRepository.findByUserIdAndNovelId(userId, novelId)
         if (review.isPresent) {
             reviewRepository.delete(review.get())
+            
+            // Update novel stats (rating, ratingCount, commentCount) from remaining reviews
+            try {
+                novelService.updateNovelStatsFromReviews(novelId)
+            } catch (e: Exception) {
+                // Log error but don't fail review deletion if stats update fails
+                val logger = org.slf4j.LoggerFactory.getLogger(ReviewService::class.java)
+                logger.error("Failed to update novel stats after review deletion: ${e.message}", e)
+            }
         }
     }
 }

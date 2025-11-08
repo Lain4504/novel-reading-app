@@ -29,8 +29,20 @@ class UserNovelInteractionService(
 
     @Transactional(readOnly = true)
     fun getNovelInteractions(novelId: String): List<UserNovelInteractionDto> {
-        return userNovelInteractionRepository.findByNovelId(novelId)
+        val logger = org.slf4j.LoggerFactory.getLogger(UserNovelInteractionService::class.java)
+        logger.info("=== UserNovelInteractionService: Getting interactions for novel ===")
+        logger.info("NovelId: $novelId")
+        
+        val interactions = userNovelInteractionRepository.findByNovelId(novelId)
             .map { UserNovelInteractionDto.fromEntity(it) }
+        
+        logger.info("Found ${interactions.size} interaction(s) for novel $novelId")
+        interactions.forEach { interaction ->
+            logger.debug("Interaction - UserId: ${interaction.userId}, Following: ${interaction.hasFollowing}, Notify: ${interaction.notify}, CurrentChapter: ${interaction.currentChapterNumber}")
+        }
+        
+        logger.info("=== UserNovelInteractionService: Interactions retrieved ===")
+        return interactions
     }
 
     fun createOrUpdateInteraction(userId: String, novelId: String, request: UserNovelInteractionUpdateRequest): UserNovelInteractionDto {

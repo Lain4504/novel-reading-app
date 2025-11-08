@@ -79,7 +79,7 @@ fun CommentsContent(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Add,
+                        imageVector = Icons.Filled.Add,
                         contentDescription = "Add comment",
                         modifier = Modifier.size(18.dp)
                     )

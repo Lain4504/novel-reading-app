@@ -13,12 +13,18 @@ class SettingsRepository @Inject constructor(
 
     fun getHasSeenOnboardingFlow(): Flow<Boolean> = settingsDataStore.hasSeenOnboarding
 
+    fun getNovelUpdateNotificationsEnabledFlow(): Flow<Boolean> = settingsDataStore.enableNovelUpdateNotifications
+
     fun setDarkMode(isDark: Boolean) {
         settingsDataStore.setDarkMode(isDark)
     }
 
     fun setHasSeenOnboarding(hasSeen: Boolean) {
         settingsDataStore.setHasSeenOnboarding(hasSeen)
+    }
+
+    fun setNovelUpdateNotificationsEnabled(enabled: Boolean) {
+        settingsDataStore.setEnableNovelUpdateNotifications(enabled)
     }
 
     fun clearSettings() {

@@ -58,6 +58,12 @@ dependencies {
 
     // Cloudinary
     implementation("com.cloudinary:cloudinary-http44:1.37.0")
+    
+    // Firebase Admin SDK for FCM
+    implementation("com.google.firebase:firebase-admin:9.2.0")
+    
+    // Google Auth Library for credentials (required by firebase-admin)
+    implementation("com.google.auth:google-auth-library-oauth2-http:1.19.0")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {

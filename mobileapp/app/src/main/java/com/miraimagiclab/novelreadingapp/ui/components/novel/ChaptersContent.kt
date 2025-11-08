@@ -43,7 +43,7 @@ fun ChaptersContent(
             // Sort options (placeholder for future enhancement)
             IconButton(onClick = { /* Handle sort */ }) {
                 Icon(
-                    imageVector = Icons.Default.Info,
+                    imageVector = Icons.Filled.Info,
                     contentDescription = "Sort chapters",
                     tint = MaterialTheme.colorScheme.primary
                 )
@@ -63,7 +63,7 @@ fun ChaptersContent(
                     verticalArrangement = Arrangement.spacedBy(Spacing.md)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Info,
+                        imageVector = Icons.Filled.Info,
                         contentDescription = "No chapters",
                         tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                         modifier = Modifier.size(48.dp)

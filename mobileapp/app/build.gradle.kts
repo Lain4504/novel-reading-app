@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     kotlin("kapt")
     alias(libs.plugins.hilt)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -61,6 +62,9 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation("androidx.compose.material:material:1.6.0") // For pull refresh
     
+    // Material Icons Extended - More icons than Default
+    implementation("androidx.compose.material:material-icons-extended:1.6.0")
+    
     // Navigation Compose
     implementation("androidx.navigation:navigation-compose:2.7.7")
     
@@ -80,12 +84,18 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.48")
     kapt("com.google.dagger:hilt-android-compiler:2.48")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    kapt("androidx.hilt:hilt-compiler:1.2.0")
     
     // Room dependencies removed - using direct API calls instead
     
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+
+    // Firebase Cloud Messaging
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation("com.google.firebase:firebase-messaging-ktx")
+    implementation("com.google.firebase:firebase-analytics-ktx")
     
     // SharedPreferences
     implementation("androidx.datastore:datastore-preferences:1.0.0")

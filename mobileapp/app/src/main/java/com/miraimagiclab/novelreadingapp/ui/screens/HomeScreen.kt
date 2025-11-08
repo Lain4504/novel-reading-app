@@ -26,6 +26,7 @@ import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -108,7 +109,7 @@ fun HomeScreen(
                             )
                         ) {
                             Icon(
-                                imageVector = Icons.Default.AccountCircle,
+                                imageVector = Icons.Filled.AccountCircle,
                                 contentDescription = "Login",
                                 modifier = Modifier.size(20.dp)
                             )
@@ -123,7 +124,7 @@ fun HomeScreen(
                         // Show notification bell only when logged in
                         IconButton(onClick = { /* Handle notification */ }) {
                             Icon(
-                                imageVector = Icons.Default.Notifications,
+                                imageVector = Icons.Filled.Notifications,
                                 contentDescription = "Notifications",
                                 tint = MaterialTheme.colorScheme.primary
                             )
@@ -245,7 +246,8 @@ fun HomeScreen(
                                         onClick = {
                                             hapticFeedback.light()
                                             onNovelClick(novel.id)
-                                        }
+                                        },
+                                        cardWidth = 140.dp
                                     )
                                 }
                             }
@@ -274,7 +276,8 @@ fun HomeScreen(
                                         onClick = {
                                             hapticFeedback.light()
                                             onNovelClick(novel.id)
-                                        }
+                                        },
+                                        cardWidth = 140.dp
                                     )
                                 }
                             }
@@ -350,7 +353,8 @@ fun HomeScreen(
                                         onClick = {
                                             hapticFeedback.light()
                                             onNovelClick(novel.id)
-                                        }
+                                        },
+                                        cardWidth = 140.dp
                                     )
                                 }
                             }
@@ -379,7 +383,8 @@ fun HomeScreen(
                                         onClick = {
                                             hapticFeedback.light()
                                             onNovelClick(novel.id)
-                                        }
+                                        },
+                                        cardWidth = 140.dp
                                     )
                                 }
                             }

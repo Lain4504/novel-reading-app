@@ -52,7 +52,7 @@ fun CommentsScreen(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "Back",
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -141,7 +141,7 @@ fun CommentsScreen(
                             verticalArrangement = Arrangement.spacedBy(Spacing.md)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Edit,
+                                imageVector = Icons.Filled.Edit,
                                 contentDescription = "No comments",
                                 tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                                 modifier = Modifier.size(48.dp)
@@ -236,7 +236,7 @@ fun CommentInputBar(
                             modifier = Modifier.size(20.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Close,
+                                imageVector = Icons.Filled.Close,
                                 contentDescription = "Cancel reply",
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(16.dp)
@@ -275,7 +275,7 @@ fun CommentInputBar(
                     enabled = commentText.isNotBlank()
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Send,
+                        imageVector = Icons.Filled.Send,
                         contentDescription = if (replyToComment != null) "Send reply" else "Send comment",
                         tint = if (commentText.isNotBlank()) 
                             MaterialTheme.colorScheme.primary 

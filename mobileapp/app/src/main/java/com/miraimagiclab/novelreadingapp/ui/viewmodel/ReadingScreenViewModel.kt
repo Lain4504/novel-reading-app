@@ -42,20 +42,105 @@ class ReadingScreenViewModel @Inject constructor(
                 _isLoading.value = true
                 _error.value = null
                 
-                // Load the specific chapter
-                chapterRepository.getChapterById(chapterId).collect { chapter ->
+                // Load chapter list first to ensure we have valid chapters
+                if (allChapters.isEmpty() || currentNovelId != novelId) {
+                    // Use sync method to avoid Flow transparency issues
+                    val chapters = chapterRepository.getChaptersByNovelIdSync(novelId)
+                    
+                    if (chapters.isEmpty()) {
+                        _currentChapter.value = UiState.Error("No chapters found")
+                        return@launch
+                    }
+                    
+                    allChapters = chapters
+                    _chapterList.value = UiState.Success(chapters)
+                    
+                    // Verify chapterId exists in the list, if not use first chapter
+                    val validChapterId = if (chapters.any { it.id == chapterId }) {
+                        chapterId
+                    } else {
+                        chapters.firstOrNull()?.id ?: chapterId
+                    }
+                    
+                    // Load the specific chapter with validated ID using sync method with novelId
+                    // This will fetch from API if not in cache
+                    var chapter = chapterRepository.getChapterByIdSync(novelId, validChapterId)
+                    
+                    // If chapter still not found, refresh chapter list to cache all chapters, then try again
+                    if (chapter == null) {
+                        try {
+                            chapterRepository.refreshChaptersByNovelId(novelId)
+                            val refreshedChapters = chapterRepository.getChaptersByNovelIdSync(novelId)
+                            
+                            if (refreshedChapters.isNotEmpty()) {
+                                allChapters = refreshedChapters
+                                _chapterList.value = UiState.Success(refreshedChapters)
+                                
+                                val finalValidChapterId = if (refreshedChapters.any { it.id == chapterId }) {
+                                    chapterId
+                                } else {
+                                    refreshedChapters.firstOrNull()?.id ?: chapterId
+                                }
+                                
+                                // Try to get chapter again after refresh
+                                chapter = chapterRepository.getChapterByIdSync(novelId, finalValidChapterId)
+                            }
+                        } catch (e: Exception) {
+                            // Ignore refresh errors, will show chapter not found below
+                        }
+                    }
+                    
+                                         if (chapter != null) {
+                         currentChapterId = validChapterId
+                         _currentChapter.value = UiState.Success(chapter)
+                         // Track chapter view count (fire-and-forget)
+                         chapterRepository.incrementViewCount(validChapterId)
+                     } else {
+                         _currentChapter.value = UiState.Error("Chapter not found")
+                         _error.value = "Chapter not found"
+                     }
+                 } else {
+                    // Chapter list already loaded, just load the specific chapter
+                    val validChapterId = if (allChapters.any { it.id == chapterId }) {
+                        chapterId
+                    } else {
+                        allChapters.firstOrNull()?.id ?: chapterId
+                    }
+                    
+                    // Use method with novelId to allow fetching from API if not in cache
+                    var chapter = chapterRepository.getChapterByIdSync(novelId, validChapterId)
+                    
+                    // If chapter not found, try refreshing chapter list and retry
+                    if (chapter == null) {
+                        try {
+                            chapterRepository.refreshChaptersByNovelId(novelId)
+                            val refreshedChapters = chapterRepository.getChaptersByNovelIdSync(novelId)
+                            
+                            if (refreshedChapters.isNotEmpty()) {
+                                allChapters = refreshedChapters
+                                _chapterList.value = UiState.Success(refreshedChapters)
+                                
+                                val finalValidChapterId = if (refreshedChapters.any { it.id == chapterId }) {
+                                    chapterId
+                                } else {
+                                    refreshedChapters.firstOrNull()?.id ?: chapterId
+                                }
+                                
+                                chapter = chapterRepository.getChapterByIdSync(novelId, finalValidChapterId)
+                            }
+                        } catch (e: Exception) {
+                            // Ignore refresh errors, will show chapter not found below
+                        }
+                    }
+                    
                     if (chapter != null) {
+                        currentChapterId = validChapterId
                         _currentChapter.value = UiState.Success(chapter)
                         // Track chapter view count (fire-and-forget)
-                        chapterRepository.incrementViewCount(chapterId)
+                        chapterRepository.incrementViewCount(validChapterId)
                     } else {
                         _currentChapter.value = UiState.Error("Chapter not found")
                     }
-                }
-                
-                // Load chapter list for navigation if not already loaded
-                if (allChapters.isEmpty() || currentNovelId != novelId) {
-                    loadChapterList(novelId)
                 }
                 
             } catch (e: Exception) {

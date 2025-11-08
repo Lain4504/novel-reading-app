@@ -55,7 +55,7 @@ fun ChangePasswordScreen(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -77,7 +77,7 @@ fun ChangePasswordScreen(
         ) {
             // Icon
             Icon(
-                imageVector = Icons.Default.Lock,
+                imageVector = Icons.Filled.Lock,
                 contentDescription = null,
                 modifier = Modifier
                     .size(80.dp)

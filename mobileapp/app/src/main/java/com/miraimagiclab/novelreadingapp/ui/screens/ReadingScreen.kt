@@ -50,6 +50,7 @@ import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.platform.LocalContext
 import com.miraimagiclab.novelreadingapp.ui.components.ReadingSettingsDialog
 import com.miraimagiclab.novelreadingapp.ui.theme.GreenPrimary
@@ -152,7 +153,6 @@ fun ReadingScreen(
         modifier = modifier
             .fillMaxSize()
             .background(currentTheme.backgroundColor)
-            .clickable { showUI = !showUI }
     ) {
         // Top App Bar - Only show when showUI is true
         if (showUI) {
@@ -276,37 +276,22 @@ fun ReadingScreen(
                 }
             }
             
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
-                    .pointerInput(scrollState) {
-                        // Scroll tracking removed - using chapter-level progress only
-                    }
-                    .pointerInput(Unit) {
-                        detectDragGestures(
-                            onDragEnd = {
-                                // Handle swipe gestures for navigation
-                            }
-                        ) { change, _ ->
-                            // Detect horizontal swipes for chapter navigation
-                            val horizontalDrag = change.position.x - change.previousPosition.x
-                            if (kotlin.math.abs(horizontalDrag) > 50) { // Minimum swipe distance
-                                if (horizontalDrag > 0 && readingViewModel.hasPreviousChapter()) {
-                                    // Swipe right - previous chapter
-                                    handlePreviousChapter()
-                                } else if (horizontalDrag < 0 && readingViewModel.hasNextChapter()) {
-                                    // Swipe left - next chapter
-                                    handleNextChapter()
-                                }
-                            }
-                        }
-                    }
-                    .padding(
-                        horizontal = maxOf(16.dp, screenWidth * 0.05f),
-                        vertical = 12.dp
-                    )
-            ) {
+                         // Scrollable content with tap detection (tap only, doesn't interfere with scroll)
+             Column(
+                 modifier = Modifier
+                     .fillMaxSize()
+                     .padding(
+                         horizontal = maxOf(16.dp, screenWidth * 0.05f),
+                         vertical = 12.dp
+                     )
+                     .pointerInput(Unit) {
+                         // Only detect tap gestures - drag gestures will pass through to verticalScroll
+                         detectTapGestures(
+                             onTap = { showUI = !showUI }
+                         )
+                     }
+                     .verticalScroll(scrollState)
+             ) {
                 // Add top padding to account for progress indicator
                 Spacer(modifier = Modifier.height(progressIndicatorHeight + 8.dp))
                 
@@ -359,11 +344,11 @@ fun ReadingScreen(
                                 modifier = Modifier.size(32.dp)
                             )
                         }
-                    }
-                }
-            }
-
-            // Bottom navigation bar - Only show when showUI is true
+                                                                                   }
+                 }
+             }
+             
+             // Bottom navigation bar - Only show when showUI is true
             if (showUI) {
                 Column(
                     modifier = Modifier.align(Alignment.BottomCenter)
@@ -451,7 +436,7 @@ fun ReadingScreen(
                                  }
                              ) {
                                  Icon(
-                                     imageVector = Icons.Default.Settings,
+                                     imageVector = Icons.Filled.Settings,
                                      contentDescription = "Reading Settings",
                                      tint = MaterialTheme.colorScheme.onSurface,
                                      modifier = Modifier.size(24.dp)

@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -59,7 +60,7 @@ fun AuthorDashboardScreen(
                 title = { Text("My Novels") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 windowInsets = WindowInsets(0)
@@ -71,7 +72,7 @@ fun AuthorDashboardScreen(
                 containerColor = MaterialTheme.colorScheme.primary,
                 elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 0.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Create Novel")
+                Icon(Icons.Filled.Add, contentDescription = "Create Novel")
             }
         }
     ) { innerPadding ->
@@ -158,7 +159,7 @@ private fun EmptyNovelsState(
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            imageVector = Icons.Default.Info,
+            imageVector = Icons.Filled.Info,
             contentDescription = null,
             modifier = Modifier.size(48.dp),
             tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
@@ -261,7 +262,7 @@ private fun NovelCard(
             
             // Arrow indicator
             Icon(
-                imageVector = Icons.Default.ArrowForward,
+                imageVector = Icons.Filled.ChevronRight,
                 contentDescription = "View details",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(16.dp)
