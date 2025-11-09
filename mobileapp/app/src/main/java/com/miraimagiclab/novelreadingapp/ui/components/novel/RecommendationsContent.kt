@@ -48,7 +48,7 @@ fun RecommendationsContent(
             // Refresh recommendations button (placeholder for future enhancement)
             IconButton(onClick = { /* Handle refresh recommendations */ }) {
                 Icon(
-                    imageVector = Icons.Default.Refresh,
+                    imageVector = Icons.Filled.Refresh,
                     contentDescription = "Refresh recommendations",
                     tint = MaterialTheme.colorScheme.primary
                 )
@@ -68,7 +68,7 @@ fun RecommendationsContent(
                     verticalArrangement = Arrangement.spacedBy(Spacing.md)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Info,
+                        imageVector = Icons.Filled.Info,
                         contentDescription = "No recommendations",
                         tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                         modifier = Modifier.size(48.dp)
@@ -156,7 +156,7 @@ fun RecommendationCard(
                 horizontalArrangement = Arrangement.spacedBy(Spacing.xs)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Star,
+                    imageVector = Icons.Filled.Star,
                     contentDescription = "Rating",
                     tint = Color(0xFFFFD700),
                     modifier = Modifier.size(12.dp)

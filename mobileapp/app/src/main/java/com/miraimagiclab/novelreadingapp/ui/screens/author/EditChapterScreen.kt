@@ -68,7 +68,7 @@ fun EditChapterScreen(
                         onClick = { showDeleteDialog = true }
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Delete,
+                            imageVector = Icons.Filled.Delete,
                             contentDescription = "Delete"
                         )
                     }

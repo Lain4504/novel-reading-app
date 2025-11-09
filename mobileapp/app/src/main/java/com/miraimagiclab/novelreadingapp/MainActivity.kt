@@ -20,6 +20,8 @@ import com.miraimagiclab.novelreadingapp.ui.theme.NovelReadingAppTheme
 import com.miraimagiclab.novelreadingapp.ui.viewmodel.SettingsViewModel
 import com.miraimagiclab.novelreadingapp.data.auth.SessionManager
 import com.miraimagiclab.novelreadingapp.data.repository.TokenRefreshRepository
+import com.miraimagiclab.novelreadingapp.service.FcmService
+import com.miraimagiclab.novelreadingapp.util.notification.NotificationHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -33,9 +35,15 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var tokenRefreshRepository: TokenRefreshRepository
     
+    @Inject
+    lateinit var fcmService: FcmService
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        
+        // Ensure notification channels are created
+        NotificationHelper.ensureChannels(this)
         
         // Check and refresh token on app startup
         lifecycleScope.launch {
@@ -58,6 +66,29 @@ class MainActivity : ComponentActivity() {
         setContent {
             val settingsViewModel: SettingsViewModel = hiltViewModel()
             val isDarkMode by settingsViewModel.isDarkMode.collectAsState()
+            val notifEnabled by settingsViewModel.isNovelUpdateNotificationsEnabled.collectAsState()
+            val authState by sessionManager.authState.collectAsState()
+            
+            // Send FCM token to server when user is logged in and notifications are enabled
+            LaunchedEffect(authState.isLoggedIn, notifEnabled) {
+                android.util.Log.d("MainActivity", "=== LaunchedEffect: FCM Token Registration ===")
+                android.util.Log.d("MainActivity", "isLoggedIn: ${authState.isLoggedIn}")
+                android.util.Log.d("MainActivity", "notifEnabled: $notifEnabled")
+                
+                if (authState.isLoggedIn && notifEnabled) {
+                    android.util.Log.d("MainActivity", "User is logged in and notifications enabled. Getting FCM token...")
+                    // Get FCM token and send to server
+                    val token = fcmService.getFcmTokenAsync()
+                    token?.let {
+                        android.util.Log.d("MainActivity", "FCM token obtained. Sending to server...")
+                        fcmService.sendTokenToServer(it)
+                    } ?: run {
+                        android.util.Log.w("MainActivity", "⚠️ FCM token is null. Cannot send to server.")
+                    }
+                } else {
+                    android.util.Log.d("MainActivity", "Skipping FCM token registration: isLoggedIn=${authState.isLoggedIn}, notifEnabled=$notifEnabled")
+                }
+            }
             
             NovelReadingAppTheme(darkTheme = isDarkMode) {
                 Surface(
@@ -67,7 +98,6 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     val navBackStackEntry by navController.currentBackStackEntryAsState()
                     val currentRoute = navBackStackEntry?.destination?.route
-                    val authState by sessionManager.authState.collectAsState()
                     
                     Scaffold(
                         bottomBar = {

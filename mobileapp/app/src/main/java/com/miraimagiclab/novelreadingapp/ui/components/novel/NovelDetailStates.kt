@@ -35,7 +35,7 @@ fun NovelDetailSkeleton(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "Back",
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -167,7 +167,7 @@ fun NovelDetailErrorState(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "Back",
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -193,7 +193,7 @@ fun NovelDetailErrorState(
                 modifier = Modifier.padding(Spacing.xl)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Info,
+                    imageVector = Icons.Filled.Info,
                     contentDescription = "Error",
                     tint = MaterialTheme.colorScheme.error,
                     modifier = Modifier.size(64.dp)
@@ -222,7 +222,7 @@ fun NovelDetailErrorState(
                     )
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Refresh,
+                        imageVector = Icons.Filled.Refresh,
                         contentDescription = "Retry",
                         modifier = Modifier.size(18.dp)
                     )

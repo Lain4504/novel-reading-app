@@ -15,6 +15,7 @@ class SettingsDataStore(private val context: Context) {
     object Keys {
         const val IS_DARK_MODE = "is_dark_mode"
         const val HAS_SEEN_ONBOARDING = "has_seen_onboarding"
+        const val ENABLE_NOVEL_UPDATE_NOTIFICATIONS = "enable_novel_update_notifications"
     }
 
     private val _isDarkMode = MutableStateFlow(sharedPreferences.getBoolean(Keys.IS_DARK_MODE, false))
@@ -22,6 +23,11 @@ class SettingsDataStore(private val context: Context) {
 
     private val _hasSeenOnboarding = MutableStateFlow(sharedPreferences.getBoolean(Keys.HAS_SEEN_ONBOARDING, false))
     val hasSeenOnboarding: Flow<Boolean> = _hasSeenOnboarding.asStateFlow()
+
+    private val _enableNovelUpdateNotifications = MutableStateFlow(
+        sharedPreferences.getBoolean(Keys.ENABLE_NOVEL_UPDATE_NOTIFICATIONS, true)
+    )
+    val enableNovelUpdateNotifications: Flow<Boolean> = _enableNovelUpdateNotifications.asStateFlow()
 
     fun setDarkMode(isDark: Boolean) {
         sharedPreferences.edit().putBoolean(Keys.IS_DARK_MODE, isDark).apply()
@@ -33,9 +39,15 @@ class SettingsDataStore(private val context: Context) {
         _hasSeenOnboarding.value = hasSeen
     }
 
+    fun setEnableNovelUpdateNotifications(enabled: Boolean) {
+        sharedPreferences.edit().putBoolean(Keys.ENABLE_NOVEL_UPDATE_NOTIFICATIONS, enabled).apply()
+        _enableNovelUpdateNotifications.value = enabled
+    }
+
     fun clear() {
         sharedPreferences.edit().clear().apply()
         _isDarkMode.value = false
         _hasSeenOnboarding.value = false
+        _enableNovelUpdateNotifications.value = true
     }
 }

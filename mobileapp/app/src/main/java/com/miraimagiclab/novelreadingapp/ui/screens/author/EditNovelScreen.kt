@@ -125,14 +125,14 @@ fun EditNovelScreen(
                 title = { Text("Edit Novel") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
                     IconButton(
                         onClick = { showDeleteDialog = true }
                     ) {
-                        Icon(Icons.Default.Delete, contentDescription = "Delete")
+                        Icon(Icons.Filled.Delete, contentDescription = "Delete")
                     }
                 },
                 windowInsets = WindowInsets(0)
@@ -216,7 +216,7 @@ fun EditNovelScreen(
                                     .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Close,
+                                    imageVector = Icons.Filled.Close,
                                     contentDescription = "Remove",
                                     tint = Color.White,
                                     modifier = Modifier.size(16.dp)
@@ -232,7 +232,7 @@ fun EditNovelScreen(
                         }
                         else -> {
                             Icon(
-                                imageVector = Icons.Default.Add,
+                                imageVector = Icons.Filled.Add,
                                 contentDescription = null,
                                 tint = Color(0xFFCCCCCC),
                                 modifier = Modifier.size(32.dp)
@@ -257,7 +257,7 @@ fun EditNovelScreen(
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Add,
+                            imageVector = Icons.Filled.Add,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )

@@ -46,3 +46,4 @@ data/db/
 ### JUnit ###
 junit/
 test-output/
+firebase-service-account.json

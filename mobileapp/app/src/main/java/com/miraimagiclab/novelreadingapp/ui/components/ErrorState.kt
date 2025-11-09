@@ -25,7 +25,7 @@ fun ErrorState(
         verticalArrangement = Arrangement.Center
     ) {
                         Icon(
-                            imageVector = Icons.Default.Warning,
+                            imageVector = Icons.Filled.Warning,
                             contentDescription = "Error",
                             modifier = Modifier.size(48.dp),
                             tint = MaterialTheme.colorScheme.error
@@ -57,7 +57,7 @@ fun ErrorState(
                 modifier = Modifier.padding(horizontal = Spacing.lg)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Refresh,
+                    imageVector = Icons.Filled.Refresh,
                     contentDescription = "Retry",
                     modifier = Modifier.size(18.dp)
                 )
@@ -79,7 +79,7 @@ fun OfflineState(
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            imageVector = Icons.Default.Info,
+            imageVector = Icons.Filled.Info,
             contentDescription = "Offline",
             modifier = Modifier.size(48.dp),
             tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
@@ -110,7 +110,7 @@ fun OfflineState(
             modifier = Modifier.padding(horizontal = Spacing.lg)
         ) {
             Icon(
-                imageVector = Icons.Default.Refresh,
+                imageVector = Icons.Filled.Refresh,
                 contentDescription = "Retry",
                 modifier = Modifier.size(18.dp)
             )
@@ -134,7 +134,7 @@ fun EmptyState(
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            imageVector = Icons.Default.Menu,
+            imageVector = Icons.Filled.Menu,
             contentDescription = "Empty",
             modifier = Modifier.size(48.dp),
             tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)

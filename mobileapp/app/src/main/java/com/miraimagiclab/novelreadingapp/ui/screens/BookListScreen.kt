@@ -242,7 +242,7 @@ private fun BookListContent(
         ) {
             IconButton(onClick = onBackClick) {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack,
+                    imageVector = Icons.Filled.ArrowBack,
                     contentDescription = "Back",
                     tint = MaterialTheme.colorScheme.onSurface
                 )
@@ -274,21 +274,20 @@ private fun BookListContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Book grid (2 columns)
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             modifier = Modifier.fillMaxSize(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 80.dp)
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+            contentPadding = PaddingValues(bottom = 80.dp, top = 0.dp)
         ) {
             items(currentNovels, key = { it.id }) { book ->
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(0.7f)
                         .pointerInput(book.id) {
                             detectTapGestures(
                                 onTap = { onBookClick(book.id) },
@@ -302,7 +301,8 @@ private fun BookListContent(
                         novel = book,
                         onClick = { onBookClick(book.id) },
                         enableInternalClick = false, // tắt clickable bên trong
-                        modifier = Modifier.matchParentSize()
+                        modifier = Modifier.fillMaxWidth(),
+                        coverHeight = 280.dp
                     )
 
                     DropdownMenu(
@@ -316,7 +316,7 @@ private fun BookListContent(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.Delete,
+                                        imageVector = Icons.Filled.Delete,
                                         contentDescription = null,
                                         tint = MaterialTheme.colorScheme.error
                                     )
