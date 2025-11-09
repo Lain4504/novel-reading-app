@@ -37,11 +37,11 @@ object NotificationHelper {
     ) {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        val title = "$novelTitle có chương mới"
+        val title = "$novelTitle has a new chapter"
         val message = if (newChaptersCount > 1) {
-            "$newChaptersCount chương mới được đăng. Nhấn để đọc."
+            "$newChaptersCount new chapters posted. Tap to read."
         } else {
-            "1 chương mới được đăng. Nhấn để đọc."
+            "1 new chapter posted. Tap to read."
         }
 
         val intent = Intent(context, MainActivity::class.java).apply {

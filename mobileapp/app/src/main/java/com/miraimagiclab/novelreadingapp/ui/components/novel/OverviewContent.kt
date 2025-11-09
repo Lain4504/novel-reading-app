@@ -8,12 +8,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.miraimagiclab.novelreadingapp.domain.model.NovelDetail
 import com.miraimagiclab.novelreadingapp.ui.theme.Spacing
 
@@ -49,37 +46,6 @@ fun OverviewContent(novelDetail: NovelDetail) {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 lineHeight = 22.sp
-            )
-        }
-        
-        // Illustration Section
-        Text(
-            text = "Illustration",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontWeight = FontWeight.Medium
-        )
-        
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(Spacing.md)
-        ) {
-            AsyncImage(
-                model = "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=120&h=200&fit=crop",
-                contentDescription = "Illustration 1",
-                modifier = Modifier
-                    .width(70.dp)
-                    .height(100.dp)
-                    .clip(RoundedCornerShape(6.dp)),
-                contentScale = ContentScale.Crop
-            )
-            AsyncImage(
-                model = "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=120&h=200&fit=crop",
-                contentDescription = "Illustration 2",
-                modifier = Modifier
-                    .width(70.dp)
-                    .height(100.dp)
-                    .clip(RoundedCornerShape(6.dp)),
-                contentScale = ContentScale.Crop
             )
         }
     }

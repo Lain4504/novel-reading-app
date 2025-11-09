@@ -20,7 +20,8 @@ import java.time.LocalDateTime
 class CommentService(
     private val commentRepository: CommentRepository,
     private val userService: UserService,
-    private val novelService: NovelService
+    private val novelService: NovelService,
+    private val notificationService: NotificationService
 ) {
 
     fun createComment(request: CommentCreateRequest): CommentResponseDto {
@@ -92,6 +93,69 @@ class CommentService(
                 // Log error but don't fail reply creation if stats update fails
                 val logger = org.slf4j.LoggerFactory.getLogger(CommentService::class.java)
                 logger.error("Failed to update novel comment count after reply creation: ${e.message}", e)
+            }
+        }
+        
+        // Tạo notification cho user có comment gốc (parent comment owner)
+        // Chỉ tạo notification nếu người reply không phải là chủ comment gốc
+        if (parent.userId != null && parent.userId != request.userId) {
+            try {
+                val logger = org.slf4j.LoggerFactory.getLogger(CommentService::class.java)
+                logger.info("Creating reply notification for user ${parent.userId}")
+                
+                // Lấy thông tin user đang reply
+                val replyUser = try {
+                    userService.getUserEntityById(request.userId)
+                } catch (e: Exception) {
+                    null
+                }
+                val replyUserName = replyUser?.username ?: "Someone"
+                
+                // Lấy thông tin novel nếu có
+                val novelTitle = if (parent.novelId != null) {
+                    try {
+                        val novel = novelService.getNovelById(parent.novelId)
+                        novel.title
+                    } catch (e: Exception) {
+                        null
+                    }
+                } else {
+                    null
+                }
+                
+                // Tạo title và message cho notification
+                val notificationTitle = "$replyUserName đã trả lời comment của bạn"
+                
+                val notificationMessage = if (novelTitle != null) {
+                    "Trong \"$novelTitle\": ${reply.content.take(100)}${if (reply.content.length > 100) "..." else ""}"
+                } else {
+                    "${reply.content.take(100)}${if (reply.content.length > 100) "..." else ""}"
+                }
+                
+                // Tạo notification với novelId để navigate đến novel detail (có thể mở comment section)
+                if (parent.novelId != null) {
+                    notificationService.createNotification(
+                        userId = parent.userId,
+                        type = com.miraimagiclab.novelreadingapp.enumeration.NotificationEnum.REPLY_COMMENT,
+                        title = notificationTitle,
+                        message = notificationMessage,
+                        entityId = parent.novelId, // Dùng novelId để navigate đến novel detail
+                        entityType = com.miraimagiclab.novelreadingapp.enumeration.EntityEnum.NOVEL
+                    )
+                } else {
+                    // Nếu không có novelId, vẫn tạo notification nhưng không có entityId
+                    notificationService.createNotification(
+                        userId = parent.userId,
+                        type = com.miraimagiclab.novelreadingapp.enumeration.NotificationEnum.REPLY_COMMENT,
+                        title = notificationTitle,
+                        message = notificationMessage
+                    )
+                }
+                logger.info("✓ Reply notification created for user ${parent.userId}")
+            } catch (e: Exception) {
+                val logger = org.slf4j.LoggerFactory.getLogger(CommentService::class.java)
+                logger.error("Failed to create reply notification: ${e.message}", e)
+                // Don't fail reply creation if notification creation fails
             }
         }
         

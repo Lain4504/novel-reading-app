@@ -51,10 +51,12 @@ class UserNovelInteractionService(
         val interaction = if (existingInteraction.isPresent) {
             // Update existing interaction
             val current = existingInteraction.get()
+            val newHasFollowing = request.hasFollowing ?: current.hasFollowing
+            // notify is automatically true when hasFollowing is true
             current.copy(
-                hasFollowing = request.hasFollowing ?: current.hasFollowing,
+                hasFollowing = newHasFollowing,
                 inWishlist = request.inWishlist ?: current.inWishlist,
-                notify = request.notify ?: current.notify,
+                notify = newHasFollowing, // Auto-set notify based on hasFollowing
                 currentChapterNumber = request.currentChapterNumber ?: current.currentChapterNumber,
                 currentChapterId = request.currentChapterId ?: current.currentChapterId,
                 lastReadAt = request.lastReadAt?.let { LocalDateTime.parse(it) } ?: current.lastReadAt,
@@ -63,12 +65,13 @@ class UserNovelInteractionService(
             )
         } else {
             // Create new interaction
+            val newHasFollowing = request.hasFollowing ?: false
             UserNovelInteraction(
                 userId = userId,
                 novelId = novelId,
-                hasFollowing = request.hasFollowing ?: false,
+                hasFollowing = newHasFollowing,
                 inWishlist = request.inWishlist ?: false,
-                notify = request.notify ?: false,
+                notify = newHasFollowing, // Auto-set notify based on hasFollowing
                 currentChapterNumber = request.currentChapterNumber,
                 currentChapterId = request.currentChapterId,
                 lastReadAt = request.lastReadAt?.let { LocalDateTime.parse(it) },
@@ -87,17 +90,20 @@ class UserNovelInteractionService(
 
         val interaction = if (existingInteraction.isPresent) {
             val current = existingInteraction.get()
+            val newHasFollowing = !current.hasFollowing
             current.copy(
-                hasFollowing = !current.hasFollowing,
+                hasFollowing = newHasFollowing,
+                notify = newHasFollowing, // Auto-set notify: true when following, false when unfollowing
                 updatedAt = LocalDateTime.now()
             )
         } else {
+            // Create new interaction with following = true
             UserNovelInteraction(
                 userId = userId,
                 novelId = novelId,
                 hasFollowing = true,
                 inWishlist = false,
-                notify = false,
+                notify = true, // Auto-set notify = true when following
                 totalChapterReads = 0,
                 createdAt = LocalDateTime.now(),
                 updatedAt = LocalDateTime.now()

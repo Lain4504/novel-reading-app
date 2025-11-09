@@ -13,6 +13,7 @@ import coil.compose.AsyncImage
 import com.miraimagiclab.novelreadingapp.domain.model.NovelDetail
 import com.miraimagiclab.novelreadingapp.ui.theme.CustomShapes
 import com.miraimagiclab.novelreadingapp.ui.theme.Spacing
+import com.miraimagiclab.novelreadingapp.util.DateFormatter
 
 @Composable
 fun NovelHeader(novelDetail: NovelDetail) {
@@ -112,7 +113,7 @@ fun NovelHeader(novelDetail: NovelDetail) {
             
             // Created date
             Text(
-                text = "Created: ${novelDetail.novel.createdAt}",
+                text = "Created: ${DateFormatter.formatRelativeDate(novelDetail.novel.createdAt)}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )

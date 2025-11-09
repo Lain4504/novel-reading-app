@@ -21,13 +21,7 @@ data class Notification(
     val message: String,
     val read: Boolean = false,
     @Field(targetType = FieldType.OBJECT_ID)
-    val entityId: String? = null,
-    val entityType: EntityEnum? = null,
-    @Field(targetType = FieldType.OBJECT_ID)
-    val actorId: String? = null,
-    val actorName: String? = null,
-    val contextData: String? = null,
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-    val updatedAt: LocalDateTime = LocalDateTime.now(),
-    val link: String? = null
+    val entityId: String? = null, // ID của entity liên quan (novelId, commentId, etc.)
+    val entityType: EntityEnum? = null, // Loại entity (NOVEL, COMMENT, etc.)
+    val createdAt: LocalDateTime = LocalDateTime.now()
 )

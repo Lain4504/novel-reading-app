@@ -59,6 +59,9 @@ fun NovelReadingNavigation(
                 onLoginClick = {
                     navController.navigate(Screen.Login.route)
                 },
+                onNotificationClick = {
+                    navController.navigate(Screen.Notification.route)
+                },
                 sessionManager = sessionManager
             )
         }
@@ -418,6 +421,33 @@ fun NovelReadingNavigation(
                 },
                 onSuccess = {
                     navController.popBackStack()
+                }
+            )
+        }
+        
+        composable(Screen.Notification.route) {
+            NotificationScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onNotificationClick = { notification ->
+                    // Handle notification click - navigate to relevant screen
+                    notification.entityId?.let { entityId ->
+                        when (notification.entityType) {
+                            "NOVEL" -> {
+                                // Navigate to novel detail
+                                navController.navigate(Screen.NovelDetail.createRoute(entityId))
+                            }
+                            "COMMENT" -> {
+                                // For comments, navigate to novel detail (comments are shown there)
+                                navController.navigate(Screen.NovelDetail.createRoute(entityId))
+                            }
+                            else -> {
+                                // Default: navigate to novel detail if entityId exists
+                                navController.navigate(Screen.NovelDetail.createRoute(entityId))
+                            }
+                        }
+                    }
                 }
             )
         }
