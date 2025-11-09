@@ -33,6 +33,12 @@ class SecurityConfig(
             .authorizeHttpRequests { authz ->
                 authz
                     .requestMatchers("/health", "/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/index.html", "/swagger-ui/").permitAll()
+                    // Public AI recommendation endpoints
+                    .requestMatchers(HttpMethod.GET, "/recommendations/health").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/recommendations/topic").permitAll()
+                    // Be permissive for the whole recommendations namespace (handles context-path differences too)
+                    .requestMatchers("/recommendations/**").permitAll()
+                    .requestMatchers("/api/recommendations/**").permitAll()
                     .requestMatchers("/users", "/users/login", "/users/refresh").permitAll() // Allow signup and login
                     .requestMatchers("/auth/verify-email").permitAll() // Allow email verification
                     .requestMatchers("/auth/verify-account").permitAll() // Allow account verification
