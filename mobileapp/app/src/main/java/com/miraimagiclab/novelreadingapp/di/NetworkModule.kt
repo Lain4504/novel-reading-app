@@ -33,8 +33,8 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    private const val BASE_URL = "http://192.168.1.4:8080/api/"
-//   private const val BASE_URL = "http://10.0.2.2:8080/api/"
+    // private const val BASE_URL = "http://192.168.1.4:8080/api/"
+  private const val BASE_URL = "http://10.0.2.2:8080/api/"
 
     @Provides
     @Singleton
@@ -181,6 +181,7 @@ object NetworkModule {
     fun provideRecommendationApiService(@Named("authedRetrofit") retrofit: Retrofit): RecommendationApiService {
         return retrofit.create(RecommendationApiService::class.java)
     
+    }
     @Provides
     @Singleton
     fun provideDeviceTokenApiService(@Named("authedRetrofit") retrofit: Retrofit): DeviceTokenApiService {
