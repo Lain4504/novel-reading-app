@@ -77,17 +77,17 @@ class HomeViewModel @Inject constructor(
     private suspend fun loadDataFromServer() {
         // Combine all data streams using new home screen specific methods
         val recFlow =
-            if (_aiTopic.value?.isNotBlank() == true && authState.value.isLoggedIn) {
-                // Topic-based AI recommendations using Gemini (user provided topic)
+            if (_aiTopic.value?.isNotBlank() == true) {
+                // Topic-based AI recommendations (allow even when not logged in)
                 novelRepository.getAiRecommendationsByTopic(_aiTopic.value!!.trim(), 12)
             } else if (authState.value.isLoggedIn && !authState.value.userId.isNullOrBlank()) {
                 // Personalized recommendations using Gemini (based on interactions)
                 novelRepository.getAiRecommendations(authState.value.userId!!, 12)
             } else {
-                // Fallback to popular recommendations when not logged in
+                // Fallback to popular recommendations when not logged in and no topic
                 novelRepository.getRecommendedNovels()
             }
-
+ 
         combine(
             novelRepository.getBannerNovels(),
             recFlow,

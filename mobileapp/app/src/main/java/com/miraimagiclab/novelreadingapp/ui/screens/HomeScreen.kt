@@ -50,6 +50,7 @@ import com.miraimagiclab.novelreadingapp.util.rememberHapticFeedback
 fun HomeScreen(
     onNovelClick: (String) -> Unit,
     onLoginClick: () -> Unit = {},
+    onAiClick: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
     sessionManager: SessionManager
 ) {
@@ -99,6 +100,20 @@ fun HomeScreen(
                     }
                 },
                 actions = {
+                    // AI button - opens dedicated AI recommendations page
+                    TextButton(
+                        onClick = onAiClick,
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Text(
+                            text = "AI",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+
                     // Login button - only show when not logged in
                     if (!authState.isLoggedIn) {
                         TextButton(
@@ -226,63 +241,14 @@ fun HomeScreen(
 
                         // Recommended for you section
                         if (homeData.recommendedNovels.isNotEmpty()) {
-                            Column {
-                                Text(
-                                    text = "AI system recomment for you",
-                                    style = MaterialTheme.typography.headlineSmall.copy(
-                                        fontWeight = FontWeight.SemiBold
-                                    ),
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.padding(bottom = Spacing.md)
-                                )
-
-                                // Topic input for AI-driven recommendations
-                                if (authState.isLoggedIn) {
-                                    var topicText by remember { mutableStateOf("") }
-
-                                    OutlinedTextField(
-                                        value = topicText,
-                                        onValueChange = { topicText = it },
-                                        modifier = Modifier.fillMaxWidth(),
-                                        label = { Text("Tell AI your topic") },
-                                        placeholder = { Text("e.g., cultivation fantasy, school life, horror") },
-                                        singleLine = true
-                                    )
-
-                                    Spacer(modifier = Modifier.height(8.dp))
-
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Button(
-                                            onClick = {
-                                                viewModel.setAiTopic(topicText.trim().ifBlank { null })
-                                            },
-                                            enabled = topicText.isNotBlank()
-                                        ) {
-                                            Text("Ask AI")
-                                        }
-                                        if (topicText.isNotBlank()) {
-                                            TextButton(onClick = {
-                                                topicText = ""
-                                                viewModel.setAiTopic(null)
-                                            }) {
-                                                Text("Clear")
-                                            }
-                                        }
-                                    }
-
-                                    Spacer(modifier = Modifier.height(Spacing.md))
-                                } else {
-                                    Text(
-                                        text = "Login to ask AI by topic",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.padding(bottom = Spacing.md)
-                                    )
-                                }
-                            }
+                            Text(
+                                text = "Recommended for you",
+                                style = MaterialTheme.typography.headlineSmall.copy(
+                                    fontWeight = FontWeight.SemiBold
+                                ),
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.padding(bottom = Spacing.md)
+                            )
 
                             LazyRow(
                                 horizontalArrangement = Arrangement.spacedBy(Spacing.md),
