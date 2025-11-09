@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.miraimagiclab.novelreadingapp.domain.model.*
 import com.miraimagiclab.novelreadingapp.ui.theme.Spacing
+import com.miraimagiclab.novelreadingapp.util.DateFormatter
 
 @Composable
 fun CommentsContent(
@@ -245,7 +246,7 @@ fun CommentItem(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = comment.createdAt,
+                            text = DateFormatter.formatRelativeDate(comment.createdAt),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
@@ -432,7 +433,7 @@ fun ReplyItem(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = reply.createdAt,
+                            text = DateFormatter.formatRelativeDate(reply.createdAt),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )

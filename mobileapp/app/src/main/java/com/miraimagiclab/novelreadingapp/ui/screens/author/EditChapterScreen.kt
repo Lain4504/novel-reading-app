@@ -27,7 +27,6 @@ fun EditChapterScreen(
     viewModel: AuthorViewModel = hiltViewModel()
 ) {
     var chapterTitle by remember { mutableStateOf("") }
-    var chapterNumber by remember { mutableStateOf(1) }
     var content by remember { mutableStateOf("") }
     var showDeleteDialog by remember { mutableStateOf(false) }
     
@@ -43,7 +42,6 @@ fun EditChapterScreen(
     LaunchedEffect(currentChapter) {
         currentChapter?.let { chapter ->
             chapterTitle = chapter.chapterTitle
-            chapterNumber = chapter.chapterNumber
             content = chapter.content
         }
     }
@@ -85,20 +83,6 @@ fun EditChapterScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Chapter Number
-            OutlinedTextField(
-                value = chapterNumber.toString(),
-                onValueChange = { 
-                    it.toIntOrNull()?.let { num ->
-                        chapterNumber = num
-                    }
-                },
-                label = { Text("Chapter Number") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                enabled = !uiState.isLoading
-            )
-
             // Chapter Title
             OutlinedTextField(
                 value = chapterTitle,
@@ -144,7 +128,6 @@ fun EditChapterScreen(
                             novelId = novelId,
                             chapterId = chapterId,
                             chapterTitle = chapterTitle,
-                            chapterNumber = chapterNumber,
                             content = content
                         )
                     }

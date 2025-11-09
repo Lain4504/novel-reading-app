@@ -3,7 +3,7 @@ package com.miraimagiclab.novelreadingapp.ui.components.novel
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
@@ -30,7 +30,7 @@ fun NovelDetailContent(
     onNavigateToCreateReview: (novelId: String) -> Unit = {},
     viewModel: com.miraimagiclab.novelreadingapp.ui.viewmodel.NovelDetailViewModel
 ) {
-    val tabs = listOf("Overview", "Chapters", "Comments", "Reviews", "Recom")
+    val tabs = listOf("Overview", "Chapters", "Comments", "Reviews", "Recommendations")
     
     Scaffold(
         topBar = {
@@ -56,9 +56,9 @@ fun NovelDetailContent(
                     val userInteraction by viewModel.userInteraction.collectAsState()
                     IconButton(onClick = { viewModel.toggleFollow() }) {
                         Icon(
-                            imageVector = if (userInteraction?.hasFollowing == true) Icons.Filled.Star else Icons.Outlined.Star,
-                            contentDescription = if (userInteraction?.hasFollowing == true) "Remove from favorites" else "Add to favorites",
-                            tint = if (userInteraction?.hasFollowing == true) Color(0xFFFFD700) else MaterialTheme.colorScheme.primary
+                            imageVector = if (userInteraction?.hasFollowing == true) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+                            contentDescription = if (userInteraction?.hasFollowing == true) "Unfollow novel" else "Follow novel",
+                            tint = if (userInteraction?.hasFollowing == true) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
                     }
                 },

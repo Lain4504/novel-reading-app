@@ -259,7 +259,7 @@ fun CommentInputBar(
                     onValueChange = onCommentTextChange,
                     placeholder = { 
                         Text(
-                            if (replyToComment != null) "Write a reply..." else "Thêm bình luận..."
+                            if (replyToComment != null) "Write a reply..." else "Add comment..."
                         ) 
                     },
                     modifier = Modifier.weight(1f),

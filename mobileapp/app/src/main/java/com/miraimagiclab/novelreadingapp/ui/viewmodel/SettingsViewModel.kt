@@ -14,6 +14,13 @@ class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
+    val themeMode: StateFlow<String> = settingsRepository.getThemeModeFlow()
+        .stateIn(
+            scope = viewModelScope,
+            started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
+            initialValue = "system"
+        )
+
     val isDarkMode: StateFlow<Boolean> = settingsRepository.getDarkModeFlow()
         .stateIn(
             scope = viewModelScope,
@@ -35,15 +42,28 @@ class SettingsViewModel @Inject constructor(
             initialValue = true
         )
 
+    fun setThemeMode(mode: String) {
+        viewModelScope.launch {
+            settingsRepository.setThemeMode(mode)
+        }
+    }
+    
     fun toggleDarkMode() {
         viewModelScope.launch {
-            val currentMode = isDarkMode.value
-            settingsRepository.setDarkMode(!currentMode)
+            val currentMode = themeMode.value
+            val newMode = when (currentMode) {
+                "light" -> "dark"
+                "dark" -> "light"
+                else -> "dark" // system -> dark
+            }
+            settingsRepository.setThemeMode(newMode)
         }
     }
 
     fun setDarkMode(isDark: Boolean) {
-        settingsRepository.setDarkMode(isDark)
+        viewModelScope.launch {
+            settingsRepository.setDarkMode(isDark)
+        }
     }
 
     fun setHasSeenOnboarding(hasSeen: Boolean) {

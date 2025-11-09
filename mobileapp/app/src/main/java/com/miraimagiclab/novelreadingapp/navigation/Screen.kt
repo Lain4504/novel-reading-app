@@ -133,4 +133,6 @@ sealed class Screen(
     }
 
     object ChangePassword : Screen("change_password")
+    
+    object Notification : Screen("notification")
 }

@@ -21,7 +21,9 @@ class ChapterService (
     private val novelService: NovelService,
     private val userNovelInteractionService: UserNovelInteractionService,
     private val deviceTokenService: DeviceTokenService,
-    private val fcmService: FcmService
+    private val fcmService: FcmService,
+    private val notificationService: NotificationService,
+    private val userService: UserService
 ){
     fun createChapter(novelId: String, request: ChapterCreateRequest): ChapterResponseDto {
         val logger = org.slf4j.LoggerFactory.getLogger(ChapterService::class.java)
@@ -75,15 +77,15 @@ class ChapterService (
             logger.info("=== START: Sending chapter update notifications ===")
             logger.info("NovelId: $novelId, ChapterId: ${chapter.id}, ChapterNumber: ${chapter.chapterNumber}, ChapterTitle: ${chapter.chapterTitle}")
             
-            // Get all users following this novel with notifications enabled
+            // Get all users following this novel (notify is automatically true when following)
             val allInteractions = userNovelInteractionService.getNovelInteractions(novelId)
             logger.info("Total interactions for novel $novelId: ${allInteractions.size}")
             
-            val interactions = allInteractions.filter { it.hasFollowing && it.notify }
-            logger.info("Interactions with hasFollowing=true and notify=true: ${interactions.size}")
+            val interactions = allInteractions.filter { it.hasFollowing }
+            logger.info("Interactions with hasFollowing=true: ${interactions.size}")
             
             if (interactions.isEmpty()) {
-                logger.warn("No users found following this novel with notifications enabled. Skipping notifications.")
+                logger.warn("No users found following this novel. Skipping notifications.")
                 return
             }
             
@@ -108,7 +110,7 @@ class ChapterService (
             
             // Get FCM tokens for these users
             val tokensByUserId = deviceTokenService.getTokensByUserIds(userIds)
-            logger.info("Total users with tokens: ${tokensByUserId.size}")
+            logger.info("Total users with FCM tokens: ${tokensByUserId.size}")
             
             var totalTokens = 0
             tokensByUserId.forEach { (userId, tokens) ->
@@ -117,11 +119,6 @@ class ChapterService (
                 tokens.forEach { token ->
                     logger.debug("User $userId token: ${token.take(20)}...")
                 }
-            }
-            
-            if (totalTokens == 0) {
-                logger.warn("No FCM tokens found for any users. Notifications cannot be sent.")
-                return
             }
             
             // Prepare notification content
@@ -137,9 +134,10 @@ class ChapterService (
             logger.info("Notification content - Title: $title, Body: $body")
             logger.info("Notification data: $data")
             
-            // Send notifications to all tokens
-            var notificationsSent = 0
+            // Tạo notification records trong database và gửi FCM push notifications
+            var notificationsCreated = 0
             var notificationsSkipped = 0
+            var fcmNotificationsSent = 0
             
             tokensByUserId.forEach { (userId, tokens) ->
                 // Get user's current chapter number to check if this is a new chapter
@@ -149,11 +147,29 @@ class ChapterService (
                 logger.info("User $userId: currentChapter=$currentChapterNumber, newChapter=${chapter.chapterNumber}")
                 
                 if (chapter.chapterNumber > currentChapterNumber) {
+                    // Tạo notification record trong database
+                    try {
+                        notificationService.createNotification(
+                            userId = userId,
+                            type = com.miraimagiclab.novelreadingapp.enumeration.NotificationEnum.NEW_CHAPTER,
+                            title = title,
+                            message = body,
+                            entityId = novelId, // Dùng novelId để navigate đến novel detail
+                            entityType = com.miraimagiclab.novelreadingapp.enumeration.EntityEnum.NOVEL
+                        )
+                        notificationsCreated++
+                        logger.info("✓ Notification record created for user $userId")
+                    } catch (e: Exception) {
+                        logger.error("Failed to create notification record for user $userId: ${e.message}", e)
+                        // Continue with FCM push even if DB notification fails
+                    }
+                    
+                    // Send FCM push notifications
                     tokens.forEach { token ->
                         logger.info("Sending notification to user $userId, token: ${token.take(20)}...")
                         val success = fcmService.sendNotification(token, title, body, data)
                         if (success) {
-                            notificationsSent++
+                            fcmNotificationsSent++
                             logger.info("✓ Notification sent successfully to user $userId")
                         } else {
                             logger.error("✗ Failed to send notification to user $userId")
@@ -165,7 +181,43 @@ class ChapterService (
                 }
             }
             
-            logger.info("=== END: Notifications sent=$notificationsSent, skipped=$notificationsSkipped ===")
+            // Tạo notification records cho users không có FCM tokens (nhưng vẫn đang follow)
+            val usersWithTokens = tokensByUserId.keys.toSet()
+            val usersWithoutTokens = userIds.filter { it !in usersWithTokens }
+            
+            if (usersWithoutTokens.isNotEmpty()) {
+                logger.info("Creating DB notifications for ${usersWithoutTokens.size} users without FCM tokens")
+                usersWithoutTokens.forEach { userId ->
+                    val interaction = interactions.find { it.userId == userId }
+                    val currentChapterNumber = interaction?.currentChapterNumber ?: 0
+                    
+                    if (chapter.chapterNumber > currentChapterNumber) {
+                        try {
+                            notificationService.createNotification(
+                                userId = userId,
+                                type = com.miraimagiclab.novelreadingapp.enumeration.NotificationEnum.NEW_CHAPTER,
+                                title = title,
+                                message = body,
+                                entityId = novelId, // Dùng novelId để navigate đến novel detail
+                                entityType = com.miraimagiclab.novelreadingapp.enumeration.EntityEnum.NOVEL
+                            )
+                            notificationsCreated++
+                            logger.info("✓ Notification record created for user $userId (no FCM token)")
+                        } catch (e: Exception) {
+                            logger.error("Failed to create notification record for user $userId: ${e.message}", e)
+                        }
+                    } else {
+                        notificationsSkipped++
+                        logger.info("Skipping notification for user $userId: chapter $currentChapterNumber >= ${chapter.chapterNumber}")
+                    }
+                }
+            }
+            
+            if (totalTokens == 0) {
+                logger.warn("No FCM tokens found for any users. Push notifications cannot be sent.")
+            }
+            
+            logger.info("=== END: DB notifications created=$notificationsCreated, FCM push sent=$fcmNotificationsSent, skipped=$notificationsSkipped ===")
         } catch (e: Exception) {
             // Log error but don't fail chapter creation
             logger.error("Error sending chapter update notifications: ${e.message}", e)

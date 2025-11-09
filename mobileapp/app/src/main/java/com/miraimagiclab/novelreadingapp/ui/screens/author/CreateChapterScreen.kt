@@ -22,7 +22,6 @@ fun CreateChapterScreen(
     viewModel: AuthorViewModel = hiltViewModel()
 ) {
     var chapterTitle by remember { mutableStateOf("") }
-    var chapterNumber by remember { mutableStateOf(1) }
     var content by remember { mutableStateOf("") }
     
     val uiState by viewModel.uiState.collectAsState()
@@ -54,19 +53,6 @@ fun CreateChapterScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Chapter Number
-            OutlinedTextField(
-                value = chapterNumber.toString(),
-                onValueChange = { 
-                    it.toIntOrNull()?.let { num ->
-                        chapterNumber = num
-                    }
-                },
-                label = { Text("Chapter Number") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
             // Chapter Title
             OutlinedTextField(
                 value = chapterTitle,
@@ -109,7 +95,6 @@ fun CreateChapterScreen(
                         viewModel.createChapter(
                             novelId = novelId,
                             chapterTitle = chapterTitle,
-                            chapterNumber = chapterNumber,
                             content = content
                         )
                     }

@@ -2,6 +2,8 @@ package com.miraimagiclab.novelreadingapp.service
 
 import com.miraimagiclab.novelreadingapp.dto.response.NotificationResponseDto
 import com.miraimagiclab.novelreadingapp.dto.response.PageResponse
+import com.miraimagiclab.novelreadingapp.enumeration.EntityEnum
+import com.miraimagiclab.novelreadingapp.enumeration.NotificationEnum
 import com.miraimagiclab.novelreadingapp.exception.NotificationNotFoundException
 import com.miraimagiclab.novelreadingapp.model.Notification
 import com.miraimagiclab.novelreadingapp.repository.NotificationRepository
@@ -14,6 +16,29 @@ import java.time.LocalDateTime
 class NotificationService(
     private val notificationRepository: NotificationRepository
 ) {
+    
+    // Tạo notification mới
+    fun createNotification(
+        userId: String,
+        type: NotificationEnum,
+        title: String,
+        message: String,
+        entityId: String? = null,
+        entityType: EntityEnum? = null
+    ): NotificationResponseDto {
+        val notification = Notification(
+            userId = userId,
+            type = type,
+            title = title,
+            message = message,
+            read = false,
+            entityId = entityId,
+            entityType = entityType,
+            createdAt = LocalDateTime.now()
+        )
+        val saved = notificationRepository.save(notification)
+        return NotificationResponseDto.fromEntity(saved)
+    }
 
     // Lấy notification theo ID
     fun getNotificationById(id: String): NotificationResponseDto {
@@ -49,8 +74,7 @@ class NotificationService(
             .orElseThrow { NotificationNotFoundException(id) }
 
         val updated = notification.copy(
-            read = true,
-            updatedAt = LocalDateTime.now()
+            read = true
         )
         val saved = notificationRepository.save(updated)
         return NotificationResponseDto.fromEntity(saved)
@@ -59,7 +83,7 @@ class NotificationService(
     // Đánh dấu tất cả notification của user là đã đọc
     fun markAllAsRead(userId: String) {
         val all = notificationRepository.findByUserId(userId)
-        val updatedList = all.map { it.copy(read = true, updatedAt = LocalDateTime.now()) }
+        val updatedList = all.map { it.copy(read = true) }
         notificationRepository.saveAll(updatedList)
     }
 }

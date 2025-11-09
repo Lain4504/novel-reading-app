@@ -142,13 +142,11 @@ class AuthorRepository @Inject constructor(
     suspend fun createChapter(
         novelId: String,
         chapterTitle: String,
-        chapterNumber: Int,
         content: String
     ): Result<ChapterDto> {
         return try {
             val request = ChapterCreateRequest(
                 chapterTitle = chapterTitle,
-                chapterNumber = chapterNumber,
                 content = content
             )
             val response = chapterApiService.createChapter(novelId, request)
@@ -166,13 +164,11 @@ class AuthorRepository @Inject constructor(
         novelId: String,
         chapterId: String,
         chapterTitle: String? = null,
-        chapterNumber: Int? = null,
         content: String? = null
     ): Result<ChapterDto> {
         return try {
             val request = ChapterUpdateRequest(
                 chapterTitle = chapterTitle,
-                chapterNumber = chapterNumber,
                 content = content
             )
             val response = chapterApiService.updateChapter(novelId, chapterId, request)

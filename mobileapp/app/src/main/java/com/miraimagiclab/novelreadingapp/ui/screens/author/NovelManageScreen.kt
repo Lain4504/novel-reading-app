@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 import com.miraimagiclab.novelreadingapp.data.remote.dto.ChapterDto
+import com.miraimagiclab.novelreadingapp.data.remote.dto.NovelDto
 import com.miraimagiclab.novelreadingapp.ui.viewmodel.AuthorViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 
@@ -36,6 +37,7 @@ fun NovelManageScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val novelChapters by viewModel.novelChapters.collectAsState()
+    val selectedNovel by viewModel.selectedNovel.collectAsState()
     
     // Delete chapter dialog state
     var showDeleteChapterDialog by remember { mutableStateOf(false) }
@@ -44,6 +46,7 @@ fun NovelManageScreen(
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(novelId) {
+        viewModel.loadNovelById(novelId)
         viewModel.loadNovelChapters(novelId)
     }
 
@@ -84,12 +87,6 @@ fun NovelManageScreen(
                     CircularProgressIndicator()
                 }
             }
-            novelChapters.isEmpty() -> {
-                EmptyChaptersState(
-                    onCreateChapterClick = onCreateChapterClick,
-                    modifier = Modifier.padding(innerPadding)
-                )
-            }
             else -> {
                 LazyColumn(
                     modifier = Modifier
@@ -98,24 +95,35 @@ fun NovelManageScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Novel info header
+                    // Novel info header - always show
                     item {
                         NovelInfoCard(
-                            novelId = novelId,
+                            novel = selectedNovel,
+                            chapterCount = novelChapters.size,
                             onEditClick = onEditNovelClick
                         )
                     }
                     
-                    // Chapters list
-                    items(novelChapters) { chapter ->
-                        ChapterItem(
-                            chapter = chapter,
-                            onClick = { onEditChapterClick(chapter.id) },
-                            onLongClick = {
-                                chapterToDelete = chapter
-                                showDeleteChapterDialog = true
-                            }
-                        )
+                    // Show empty state or chapters list
+                    if (novelChapters.isEmpty()) {
+                        item {
+                            EmptyChaptersState(
+                                onCreateChapterClick = onCreateChapterClick,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    } else {
+                        // Chapters list
+                        items(novelChapters) { chapter ->
+                            ChapterItem(
+                                chapter = chapter,
+                                onClick = { onEditChapterClick(chapter.id) },
+                                onLongClick = {
+                                    chapterToDelete = chapter
+                                    showDeleteChapterDialog = true
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -158,8 +166,8 @@ private fun EmptyChaptersState(
 ) {
     Column(
         modifier = modifier
-            .fillMaxSize()
-            .padding(24.dp),
+            .fillMaxWidth()
+            .padding(vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -201,7 +209,8 @@ private fun EmptyChaptersState(
 
 @Composable
 private fun NovelInfoCard(
-    novelId: String,
+    novel: NovelDto?,
+    chapterCount: Int,
     onEditClick: () -> Unit
 ) {
     Box(
@@ -216,7 +225,7 @@ private fun NovelInfoCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
-                model = "https://via.placeholder.com/60x90",
+                model = novel?.coverImage ?: "https://via.placeholder.com/60x90",
                 contentDescription = "Novel cover",
                 modifier = Modifier.size(60.dp, 90.dp)
             )
@@ -227,7 +236,7 @@ private fun NovelInfoCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Novel Title", // TODO: Load actual novel title
+                    text = novel?.title ?: "Loading...",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -235,7 +244,7 @@ private fun NovelInfoCard(
                 Spacer(modifier = Modifier.height(2.dp))
                 
                 Text(
-                    text = "Author Name", // TODO: Load actual author name
+                    text = novel?.authorName ?: "Loading...",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -246,12 +255,12 @@ private fun NovelInfoCard(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = "DRAFT",
+                        text = novel?.status ?: "DRAFT",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "0 chapters",
+                        text = "$chapterCount ${if (chapterCount == 1) "chapter" else "chapters"}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

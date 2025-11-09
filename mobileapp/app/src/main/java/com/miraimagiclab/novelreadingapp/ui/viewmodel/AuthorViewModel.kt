@@ -262,7 +262,6 @@ class AuthorViewModel @Inject constructor(
     fun createChapter(
         novelId: String,
         chapterTitle: String,
-        chapterNumber: Int,
         content: String
     ) {
         viewModelScope.launch {
@@ -270,7 +269,6 @@ class AuthorViewModel @Inject constructor(
             authorRepository.createChapter(
                 novelId = novelId,
                 chapterTitle = chapterTitle,
-                chapterNumber = chapterNumber,
                 content = content
             )
                 .onSuccess { chapter ->
@@ -293,7 +291,6 @@ class AuthorViewModel @Inject constructor(
         novelId: String,
         chapterId: String,
         chapterTitle: String? = null,
-        chapterNumber: Int? = null,
         content: String? = null
     ) {
         viewModelScope.launch {
@@ -302,7 +299,6 @@ class AuthorViewModel @Inject constructor(
                 novelId = novelId,
                 chapterId = chapterId,
                 chapterTitle = chapterTitle,
-                chapterNumber = chapterNumber,
                 content = content
             )
                 .onSuccess { updatedChapter ->

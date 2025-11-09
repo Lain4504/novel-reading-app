@@ -69,7 +69,7 @@ class NovelFirebaseMessagingService : FirebaseMessagingService() {
         
         // Check if message contains a notification payload
         notification?.let { notif ->
-            val title = notif.title ?: "Thông báo"
+            val title = notif.title ?: "Notification"
             val body = notif.body ?: ""
             
             // Get data payload
@@ -109,8 +109,8 @@ class NovelFirebaseMessagingService : FirebaseMessagingService() {
                 val chapterNumber = data["chapterNumber"]
                 
                 // Try to get title and body from data, or use defaults
-                val title = data["title"] ?: "Có chương mới"
-                val body = data["body"] ?: "Một chương mới đã được thêm vào truyện bạn theo dõi"
+                val title = data["title"] ?: "New Chapter Available"
+                val body = data["body"] ?: "A new chapter has been added to the novel you're following"
                 
                 android.util.Log.d(TAG, "Creating notification from data payload:")
                 android.util.Log.d(TAG, "  Title: $title")
