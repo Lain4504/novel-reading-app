@@ -2,6 +2,7 @@ package com.miraimagiclab.novelreadingapp.data.repository
 
 import com.miraimagiclab.novelreadingapp.data.mapper.NovelMapper
 import com.miraimagiclab.novelreadingapp.data.remote.api.NovelApiService
+import com.miraimagiclab.novelreadingapp.data.remote.api.RecommendationApiService
 import com.miraimagiclab.novelreadingapp.data.remote.dto.NovelSearchRequest
 import com.miraimagiclab.novelreadingapp.data.remote.dto.PageResponse
 import com.miraimagiclab.novelreadingapp.domain.model.Novel
@@ -13,7 +14,8 @@ import javax.inject.Singleton
 
 @Singleton
 class NovelRepositoryImpl @Inject constructor(
-    private val novelApiService: NovelApiService
+    private val novelApiService: NovelApiService,
+    private val recommendationApiService: RecommendationApiService
 ) : NovelRepository {
 
     // Home screen specific implementations - calling API directly (no cache)
@@ -227,6 +229,66 @@ class NovelRepositoryImpl @Inject constructor(
                 last = true,
                 numberOfElements = 0
             )
+        }
+    }
+
+    override fun getAiRecommendations(userId: String, limit: Int): Flow<List<Novel>> {
+        return flow {
+            try {
+                val response = recommendationApiService.getRecommendations(userId, limit)
+                if (response.success && response.data != null && response.data.isNotEmpty()) {
+                    val novels = response.data.map { NovelMapper.mapDtoToDomain(it.novel) }
+                    emit(novels)
+                } else {
+                    // Fallback to generic recommendations if AI is empty/unavailable
+                    val fallback = novelApiService.getRecommendedNovels()
+                    val novels = if (fallback.success && fallback.data != null) {
+                        fallback.data.map { NovelMapper.mapDtoToDomain(it) }
+                    } else emptyList()
+                    emit(novels)
+                }
+            } catch (e: Exception) {
+                // On error, fallback to generic recommendations
+                try {
+                    val fallback = novelApiService.getRecommendedNovels()
+                    val novels = if (fallback.success && fallback.data != null) {
+                        fallback.data.map { NovelMapper.mapDtoToDomain(it) }
+                    } else emptyList()
+                    emit(novels)
+                } catch (_: Exception) {
+                    emit(emptyList())
+                }
+            }
+        }
+    }
+
+    override fun getAiRecommendationsByTopic(topic: String, limit: Int): Flow<List<Novel>> {
+        return flow {
+            try {
+                val response = recommendationApiService.getRecommendationsByTopic(topic, limit)
+                if (response.success && response.data != null && response.data.isNotEmpty()) {
+                    val novels = response.data.map { NovelMapper.mapDtoToDomain(it.novel) }
+                    emit(novels)
+                } else {
+                    // Fallback to generic recommendations if AI is empty/unavailable
+                    val fallback = novelApiService.getRecommendedNovels()
+                    val novels = if (fallback.success && fallback.data != null) {
+                        fallback.data.map { NovelMapper.mapDtoToDomain(it) }
+                    } else emptyList()
+                    emit(novels)
+                }
+            } catch (e: Exception) {
+                // On error, fallback to generic recommendations
+                try {
+                    val fallback = novelApiService.getRecommendedNovels()
+                    val novels = if (fallback.success && fallback.data != null) {
+                        fallback.data.map { NovelMapper.mapDtoToDomain(it) }
+                    } else emptyList()
+                    emit(novels)
+                } catch (_: Exception) {
+                    emit(emptyList())
+                }
+            }
         }
     }
 }

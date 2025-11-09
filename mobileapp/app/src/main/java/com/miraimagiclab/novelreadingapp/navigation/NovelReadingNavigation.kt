@@ -59,6 +59,9 @@ fun NovelReadingNavigation(
                 onLoginClick = {
                     navController.navigate(Screen.Login.route)
                 },
+                onAiClick = {
+                    navController.navigate(Screen.AIRecommendations.route)
+                },
                 onNotificationClick = {
                     navController.navigate(Screen.Notification.route)
                 },
@@ -424,7 +427,17 @@ fun NovelReadingNavigation(
                 }
             )
         }
-        
+        composable(Screen.AIRecommendations.route) {
+    AiRecommendationsScreen(
+        onBackClick = {
+            navController.popBackStack()
+        },
+        onNovelClick = { novelId ->
+            navController.navigate(Screen.NovelDetail.createRoute(novelId))
+        },
+        sessionManager = sessionManager
+    )
+}
         composable(Screen.Notification.route) {
             NotificationScreen(
                 onBackClick = {

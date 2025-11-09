@@ -54,6 +54,7 @@ import com.miraimagiclab.novelreadingapp.util.rememberHapticFeedback
 fun HomeScreen(
     onNovelClick: (String) -> Unit,
     onLoginClick: () -> Unit = {},
+    onAiClick: () -> Unit = {},
     onNotificationClick: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
     sessionManager: SessionManager,
@@ -114,6 +115,20 @@ fun HomeScreen(
                     }
                 },
                 actions = {
+                    // AI button - opens dedicated AI recommendations page
+                    TextButton(
+                        onClick = onAiClick,
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Text(
+                            text = "AI",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+
                     // Theme toggle icon - always visible
                     IconButton(onClick = { settingsViewModel.toggleDarkMode() }) {
                         Icon(

@@ -39,4 +39,10 @@ interface NovelRepository {
     
     // Search novels with pagination
     suspend fun searchNovels(query: String, page: Int, size: Int, sortBy: String = "updatedAt", sortDirection: String = "desc"): PageResponse<Novel>
+
+    // AI Recommendations for a user (Gemini-backed)
+    fun getAiRecommendations(userId: String, limit: Int = 10): Flow<List<Novel>>
+
+    // AI Recommendations by topic (user-provided prompt)
+    fun getAiRecommendationsByTopic(topic: String, limit: Int = 10): Flow<List<Novel>>
 }

@@ -10,6 +10,7 @@ import com.miraimagiclab.novelreadingapp.data.remote.api.ReviewApiService
 import com.miraimagiclab.novelreadingapp.data.remote.api.UserNovelInteractionApiService
 import com.miraimagiclab.novelreadingapp.data.remote.api.UserApiService
 import com.miraimagiclab.novelreadingapp.data.remote.api.ImageApiService
+import com.miraimagiclab.novelreadingapp.data.remote.api.RecommendationApiService
 import com.miraimagiclab.novelreadingapp.data.remote.api.DeviceTokenApiService
 import com.miraimagiclab.novelreadingapp.data.remote.api.NotificationApiService
 import com.miraimagiclab.novelreadingapp.data.auth.SessionManager
@@ -33,8 +34,8 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    private const val BASE_URL = "http://192.168.1.26:8080/api/"
-//    private const val BASE_URL = "http://10.0.2.2:8080/api/"
+//private const val BASE_URL = "http://10.12.7.138:8080/api/"
+   private const val BASE_URL = "http://10.0.2.2:8080/api/"
 
     @Provides
     @Singleton
@@ -175,7 +176,13 @@ object NetworkModule {
     fun provideImageApiService(@Named("authedRetrofit") retrofit: Retrofit): ImageApiService {
         return retrofit.create(ImageApiService::class.java)
     }
+
+    @Provides
+    @Singleton
+    fun provideRecommendationApiService(@Named("authedRetrofit") retrofit: Retrofit): RecommendationApiService {
+        return retrofit.create(RecommendationApiService::class.java)
     
+    }
     @Provides
     @Singleton
     fun provideDeviceTokenApiService(@Named("authedRetrofit") retrofit: Retrofit): DeviceTokenApiService {

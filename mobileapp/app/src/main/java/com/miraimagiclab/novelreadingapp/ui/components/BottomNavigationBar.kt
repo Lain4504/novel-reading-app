@@ -41,6 +41,12 @@ fun BottomNavigationBar(
                 selectedIcon = Icons.Filled.Home
             ),
             BottomNavItem(
+                route = Screen.AIRecommendations.route,
+                title = "AI",
+                icon = Icons.Default.Star,
+                selectedIcon = Icons.Default.Star
+            ),
+            BottomNavItem(
                 route = Screen.BookList.route,
                 title = "Library",
                 icon = Icons.Outlined.LibraryBooks,
@@ -67,6 +73,12 @@ fun BottomNavigationBar(
                 title = "Home",
                 icon = Icons.Outlined.Home,
                 selectedIcon = Icons.Filled.Home
+            ),
+            BottomNavItem(
+                route = Screen.AIRecommendations.route,
+                title = "AI",
+                icon = Icons.Default.Star,
+                selectedIcon = Icons.Default.Star
             ),
             BottomNavItem(
                 route = Screen.Profile.route,
