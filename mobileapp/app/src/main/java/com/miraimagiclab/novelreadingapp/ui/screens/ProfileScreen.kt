@@ -20,9 +20,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -91,7 +93,8 @@ fun ProfileScreen(
                     contentDescription = "Profile avatar",
                     modifier = Modifier
                         .size(64.dp)
-                        .clip(CircleShape)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
@@ -143,10 +146,9 @@ fun ProfileScreen(
 
             // App settings
             SectionTitle("App settings")
-            AppThemeMenuItem(
-                title = "App Theme",
-                isDarkMode = isDarkMode,
-                onToggle = { settingsViewModel.toggleDarkMode() }
+            ThemeSwitchSection(
+                themeMode = settingsViewModel.themeMode.collectAsState().value,
+                onThemeChange = { mode -> settingsViewModel.setThemeMode(mode) }
             )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
@@ -155,7 +157,7 @@ fun ProfileScreen(
             // Note: FCM token is automatically managed by MainActivity when user logs in
             // and notifications are enabled. No need for manual scheduling/canceling.
             NotificationMenuItem(
-                title = "Thông báo chương mới",
+                title = "New Chapter Notifications",
                 enabled = settingsViewModel.isNovelUpdateNotificationsEnabled.collectAsState().value,
                 onToggle = { enabled ->
                     settingsViewModel.setNovelUpdateNotificationsEnabled(enabled)
@@ -308,36 +310,112 @@ fun ProfileMenuItem(title: String, icon: androidx.compose.ui.graphics.vector.Ima
 }
 
 @Composable
-fun AppThemeMenuItem(
-    title: String,
-    isDarkMode: Boolean,
-    onToggle: () -> Unit
+fun ThemeSwitchSection(
+    themeMode: String,
+    onThemeChange: (String) -> Unit
 ) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        Icon(
-            imageVector = Icons.Filled.Settings,
-            contentDescription = title,
-            modifier = Modifier.size(22.dp)
+        Text(
+            text = "Theme",
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(bottom = 8.dp)
         )
-        Spacer(modifier = Modifier.width(16.dp))
-        Column {
-            Text(text = title, style = MaterialTheme.typography.bodyMedium)
-            Text(
-                text = if (isDarkMode) "Dark Mode" else "Light Mode",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+        
+        // Theme switch buttons container
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                    shape = RoundedCornerShape(24.dp)
+                )
+                .padding(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            // Light mode button (Sun icon)
+            ThemeSwitchButton(
+                icon = Icons.Filled.WbSunny,
+                label = null,
+                isSelected = themeMode == "light",
+                onClick = { onThemeChange("light") },
+                modifier = Modifier.weight(1f)
+            )
+            
+            // Dark mode button (Moon icon)
+            ThemeSwitchButton(
+                icon = Icons.Filled.DarkMode,
+                label = null,
+                isSelected = themeMode == "dark",
+                onClick = { onThemeChange("dark") },
+                modifier = Modifier.weight(1f)
+            )
+            
+            // System mode button (Monitor/Computer icon)
+            ThemeSwitchButton(
+                icon = Icons.Filled.Computer,
+                label = "System",
+                isSelected = themeMode == "system",
+                onClick = { onThemeChange("system") },
+                modifier = Modifier.weight(1f)
             )
         }
-        Spacer(modifier = Modifier.weight(1f))
-        Switch(
-            checked = isDarkMode,
-            onCheckedChange = { onToggle() }
-        )
+    }
+}
+
+@Composable
+fun ThemeSwitchButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String?,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val containerColor = if (isSelected) {
+        MaterialTheme.colorScheme.surface
+    } else {
+        androidx.compose.ui.graphics.Color.Transparent
+    }
+    
+    val contentColor = if (isSelected) {
+        MaterialTheme.colorScheme.onSurface
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+    }
+    
+    Box(
+        modifier = modifier
+            .height(32.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(containerColor)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 12.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                modifier = Modifier.size(16.dp),
+                tint = contentColor
+            )
+            if (label != null) {
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontSize = 10.sp,
+                    color = contentColor
+                )
+            }
+        }
     }
 }
 
@@ -362,7 +440,7 @@ fun NotificationMenuItem(
         Column {
             Text(text = title, style = MaterialTheme.typography.bodyMedium)
             Text(
-                text = if (enabled) "Bật" else "Tắt",
+                text = if (enabled) "On" else "Off",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

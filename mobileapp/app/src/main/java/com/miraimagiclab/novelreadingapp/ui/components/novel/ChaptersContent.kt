@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.miraimagiclab.novelreadingapp.domain.model.*
 import com.miraimagiclab.novelreadingapp.ui.theme.Spacing
+import com.miraimagiclab.novelreadingapp.util.DateFormatter
 
 @Composable
 fun ChaptersContent(
@@ -160,7 +161,7 @@ fun ChapterItem(
                 }
                 
                 Text(
-                    text = chapter.createdAt,
+                    text = DateFormatter.formatRelativeDate(chapter.createdAt),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )

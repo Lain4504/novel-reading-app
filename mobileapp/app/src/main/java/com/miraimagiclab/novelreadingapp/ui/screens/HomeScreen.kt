@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
@@ -27,6 +28,7 @@ import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.miraimagiclab.novelreadingapp.data.auth.SessionManager
 import com.miraimagiclab.novelreadingapp.ui.components.BannerCard
+import com.miraimagiclab.novelreadingapp.ui.viewmodel.SettingsViewModel
 import com.miraimagiclab.novelreadingapp.ui.components.ErrorState
 import com.miraimagiclab.novelreadingapp.ui.components.HomeScreenSkeleton
 import com.miraimagiclab.novelreadingapp.ui.components.NovelCard
@@ -52,14 +55,25 @@ fun HomeScreen(
     onNovelClick: (String) -> Unit,
     onLoginClick: () -> Unit = {},
     onAiClick: () -> Unit = {},
+    onNotificationClick: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
-    sessionManager: SessionManager
+    sessionManager: SessionManager,
+    settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
     val scrollState = rememberScrollState()
     val uiState by viewModel.uiState.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
     val hapticFeedback = rememberHapticFeedback()
     val authState by sessionManager.authState.collectAsState()
+    val themeMode by settingsViewModel.themeMode.collectAsState()
+    val isSystemInDarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
+    
+    // Determine if currently in dark mode for icon display
+    val isDarkMode = when (themeMode) {
+        "dark" -> true
+        "light" -> false
+        else -> isSystemInDarkTheme
+    }
 
     val pullRefreshState = rememberPullRefreshState(
         refreshing = isRefreshing,
@@ -115,6 +129,15 @@ fun HomeScreen(
                         )
                     }
 
+                    // Theme toggle icon - always visible
+                    IconButton(onClick = { settingsViewModel.toggleDarkMode() }) {
+                        Icon(
+                            imageVector = if (isDarkMode) Icons.Filled.DarkMode else Icons.Filled.WbSunny,
+                            contentDescription = if (isDarkMode) "Switch to light mode" else "Switch to dark mode",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    
                     // Login button - only show when not logged in
                     if (!authState.isLoggedIn) {
                         TextButton(
@@ -137,7 +160,7 @@ fun HomeScreen(
                         }
                     } else {
                         // Show notification bell only when logged in
-                        IconButton(onClick = { /* Handle notification */ }) {
+                        IconButton(onClick = onNotificationClick) {
                             Icon(
                                 imageVector = Icons.Filled.Notifications,
                                 contentDescription = "Notifications",
@@ -302,43 +325,104 @@ fun HomeScreen(
 
                         // Ranking section
                         if (homeData.rankingNovels.isNotEmpty()) {
-                            Text(
-                                text = "Top Ranking",
-                                style = MaterialTheme.typography.headlineSmall.copy(
-                                    fontWeight = FontWeight.SemiBold
-                                ),
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.padding(bottom = Spacing.md)
-                            )
-
-                            // Ranking with swiper functionality
-                            val pagerState =
-                                rememberPagerState(pageCount = { (homeData.rankingNovels.size + 4) / 5 })
-
-                            HorizontalPager(
-                                state = pagerState,
-                                modifier = Modifier.height(480.dp)
-                            ) { page ->
-                                Column(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                            Column(
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                // Enhanced header with icon
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = Spacing.md),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
                                 ) {
-                                    // Show 5 items per page
-                                    repeat(5) { index ->
-                                        val globalIndex = page * 5 + index
-                                        if (globalIndex < homeData.rankingNovels.size) {
-                                            val novel = homeData.rankingNovels[globalIndex]
-                                            RankingListItem(
-                                                novel = novel,
-                                                rank = globalIndex + 1,
-                                                onClick = {
-                                                    hapticFeedback.light()
-                                                    onNovelClick(novel.id)
+                                    Icon(
+                                        imageVector = Icons.Filled.Star,
+                                        contentDescription = "Ranking",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                    Text(
+                                        text = "Top Ranking",
+                                        style = MaterialTheme.typography.headlineSmall.copy(
+                                            fontWeight = FontWeight.Bold
+                                        ),
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+
+                                // Ranking with swiper functionality
+                                val pagerState =
+                                    rememberPagerState(pageCount = { (homeData.rankingNovels.size + 3) / 4 })
+
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(20.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                                    ),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(Spacing.sm)
+                                    ) {
+                                        HorizontalPager(
+                                            state = pagerState,
+                                            modifier = Modifier.height(440.dp)
+                                        ) { page ->
+                                            Column(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+                                            ) {
+                                                // Show 4 items per page
+                                                repeat(4) { index ->
+                                                    val globalIndex = page * 4 + index
+                                                    if (globalIndex < homeData.rankingNovels.size) {
+                                                        val novel = homeData.rankingNovels[globalIndex]
+                                                        RankingListItem(
+                                                            novel = novel,
+                                                            rank = globalIndex + 1,
+                                                            onClick = {
+                                                                hapticFeedback.light()
+                                                                onNovelClick(novel.id)
+                                                            }
+                                                        )
+                                                    } else {
+                                                        // Empty space to maintain consistent layout
+                                                        Spacer(modifier = Modifier.height(100.dp))
+                                                    }
                                                 }
-                                            )
-                                        } else {
-                                            // Empty space to maintain consistent layout
-                                            Spacer(modifier = Modifier.height(88.dp))
+                                            }
+                                        }
+
+                                        // Page indicators
+                                        if (pagerState.pageCount > 1) {
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(top = Spacing.sm, bottom = Spacing.xs),
+                                                horizontalArrangement = Arrangement.Center
+                                            ) {
+                                                repeat(pagerState.pageCount) { iteration ->
+                                                    val color = if (pagerState.currentPage == iteration)
+                                                        MaterialTheme.colorScheme.primary
+                                                    else
+                                                        MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
+
+                                                    val width = if (pagerState.currentPage == iteration) 24.dp else 8.dp
+
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .padding(horizontal = 3.dp)
+                                                            .height(6.dp)
+                                                            .width(width)
+                                                            .background(
+                                                                color = color,
+                                                                shape = RoundedCornerShape(3.dp)
+                                                            )
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -350,7 +434,7 @@ fun HomeScreen(
                         // New Novels section
                         if (homeData.newNovels.isNotEmpty()) {
                             Text(
-                                text = "Truyện mới",
+                                text = "New Novels",
                                 style = MaterialTheme.typography.headlineSmall.copy(
                                     fontWeight = FontWeight.SemiBold
                                 ),
@@ -380,7 +464,7 @@ fun HomeScreen(
                         // Completed Novels section
                         if (homeData.completedNovels.isNotEmpty()) {
                             Text(
-                                text = "Truyện hoàn thành",
+                                text = "Completed Novels",
                                 style = MaterialTheme.typography.headlineSmall.copy(
                                     fontWeight = FontWeight.SemiBold
                                 ),

@@ -134,4 +134,6 @@ sealed class Screen(
 
     object ChangePassword : Screen("change_password")
     object AIRecommendations : Screen("ai_recommendations")
+    
+    object Notification : Screen("notification")
 }

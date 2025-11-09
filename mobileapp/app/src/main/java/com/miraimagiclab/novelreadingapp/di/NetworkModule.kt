@@ -12,6 +12,7 @@ import com.miraimagiclab.novelreadingapp.data.remote.api.UserApiService
 import com.miraimagiclab.novelreadingapp.data.remote.api.ImageApiService
 import com.miraimagiclab.novelreadingapp.data.remote.api.RecommendationApiService
 import com.miraimagiclab.novelreadingapp.data.remote.api.DeviceTokenApiService
+import com.miraimagiclab.novelreadingapp.data.remote.api.NotificationApiService
 import com.miraimagiclab.novelreadingapp.data.auth.SessionManager
 import com.miraimagiclab.novelreadingapp.data.local.prefs.AuthDataStore
 import com.miraimagiclab.novelreadingapp.data.remote.interceptor.AuthInterceptor
@@ -186,5 +187,11 @@ object NetworkModule {
     @Singleton
     fun provideDeviceTokenApiService(@Named("authedRetrofit") retrofit: Retrofit): DeviceTokenApiService {
         return retrofit.create(DeviceTokenApiService::class.java)
+    }
+    
+    @Provides
+    @Singleton
+    fun provideNotificationApiService(@Named("authedRetrofit") retrofit: Retrofit): NotificationApiService {
+        return retrofit.create(NotificationApiService::class.java)
     }
 }

@@ -202,8 +202,8 @@ private fun BookListContent(
                 showDeleteDialog = false
                 novelToDelete = null
             },
-            title = { Text("Xóa Novel") },
-            text = { Text("Bạn có chắc chắn muốn xóa novel này khỏi danh sách của bạn?") },
+            title = { Text("Delete Novel") },
+            text = { Text("Are you sure you want to remove this novel from your list?") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -212,7 +212,7 @@ private fun BookListContent(
                         novelToDelete = null
                     }
                 ) {
-                    Text("Đồng ý")
+                    Text("Confirm")
                 }
             },
             dismissButton = {
@@ -222,7 +222,7 @@ private fun BookListContent(
                         novelToDelete = null
                     }
                 ) {
-                    Text("Hủy")
+                    Text("Cancel")
                 }
             }
         )
@@ -300,7 +300,7 @@ private fun BookListContent(
                     NovelCard(
                         novel = book,
                         onClick = { onBookClick(book.id) },
-                        enableInternalClick = false, // tắt clickable bên trong
+                        enableInternalClick = false, // disable internal click
                         modifier = Modifier.fillMaxWidth(),
                         coverHeight = 280.dp
                     )
@@ -321,7 +321,7 @@ private fun BookListContent(
                                         tint = MaterialTheme.colorScheme.error
                                     )
                                     Text(
-                                        text = "Xóa khỏi danh sách",
+                                        text = "Remove from list",
                                         color = MaterialTheme.colorScheme.error
                                     )
                                 }

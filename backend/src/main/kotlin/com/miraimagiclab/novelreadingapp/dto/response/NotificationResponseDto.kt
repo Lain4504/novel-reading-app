@@ -14,12 +14,7 @@ data class NotificationResponseDto(
     val read: Boolean,
     val entityId: String?,
     val entityType: EntityEnum?,
-    val actorId: String?,
-    val actorName: String?,
-    val contextData: String?,
-    val link: String?,
-    val createdAt: LocalDateTime,
-    val updatedAt: LocalDateTime
+    val createdAt: LocalDateTime
 ) {
     companion object {
         fun fromEntity(entity: Notification): NotificationResponseDto {
@@ -32,12 +27,7 @@ data class NotificationResponseDto(
                 read = entity.read,
                 entityId = entity.entityId,
                 entityType = entity.entityType,
-                actorId = entity.actorId,
-                actorName = entity.actorName,
-                contextData = entity.contextData,
-                link = entity.link,
-                createdAt = entity.createdAt,
-                updatedAt = entity.updatedAt
+                createdAt = entity.createdAt
             )
         }
     }

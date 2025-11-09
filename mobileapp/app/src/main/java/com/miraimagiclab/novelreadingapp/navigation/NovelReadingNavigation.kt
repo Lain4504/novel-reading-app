@@ -62,6 +62,9 @@ fun NovelReadingNavigation(
                 onAiClick = {
                     navController.navigate(Screen.AIRecommendations.route)
                 },
+                onNotificationClick = {
+                    navController.navigate(Screen.Notification.route)
+                },
                 sessionManager = sessionManager
             )
         }
@@ -425,14 +428,40 @@ fun NovelReadingNavigation(
             )
         }
         composable(Screen.AIRecommendations.route) {
-            AiRecommendationsScreen(
+    AiRecommendationsScreen(
+        onBackClick = {
+            navController.popBackStack()
+        },
+        onNovelClick = { novelId ->
+            navController.navigate(Screen.NovelDetail.createRoute(novelId))
+        },
+        sessionManager = sessionManager
+    )
+}
+        composable(Screen.Notification.route) {
+            NotificationScreen(
                 onBackClick = {
                     navController.popBackStack()
                 },
-                onNovelClick = { novelId ->
-                    navController.navigate(Screen.NovelDetail.createRoute(novelId))
-                },
-                sessionManager = sessionManager
+                onNotificationClick = { notification ->
+                    // Handle notification click - navigate to relevant screen
+                    notification.entityId?.let { entityId ->
+                        when (notification.entityType) {
+                            "NOVEL" -> {
+                                // Navigate to novel detail
+                                navController.navigate(Screen.NovelDetail.createRoute(entityId))
+                            }
+                            "COMMENT" -> {
+                                // For comments, navigate to novel detail (comments are shown there)
+                                navController.navigate(Screen.NovelDetail.createRoute(entityId))
+                            }
+                            else -> {
+                                // Default: navigate to novel detail if entityId exists
+                                navController.navigate(Screen.NovelDetail.createRoute(entityId))
+                            }
+                        }
+                    }
+                }
             )
         }
         }

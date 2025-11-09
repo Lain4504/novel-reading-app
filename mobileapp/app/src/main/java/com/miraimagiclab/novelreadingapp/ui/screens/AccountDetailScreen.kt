@@ -196,7 +196,8 @@ private fun UserHeaderSection(user: UserDto) {
                 contentDescription = "Profile avatar",
                 modifier = Modifier
                     .size(80.dp)
-                    .clip(CircleShape)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
             )
             
             Column(
@@ -299,13 +300,32 @@ private fun AuthorNovelsSection(
     onNovelClick: (String) -> Unit
 ) {
     Column(
-        modifier = Modifier.padding(16.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        Text(
-            text = "Novels by this author",
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        // Header with better styling
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp, top = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Filled.MenuBook,
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Novels by this author",
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
 
         when (val state = authorNovels) {
             is UiState.Idle -> {
@@ -337,8 +357,9 @@ private fun AuthorNovelsSection(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Star,
+                        imageVector = Icons.Filled.Error,
                         contentDescription = "Error",
+                        modifier = Modifier.size(48.dp),
                         tint = MaterialTheme.colorScheme.error
                     )
                     Text(
@@ -349,7 +370,8 @@ private fun AuthorNovelsSection(
                     Text(
                         text = state.message,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
                     )
                 }
             }
@@ -358,26 +380,29 @@ private fun AuthorNovelsSection(
                 if (novels.isEmpty()) {
                     EmptyNovelsState()
                 } else {
-                    // Use LazyVerticalGrid for better performance and consistency
-                    val chunkedNovels = novels.chunked(2)
+                    // Convert novels to domain models
+                    val domainNovels = novels.map { NovelMapper.mapDtoToDomain(it) }
+                    
+                    // Beautiful grid layout with better spacing
+                    val chunkedNovels = domainNovels.chunked(2)
                     Column(
+                        modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         chunkedNovels.forEach { rowNovels ->
                             Row(
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                rowNovels.forEach { novelDto ->
-                                    // Convert NovelDto to Novel for NovelCard using mapper
-                                    val novel = NovelMapper.mapDtoToDomain(novelDto)
-                                    
+                                rowNovels.forEach { novel ->
                                     Box(
                                         modifier = Modifier.weight(1f)
                                     ) {
                                         NovelCard(
                                             novel = novel,
-                                            onClick = { onNovelClick(novel.id) }
+                                            onClick = { onNovelClick(novel.id) },
+                                            modifier = Modifier.fillMaxWidth(),
+                                            coverHeight = 240.dp
                                         )
                                     }
                                 }

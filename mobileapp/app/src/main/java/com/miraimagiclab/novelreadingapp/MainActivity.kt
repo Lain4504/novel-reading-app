@@ -65,9 +65,17 @@ class MainActivity : ComponentActivity() {
         
         setContent {
             val settingsViewModel: SettingsViewModel = hiltViewModel()
-            val isDarkMode by settingsViewModel.isDarkMode.collectAsState()
+            val themeMode by settingsViewModel.themeMode.collectAsState()
+            val isSystemInDarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
             val notifEnabled by settingsViewModel.isNovelUpdateNotificationsEnabled.collectAsState()
             val authState by sessionManager.authState.collectAsState()
+            
+            // Determine dark theme based on theme mode
+            val darkTheme = when (themeMode) {
+                "dark" -> true
+                "light" -> false
+                else -> isSystemInDarkTheme // "system"
+            }
             
             // Send FCM token to server when user is logged in and notifications are enabled
             LaunchedEffect(authState.isLoggedIn, notifEnabled) {
@@ -90,7 +98,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
             
-            NovelReadingAppTheme(darkTheme = isDarkMode) {
+            NovelReadingAppTheme(darkTheme = darkTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
